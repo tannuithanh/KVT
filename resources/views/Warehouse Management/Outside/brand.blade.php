@@ -18,27 +18,27 @@
 
     <section class="section">
     <div class="row">
-    <div class="col-lg-3">
+    <div class="col-lg-12">
         <div class="card">
         <div class="card-body">
             <h5 class="card-title">Danh sách thương hiệu</h5>
             <table class="table table-borderless table-bordered">
             <thead>
-                <tr>
-                    <th scope="col" >STT</th>
-                    <th scope="col">Thương hiệu</th>
+                <tr     >
+                    <th style="text-align: center;" scope="col" >STT</th>
+                    <th style="text-align: center;"  scope="col">Thương hiệu</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($brand as $value )
                     <tr>
-                        <td>{{$value->id}}</td>
-                        <td><a href="{{ route('listProject', $value->id) }}">{{$value->name}}</a></td>
+                        <td style="text-align: center" >{{$value->id}}</td>
+                        <td style="text-align: center" ><a href="{{ route('listProject', $value->id) }}">{{$value->name}}</a></td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
-        
+
         </div>
         </div>
         </div>

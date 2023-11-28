@@ -19,7 +19,7 @@
 
     <section class="section">
     <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="card">
         <div class="card-body">
             <h5 class="mt-3" style="    font-size: 18px;
@@ -32,10 +32,10 @@
             <table class="table table-borderless table-bordered mt-2">
             <thead>
                 <tr>
-                    <th style="vertical-align: middle; text-align: center" scope="col" >STT</th>
-                    <th style="vertical-align: middle; text-align: center" scope="col">Tên dự án</th>
-                    <th style="vertical-align: middle; text-align: center" scope="col">Mô tả dự án</th>
-                    <th style="vertical-align: middle; text-align: center" scope="col">Thao tác</th>
+                    <th style="vertical-align: middle; text-align: center;" scope="col" >STT</th>
+                    <th style="vertical-align: middle; text-align: center;" scope="col">Tên dự án</th>
+                    <th style="vertical-align: middle; text-align: center;" scope="col">Mô tả dự án</th>
+                    <th style="vertical-align: middle; text-align: center;" scope="col">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,7 +53,7 @@
                 @endforeach
             </tbody>
         </table>
-        
+
         </div>
         </div>
         </div>

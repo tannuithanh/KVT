@@ -36,17 +36,17 @@
 
             /* Tùy chỉnh màu nền của track */
             ::-webkit-scrollbar-track {
-                background: #f1f1f1; 
+                background: #f1f1f1;
             }
 
             /* Tùy chỉnh màu của handle */
             ::-webkit-scrollbar-thumb {
-                background: #888; 
+                background: #888;
             }
 
             /* Khi rê chuột lên thanh kéo */
             ::-webkit-scrollbar-thumb:hover {
-                background: #555; 
+                background: #555;
             }
 
   </style>
@@ -58,18 +58,19 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="index.html" class="logo d-flex align-items-center">
-        <img src="{{asset('assets/img/logo1.png')}}" alt="">
-        <span class="d-none d-lg-block">
-          <img src="{{asset('assets/img/logo.png')}}" alt="Hình ảnh mô tả">
-        </span>
-
-      </a>
-      <i class="bi bi-list toggle-sidebar-btn"></i>
+        <a href="index.html" class="logo d-flex align-items-center">
+            <img src="{{asset('assets/img/abc.png')}}" alt="">
+            <div style="text-align: center;">
+                <span class="d-none d-lg-block">
+                    QUẢN LÝ VẬT TƯ
+                </span>
+                <span class="d-none d-lg-block">
+                    R&D CENTER
+                </span>
+            </div>
+        </a>
+        <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
-
-
-
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
@@ -127,7 +128,7 @@
   <!-- ======= Sidebar ======= -->
   @php
     $currentRoute = Route::currentRouteName();
-    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listBrand', 'listProject']);
+    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listBrand', 'listProject','listWarehouse']);
     $isActiveDashboard = $currentRoute == 'dashboard';
   @endphp
 
@@ -141,21 +142,35 @@
             <span>Trang chủ</span>
         </a>
       </li>
-      
+
       <li class="nav-item">
           <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
               <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
           </a>
           <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
               <li>
-                <a href="{{route('listBrand')}}" class="{{ in_array($currentRoute, ['listBrand', 'listProject']) ? 'active' : '' }}">
-                      <i class="bi bi-circle"></i><span>Quản lý vật tư</span>
+                <a href="{{route('listBrand')}}" class="{{ in_array($currentRoute, ['listBrand', 'listProject','listWarehouse']) ? 'active' : '' }}">
+                      <i class="bi bi-circle"></i><span>Nhập kho</span>
                   </a>
               </li>
-              <!-- Đoạn code cho "Quản lý tồn kho" tương tự -->
           </ul>
+          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="">
+                    <i class="bi bi-circle"></i><span>Xuất kho</span>
+                </a>
+            </li>
+        </ul>
+        <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="">
+                    <i class="bi bi-circle"></i><span>Quản lý kế hoạch</span>
+                </a>
+            </li>
+        </ul>
+
       </li>
-    
+
     </ul>
 
   </aside><!-- End Sidebar-->

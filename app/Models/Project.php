@@ -15,4 +15,8 @@ class Project extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+    public function supplies()
+    {
+        return $this->hasMany(Supply::class, 'project_id');
+    }
 }
