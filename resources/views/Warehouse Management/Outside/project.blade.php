@@ -28,13 +28,16 @@
             <h5 class="mt-3" style="    font-size: 18px;
             font-weight: 600;
             color: #012970;">Danh sách dự án</h5>
-            <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
+            @if (in_array($user->appFunction->id, [3, 5]))
+                <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
+            @endif
             <table class="table table-borderless table-bordered mt-2">
             <thead>
                 <tr>
                     <th style="vertical-align: middle; text-align: center;" scope="col" >STT</th>
                     <th style="vertical-align: middle; text-align: center;" scope="col">Tên dự án</th>
                     <th style="vertical-align: middle; text-align: center;" scope="col">Mô tả dự án</th>
+                    <th style="vertical-align: middle; text-align: center;" scope="col">Ngày tạo</th>
                     <th style="vertical-align: middle; text-align: center;" scope="col">Thao tác</th>
                 </tr>
             </thead>
@@ -45,9 +48,12 @@
                         <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', $value->id) }}">{{$value->name}}</a></td>
                         <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
+                        <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col">
-                            <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project" data-bs-toggle="modal" data-id="{{$value->id}}" data-name="{{$value->name}}" data-description="{{$value->description}}">Sửa</button>
-                            <button class="btn btn-sm btn-danger delete-project" data-id="{{$value->id}}">Xóa</button>
+                            @if (in_array($user->appFunction->id, [3, 5]))
+                                <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project" data-bs-toggle="modal" data-id="{{$value->id}}" data-name="{{$value->name}}" data-description="{{$value->description}}">Sửa</button>
+                                <button class="btn btn-sm btn-danger delete-project" data-id="{{$value->id}}">Xóa</button>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

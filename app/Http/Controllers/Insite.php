@@ -17,9 +17,8 @@ class Insite extends Controller
     public function listWarehouse($idProject){
         $project = Project::find($idProject);
         $brandId = $project->brand->id;
-        // dd($project->toarray());
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-        return view('Warehouse Management.Inside.Warehouse',compact('user','brandId','project'));
+        return view('Warehouse Management.Inside.quanlykehoach',compact('user','brandId','project'));
     }
 
     public function importSupplies(Request $request){
@@ -68,8 +67,8 @@ class Insite extends Controller
 
                 $supply->save();
             }
-        }
-    }, $file);
+            }
+        }, $file);
 
         return response()->json(['success' => 'Dữ liệu đã được nhập thành công']);
     }

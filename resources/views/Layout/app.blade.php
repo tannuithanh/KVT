@@ -8,6 +8,8 @@
   <title>@yield('title', '')</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
+  <link rel="icon" href="{{asset('favicon.ico')}}" type="image/x-icon"/>
+  <link rel="shortcut icon" href="{{asset('favicon.ico')}}" type="image/x-icon"/>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <!-- Favicons -->
   <link href="{{asset('assets/img/logo1.png')}}" rel="icon">
@@ -23,6 +25,8 @@
   <link href="{{asset('assets/vendor/remixicon/remixicon.css')}}" rel="stylesheet">
   <link href="{{asset('assets/vendor/simple-datatables/style.css')}}" rel="stylesheet">
   <link href="{{asset('assets/css/style.css')}}" rel="stylesheet">
+  <link href="{{asset('assets/css/TH.css')}}" rel="stylesheet">
+  <link href="{{asset('assets/css/loadingPage.css')}}" rel="stylesheet">
   <link href="{{ asset('assets/css/sweetalert2.min.css') }}" rel="stylesheet">
   @yield('style')
   <style>
@@ -49,16 +53,28 @@
                 background: #555;
             }
 
+
   </style>
 </head>
-
+ <!-- ======= Loading Page ======= -->
+<div class='container1'>
+    <div class='loader'>
+      <div class='loader--dot'></div>
+      <div class='loader--dot'></div>
+      <div class='loader--dot'></div>
+      <div class='loader--dot'></div>
+      <div class='loader--dot'></div>
+      <div class='loader--dot'></div>
+      <div class='loader--text'></div>
+    </div>
+</div>
 <body>
 
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo d-flex align-items-center">
+        <a class="logo d-flex align-items-center">
             <img src="{{asset('assets/img/abc.png')}}" alt="">
             <div style="text-align: center;">
                 <span class="d-none d-lg-block">
@@ -76,7 +92,7 @@
 
         <li class="nav-item dropdown pe-3">
 
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <a class="nav-link nav-profile d-flex align-items-center pe-0"  data-bs-toggle="dropdown">
             <img src="{{asset('assets/img/User_icon_2.svg.png')}}" alt="Profile" class="rounded-circle">
             <span class="d-none d-md-block dropdown-toggle ps-2">Hi, {{$user->name}}</span>
           </a><!-- End Profile Iamge Icon -->
@@ -150,25 +166,28 @@
           <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{{route('listBrand')}}" class="{{ in_array($currentRoute, ['listBrand', 'listProject','listWarehouse']) ? 'active' : '' }}">
-                      <i class="bi bi-circle"></i><span>Nhập kho</span>
+                      <i class="bi bi-circle"></i><span>Quản lý kế hoạch</span>
                   </a>
               </li>
           </ul>
-          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-            <li>
-              <a href="">
-                    <i class="bi bi-circle"></i><span>Xuất kho</span>
-                </a>
-            </li>
-        </ul>
-        <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-            <li>
-              <a href="">
-                    <i class="bi bi-circle"></i><span>Quản lý kế hoạch</span>
-                </a>
-            </li>
-        </ul>
-
+        @if ($user->appFunction->id == 1)
+            <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+                <li>
+                    <a href="">
+                            <i class="bi bi-circle"></i><span>Nhập kho</span>
+                        </a>
+                </li>
+            </ul>
+        @endif
+        @if ($user->appFunction->id == 2)
+            <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+                <li>
+                <a href="">
+                        <i class="bi bi-circle"></i><span>Xuất kho</span>
+                    </a>
+                </li>
+            </ul>
+        @endif
       </li>
 
     </ul>
@@ -206,6 +225,23 @@
   <script src="{{asset('assets/vendor/php-email-form/validate.js')}}"></script>
   <script src="{{asset('assets/js/main.js')}}"></script>
   @yield('script')
+  <script>
+    $(document).ready(function() {
+        $('.container1').hide(); // Ẩn loader khi trang được tải xong
+
+        $(document).on('click', 'a', function(e) {
+            var href = $(this).attr('href');
+            if(href && href !== "#" && href !== "javascript:void(0)") {
+            $('.container1').show(); // Hiển thị loader chỉ khi thẻ a có href cụ thể
+            }
+        });
+
+        $(window).on('load', function() {
+            $('.container1').hide(); // Ẩn loader khi trang mới được tải xong
+        });
+    });
+
+  </script>
 </body>
 
 </html>

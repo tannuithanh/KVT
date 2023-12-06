@@ -52,7 +52,9 @@
 
                 </div>
                 <div class="tab-pane fade" id="user-justified" role="tabpanel" aria-labelledby="user-tab">
+                    @if (($user->position->id == 11))
                     <button type="button" class="btn btn-outline-primary add-user" data-bs-target="#add-User" data-bs-toggle="modal">+ Thêm người dùng</button>
+                    @endif
                     <table class="table table-borderless table-bordered users mt-3">
                         <thead>
                             <tr>
@@ -72,7 +74,9 @@
                     </table>
                 </div>
                 <div class="tab-pane fade" id="category-justified" role="tabpanel" aria-labelledby="category-tab">
-                    <button type="button" class="btn btn-outline-primary add-category" data-bs-target="#add-provider" data-bs-toggle="modal">+ Thêm nhà cung cấp</button>
+                    @if (($user->position->id == 11))
+                        <button type="button" class="btn btn-outline-primary add-category" data-bs-target="#add-provider" data-bs-toggle="modal">+ Thêm nhà cung cấp</button>
+                    @endif
                     <table class="table table-borderless table-bordered mt-2" id="providers" >
                         <thead>
                             <tr>
@@ -156,7 +160,7 @@
             </div>
         </div>
     </div>
-<!-- THÊM TIN NHÂN SỰ -->
+<!-- THÊM NHÂN SỰ -->
     <div class="modal fade" id="add-User" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -300,7 +304,7 @@
             </div>
         </div>
     </div>
-    
+
 @endsection
 @section('script')
 <script>
@@ -397,6 +401,7 @@
             method: 'GET',
             dataType: 'json',
             success: function(data) {
+
                 let rows = '';
                 $.each(data, function(index, user) {
                     rows += `
@@ -407,10 +412,12 @@
                             <td style="text-align: center">${user.email}</td>
                             <td style="text-align: center">${user.department ? user.department.name : 'Không có phòng ban'}</td>
                             <td style="text-align: center">${user.position ? user.position.name : 'Không có chức vụ'}</td>
-                            <td style="text-align: center">${user.appFunction ? user.appFunction.name : 'Không có chức năng'}</td>
+                            <td style="text-align: center">${user.app_function ? user.app_function.name : 'Không có chức năng'}</td>
                             <td style="text-align: center">
-                                <button class="btn btn-sm btn-primary edit-user" data-bs-target="#Edit-User" data-bs-toggle="modal">Sửa</button>
-                                <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Delete</button>
+                                @if (($user->position->id == 11))
+                                    <button class="btn btn-sm btn-primary edit-user" data-bs-target="#Edit-User" data-bs-toggle="modal">Sửa</button>
+                                    <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Delete</button>
+                                @endif
                             </td>
                         </tr>
                     `;
@@ -434,6 +441,7 @@
         $('#edit-msnv').val(msnv);
         $('#edit-email').val(email);
     });
+
     $(document).on('click', '.submit-edit-user', function() {
         let name = $('#edit-name').val();
         let msnv = $('#edit-msnv').val();
@@ -441,9 +449,10 @@
         let departmentId = $('#edit-department').val();
         let positionId = $('#edit-position').val();
         let appFunctionId = $('#edit-appFunction').val();
-
+        // console.log(name,msnv,email,departmentId,positionId,appFunctionId)
         $.ajax({
             url: "{{route('editUser')}}",
+
             method: 'POST',
             data: {
                 "_token": "{{ csrf_token() }}",
@@ -485,7 +494,7 @@
 //------------------ XÓA NGƯỜI DÙNG ---------------------------------//
     $(document).on('click', '.delete-user', function() {
         let userId = $(this).data('id');
-        
+
         // Hiển thị SweetAlert2 để xác nhận việc xóa
         Swal.fire({
             title: 'Bạn có chắc chắn muốn xóa người dùng này?',
@@ -600,16 +609,18 @@
                             <td style="text-align: center">${detail.describe}</td>
                             <td style="text-align: center">${detail.provider.name}</td>
                             <td style="text-align: center">
-                                <button class="btn btn-sm btn-primary edit-provider-model" 
-                                        data-bs-target="#edit-provider" 
-                                        data-bs-toggle="modal"
-                                        data-id="${detail.id}"
-                                        data-name="${detail.name}"
-                                        data-describe="${detail.describe}"
-                                        data-provider-id="${detail.provider.id}">
-                                    Sửa
-                                </button>
-                                <button class="btn btn-sm btn-danger delete-provider" data-id="${detail.id}">Delete</button>
+                                @if (($user->position->id == 11))
+                                    <button class="btn btn-sm btn-primary edit-provider-model"
+                                            data-bs-target="#edit-provider"
+                                            data-bs-toggle="modal"
+                                            data-id="${detail.id}"
+                                            data-name="${detail.name}"
+                                            data-describe="${detail.describe}"
+                                            data-provider-id="${detail.provider.id}">
+                                        Sửa
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-provider" data-id="${detail.id}">Delete</button>
+                                @endif
                             </td>
                         </tr>
                     `;

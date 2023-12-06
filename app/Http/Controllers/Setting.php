@@ -16,6 +16,7 @@ class Setting extends Controller
 {
     public function profile(){
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        // dd($user->appFunction->toarray());
         return view('Setting.profile',compact('user'));
     }
     public function changePassword(Request $request){
@@ -73,13 +74,14 @@ class Setting extends Controller
 
     public function editUser(Request $request){
         $user = User::where('msnv', $request->msnv)->first();
+
         if ($user) {
             $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
                 'department_id' => $request->department_id,
                 'position_id' => $request->position_id,
-                'app_function_id' => $request->app_function_id
+                'function_id' => $request->app_function_id
             ]);
             return response()->json(['message' => 'Cập nhật thành công!'], 200);
         } else {
@@ -101,7 +103,7 @@ class Setting extends Controller
             return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi xóa người dùng.']);
         }
     }
-    
+
     public function addUser(Request $request){
         try {
             // Tạo một người dùng mới

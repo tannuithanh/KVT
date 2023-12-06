@@ -10,7 +10,7 @@
     <nav>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
-        <li class="breadcrumb-item">Quản lý vật tư</li>
+        <li class="breadcrumb-item">Nhập kho</li>
         <li class="breadcrumb-item"><a href="{{route('listBrand')}}">Thương hiệu</a></li>
         <li class="breadcrumb-item"><a href="{{ route('listProject', $brandId) }}">Dự án</a></li>
         <li class="breadcrumb-item active">Danh sách vật tư</li>
@@ -47,24 +47,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- <tr>
-                                <td style="text-align: center" >Test</td>
-                                <td style="text-align: center" >CSC</td>
-                                <td style="text-align: center" >BUS</td>
-                                <td style="text-align: center" >Nội dung test</td>
-                                <td style="text-align: center" >1</td>
-                                <td style="text-align: center" >LA BỊT HỘP 30x30</td>
-                                <td style="text-align: center" >10042R70</td>
-                                <td style="text-align: center" >Cái</td>
-                                <td style="text-align: center" >1</td>
-                                <td style="text-align: center" >15/11/2023</td>
-                                <td style="text-align: center" ><img style="width: 100px" src="{{ asset('barcode/Ma_vach 700.jpg') }}" alt="Barcode"></td>
-                                <td style="text-align: center" >Ghi chú</td>
-                                <td style="text-align: center">
-                                    <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project" data-bs-toggle="modal">Sửa</button>
-                                    <button class="btn btn-sm btn-danger delete-project" >Xóa</button>
-                                </td>
-                            </tr> --}}
+
                         </tbody>
                     </table>
 
