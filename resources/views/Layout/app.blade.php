@@ -78,10 +78,10 @@
             <img src="{{asset('assets/img/abc.png')}}" alt="">
             <div style="text-align: center;">
                 <span class="d-none d-lg-block">
-                    QUẢN LÝ VẬT TƯ
+                     KHO VẬT TƯ
                 </span>
                 <span class="d-none d-lg-block">
-                    R&D CENTER
+                     R&D CENTER
                 </span>
             </div>
         </a>

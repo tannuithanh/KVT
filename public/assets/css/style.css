@@ -1249,9 +1249,7 @@ h6 {
   font-size: 14px;
   transition: all 0.3s;
   border-top: 1px solid #cddfff;
-  position: fixed;
   bottom: 0;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: left;

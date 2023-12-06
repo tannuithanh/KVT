@@ -27,7 +27,7 @@
                     <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
                         <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{$project->brand->name}}</span> |
                         <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: red">{{$project->name}}</span> |
-                        <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red"></span>
+                        <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red">{{ $totalSupplies ?? 0 }}</span>
                     </h5>
                     <button type="button" class="btn btn-outline-success ri-search-line" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
                     <table class="table table-borderless table-bordered table-hover mt-2">
