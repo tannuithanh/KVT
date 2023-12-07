@@ -30,6 +30,16 @@
                         <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red">{{ $totalSupplies ?? 0 }}</span>
                     </h5>
                     <button type="button" class="btn btn-outline-success ri-search-line" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
+
+                        <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            Thêm vật tư
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#themdanhmucvattubangfileexcel">Thêm bằng cách import file</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalThemThuCong">Thêm thủ công</a></li>
+                        </ul>
+
+
                     <table class="table table-borderless table-bordered table-hover mt-2">
                         <thead>
                             <tr>
@@ -59,7 +69,7 @@
     </div>
 </section>
 
-{{-- MODEL --}}
+{{-- MODEL TÌM KIẾM --}}
 <div class="modal fade" id="Timkiemvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
@@ -115,18 +125,6 @@
                 <div class="form-check d-flex align-items-center mt-2">
                   <!-- Checkbox -->
                   <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="stt" >
-                    <label class="form-check-label" for="stt">
-                      STT:
-                    </label>
-                  </div>
-
-                    <input type="number" class="form-control" id="sttSuppelies" disabled>
-                </div>
-
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
                     <input class="form-check-input" type="checkbox" id="maso" >
                     <label class="form-check-label" for="maso">
                       Mã số:
@@ -163,6 +161,38 @@
           </form>
           </div>
         </div>
+</div>
+{{-- THÊM DANH MỤC VẬT TƯ --}}
+<div class="modal fade" id="themdanhmucvattubangfileexcel" tabindex="-1" role="dialog">
+    <!-- Nội dung modal -->
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm vật tư từ file Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <a href="{{ asset('bieumau/Sodonhan_NCC_Chiphi.xlsx') }}" download>
+                        <button type="button" id="bieumau" class="btn btn-success">
+                            <i class="ri ri-download-2-fill"> Tải biểu mẫu</i>
+                        </button>
+                    </a>
+                </div>
+                <form action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="file" required />
+                    </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Thêm</button>
+                    </div>
+                </form>
+        </div>
+    </div>
 </div>
 @endsection
 

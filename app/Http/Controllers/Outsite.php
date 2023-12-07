@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Outsite extends Controller
 {
-    public function listBrand(){
+    public function listBrand(Request $request){
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
 
         // Truy vấn tất cả brands
@@ -33,15 +33,17 @@ class Outsite extends Controller
             // Gán tổng số lượng vật tư của tất cả các dự án cho mỗi thương hiệu
             $brand->totalSupplies = $brandTotalSupplies;
         }
-        return view('Warehouse Management.Outside.brand', compact('user', 'brands'));
+        $module = $request->query('module', 'defaultModule');
+        return view('Warehouse Management.Outside.brand', compact('user', 'brands','module'));
     }
 
-    public function Project($brandId)
+    public function Project($brandId,Request $request)
     {
+        $module = $request->query('module', 'defaultModule');
         $user = Auth::User();
         $projects = Project::where('brand_id', $brandId)->get();
         $brand = Brand::find($brandId);
-        return view('Warehouse Management.Outside.project', compact('projects', 'user', 'brandId', 'brand'));
+        return view('Warehouse Management.Outside.project', compact('projects', 'user', 'brandId', 'brand','module'));
     }
 
     public function addProject(Request $request)

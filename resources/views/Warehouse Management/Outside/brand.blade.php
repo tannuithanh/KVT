@@ -8,11 +8,11 @@
     <div class="pagetitle">
         <h1>Thương hiệu</h1>
         <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
-            <li class="breadcrumb-item">Nhập kho</li>
-            <li class="breadcrumb-item active">Thương hiệu</li>
-        </ol>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
+                <li class="breadcrumb-item">{{ $module }}</li>
+                <li class="breadcrumb-item active">Thương hiệu</li>
+            </ol>
         </nav>
     </div>
 
@@ -35,7 +35,11 @@
                 @foreach ($brands as $value )
                     <tr>
                         <td style="text-align: center" >{{$value->id}}</td>
-                        <td style="text-align: center" ><a href="{{ route('listProject', $value->id) }}">{{$value->name}}</a></td>
+                        <td style="text-align: center">
+                            <a href="{{ route('listProject', ['brand' => $value->id, 'module' => $module]) }}">
+                                {{$value->name}}
+                            </a>
+                        </td>
                         <td style="text-align: center" >{{$value->projects_count}}</td>
                         <td style="text-align: center" >{{$value->totalSupplies}}</td>
                     </tr>
