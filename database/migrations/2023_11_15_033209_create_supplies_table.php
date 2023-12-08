@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('maso')->nullable(false);
             $table->string('donvitinh')->nullable(false);
             $table->integer('soluong')->nullable(false);
-            $table->dateTime('ngaynhan')->nullable(false);
+            $table->dateTime('ngaynhan');
             $table->string('note')->nullable();
             $table->integer('status')->default(0);
             $table->string('barcode')->nullable();

@@ -38,28 +38,75 @@
                             <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#themdanhmucvattubangfileexcel">Thêm bằng cách import file</a></li>
                             <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalThemThuCong">Thêm thủ công</a></li>
                         </ul>
-
-
+                        <!-- Nội dung thông báo thành công -->
+                          @if(session('success'))
+                              <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
+                                  {{ session('success') }}
+                                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                              </div>
+                          @endif
+                    
                     <table class="table table-borderless table-bordered table-hover mt-2">
+                      
                         <thead>
                             <tr>
-                                <th style="text-align: center" scope="col">Số đơn hàng</th>
-                                <th style="text-align: center" scope="col">NCC</th>
-                                <th style="text-align: center" scope="col">Chi Phí</th>
-                                <th style="text-align: center" scope="col">Nội dung/phân cụm</th>
-                                <th style="text-align: center" scope="col">STT</th>
-                                <th style="text-align: center" scope="col">Tên vật tư</th>
-                                <th style="text-align: center" scope="col">Mã số</th>
-                                <th style="text-align: center" scope="col">Đơn vị tính</th>
-                                <th style="text-align: center" scope="col">Số lượng</th>
-                                <th style="text-align: center" scope="col">Ngày nhận</th>
-                                <th style="text-align: center" scope="col">Mã barcode</th>
-                                <th style="text-align: center" scope="col">Ghi chú</th>
-                                <th style="text-align: center" scope="col">Thao tác</th>
+                                
+                                <tr>
+                                <th style="text-align: center" rowspan="2" scope="col">STT</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
+                                <th style="text-align: center" rowspan="2" scope="col">NCC</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Nội dung/phân cụm</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Đơn vị tính</th>
+                                <th style="text-align: center" colspan="3" scope="col">Số lượng</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Ngày nhận</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Barcode</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Trạng thái</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
+                              </tr>
+                              <tr>
+                                  <!-- Các cột khác ở đây -->
+                                  <th style="text-align: center" scope="col">Tổng</th>
+                                  <th style="text-align: center" scope="col">Đã nhận</th>
+                                  <th style="text-align: center" scope="col">Chưa nhận</th>
+                                  <!-- Các cột khác ở đây -->
+                              </tr>
+                               
                             </tr>
                         </thead>
                         <tbody>
-
+                            @foreach ($supplies as $index => $supply)
+                                <tr>
+                                    <td style="text-align: center">{{ $index + 1 }}</td>
+                                    <td style="text-align: center">{{ $supply->sodonhang }}</td>
+                                    <td style="text-align: center">{{ $supply->tenvattu }}</td>
+                                    <td style="text-align: center">{{ $supply->nhacungcap }}</td>
+                                    <td style="text-align: center">{{ $supply->noidungphancum }}</td>
+                                    <td style="text-align: center">{{ $supply->maso }}</td>
+                                    <td style="text-align: center">{{ $supply->donvitinh }}</td>
+                                    <td style="text-align: center; color: red">{{ $supply->soluong }}</td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center"></td>
+                                    <td style="text-align: center">{{ $supply->ngaynhan }}</td>
+                                    <td style="text-align: center">{{ $supply->chiphi }}</td>
+                                    <td style="text-align: center">
+                                      {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
+                                    </td>
+                                    <td style="text-align: center">
+                                      @if ($supply->status == 0)
+                                        <span class="badge bg-secondary">Chưa nhận</span>
+                                      @endif
+                                       
+                                    </td>
+                                    <td style="text-align: center">{{ $supply->note }}</td>
+                                    <td style="text-align: center">
+                                      <button onclick="printBarcode('{{$supply->barcodeData}}')">In Barcode</button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
 
@@ -173,7 +220,7 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <a href="{{ asset('bieumau/Sodonhan_NCC_Chiphi.xlsx') }}" download>
+                    <a href="{{ asset('bieumau/file mẫu.xlsx') }}" download>
                         <button type="button" id="bieumau" class="btn btn-success">
                             <i class="ri ri-download-2-fill"> Tải biểu mẫu</i>
                         </button>
@@ -181,6 +228,7 @@
                 </div>
                 <form action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
                     @csrf
+                    <input type="number" class="form-control" value="{{$project->id}}" name="project_id" required hidden />
                     <div class="mb-3">
                         <input type="file" class="form-control" name="file" required />
                     </div>
@@ -198,31 +246,6 @@
 
 @section('script')
 <script>
-    $(document).ready(function() {
-        $('.saveSupplies').on('click', function() {
-            var formData = new FormData();
-            formData.append('file-upload', $('#file-upload')[0].files[0]);
-
-            $.ajax({
-                url: '{{ route("importSupplies") }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    console.log('File uploaded successfully');
-                    // Thêm mã xử lý khi thành công
-                },
-                error: function(response) {
-                    console.log('Error uploading file');
-                    // Thêm mã xử lý khi có lỗi
-                }
-            });
-        });
-    });
-
-</script>
-<script>
   $(document).ready(function(){
       $(".form-check-input").click(function(){
           var checkboxId = $(this).attr('id');
@@ -238,5 +261,24 @@
           }
       });
   });
-  </script>
+</script>
+<script>
+      function printBarcode(barcodeData) {
+          var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+      
+          mywindow.document.write('<html><head><title>' + 'Barcode' + '</title>');
+          mywindow.document.write('</head><body >');
+          mywindow.document.write('<h1>' + 'Barcode' + '</h1>');
+          mywindow.document.write(document.getElementById(barcodeData).innerHTML);
+          mywindow.document.write('</body></html>');
+      
+          mywindow.document.close(); // necessary for IE >= 10
+          mywindow.focus(); // necessary for IE >= 10*/
+      
+          mywindow.print();
+          mywindow.close();
+      
+          return true;
+      }
+</script>
 @endsection
