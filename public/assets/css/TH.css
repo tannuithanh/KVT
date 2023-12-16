@@ -1,7 +1,27 @@
 th {
-    background-color: #12236d !important;
+    background-color: #173e86 !important;
     color: white !important;
     text-align:center;
     vertical-align:middle;
 }
-
+/* Tùy chỉnh cho toàn bộ scrollbar */
+::-webkit-scrollbar {
+    width: 12px; /* Đặt độ rộng của thanh cuộn */
+  }
+  
+  /* Tùy chỉnh cho nắp đậy của scrollbar (phần bạn click vào) */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Đặt màu nền cho track */
+  }
+  
+  /* Tùy chỉnh cho phần có thể kéo được của scrollbar (thanh cuộn thực sự) */
+  ::-webkit-scrollbar-thumb {
+    background: #888; /* Đặt màu nền cho thumb */
+    border-radius: 10px; /* Làm tròn góc */
+  }
+  
+  /* Thêm hiệu ứng khi hover vào thanh cuộn */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Đổi màu nền khi hover */
+  }
+  

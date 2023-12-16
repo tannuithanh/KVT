@@ -138,7 +138,7 @@
                                         <th scope="col">Tên thương hiệu</th>
                                         <th scope="col">Tên dự án</th>
                                         <th scope="col">Số lượng nhập kho</th>
-                                        <th scope="col">Số lượng Xuất kho</th>
+                                        <th scope="col">Số lượng xuất kho</th>
                                     </tr>
                                 </thead>
                                 <tbody>

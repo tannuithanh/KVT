@@ -30,8 +30,9 @@
   <link href="{{ asset('assets/css/sweetalert2.min.css') }}" rel="stylesheet">
   @yield('style')
   <style>
+
         body {
-                font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+              font-family: Arial, sans-serif;
             }
             /* Tùy chỉnh chiều rộng của thanh kéo */
             ::-webkit-scrollbar {
@@ -71,22 +72,19 @@
 <body>
 
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center">
+  <header id="header" class="header fixed-top d-flex align-items-center" style="background-color: #05438a;color: white !important; font-family:Arial, Helvetica, sans-serif " >
 
-    <div class="d-flex align-items-center justify-content-between">
-        <a class="logo d-flex align-items-center">
-            <img src="{{asset('assets/img/abc.png')}}" alt="">
+    <div class="d-flex align-items-center justify-content-between" >
+        <a class="logo d-flex align-items-center bg-rounded-white" style="text-align: center;border-radius: 30px; align-items: center; background-color: white; justify-content: center; padding: 5px;">
             <div style="text-align: center;">
-                <span class="d-none d-lg-block">
-                     KHO VẬT TƯ
-                </span>
-                <span class="d-none d-lg-block">
-                     R&D CENTER
-                </span>
+                <img src="{{asset('assets/img/logo.png')}}" alt="" style="max-height: 25px ">
             </div>
         </a>
-        <i class="bi bi-list toggle-sidebar-btn"></i>
+        <i class="bi bi-list toggle-sidebar-btn" style="color: white"></i>
     </div><!-- End Logo -->
+    <div class="header-title" style="font-size: 25px;">
+        KHO R&D ÔTÔ
+    </div>
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
@@ -94,8 +92,8 @@
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0"  data-bs-toggle="dropdown">
             <img src="{{asset('assets/img/User_icon_2.svg.png')}}" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">Hi, {{$user->name}}</span>
-          </a><!-- End Profile Iamge Icon -->
+            <span class="d-none d-md-block dropdown-toggle ps-2" style="color: white">Hi, {{$user->name}}</span>
+          </a>
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
@@ -196,7 +194,7 @@
 
   </aside><!-- End Sidebar-->
 
-  <main id="main" class="main">
+  <main id="main" class="main content">
 
     @yield('content')
 
@@ -204,12 +202,16 @@
 
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
-    <div class="copyright">
-      &copy; phát triển bởi <strong><span>Phòng Quản Trị Dữ Liệu.</span></strong>
+    <div class="left-content">
+        <span>Ứng dụng quản lý vật tư linh kiện tại kho Trung Tâm R&D ÔTô</span>
     </div>
-    <div class="credits">
+    <div class="right-content">
+        <div>Bản quyền © 2023 tại Trung tâm R&D</div>
+        <div><i class="fa fa-phone"></i>✆ hotline: 0886418363</div>
     </div>
-  </footer><!-- End Footer -->
+</footer><!-- End Footer -->
+
+
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
       class="bi bi-arrow-up-short"></i></a>
@@ -228,20 +230,20 @@
   <script src="{{asset('assets/js/main.js')}}"></script>
   @yield('script')
   <script>
-    $(document).ready(function() {
-        $('.container1').hide(); // Ẩn loader khi trang được tải xong
+      $(document).ready(function() {
+          $('.container1').hide(); // Ẩn loader khi trang được tải xong
 
-        $(document).on('click', 'a', function(e) {
-            var href = $(this).attr('href');
-            if(href && href !== "#" && href !== "javascript:void(0)") {
-            $('.container1').show(); // Hiển thị loader chỉ khi thẻ a có href cụ thể
-            }
-        });
+          $(document).on('click', 'a', function(e) {
+              var href = $(this).attr('href');
+              if(href && href !== "#" && href !== "javascript:void(0)") {
+              $('.container1').show(); // Hiển thị loader chỉ khi thẻ a có href cụ thể
+              }
+          });
 
-        $(window).on('load', function() {
-            $('.container1').hide(); // Ẩn loader khi trang mới được tải xong
-        });
-    });
+          $(window).on('load', function() {
+              $('.container1').hide(); // Ẩn loader khi trang mới được tải xong
+          });
+      });
 
   </script>
 

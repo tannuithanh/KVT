@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AppFunctionsTableSeeder::class,
             UsersTableSeeder::class,
             ProviderSeeder::class,
+            SegmentTableSeeder::class,
         ]);
     }
 }

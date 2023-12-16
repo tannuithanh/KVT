@@ -10,8 +10,8 @@ class Brand extends Model
     use HasFactory;
     protected $fillable = ['name'];
 
-    public function projects()
+    public function segments()
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Segment::class);
     }
 }

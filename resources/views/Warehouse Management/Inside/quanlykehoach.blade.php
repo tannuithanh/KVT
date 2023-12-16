@@ -117,131 +117,131 @@
 </section>
 
 {{-- MODEL TÌM KIẾM --}}
-<div class="modal fade" id="Timkiemvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Tìm kiếm vật tư</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form action="" method="GET">
-                <input type="text" value="" name="project_id" hidden>
-              <div class="col-sm-12">
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="tenvattu" >
-                    <label class="form-check-label" for="tenvattu">
-                      Tên vật tư:
-                    </label>
+  <div class="modal fade" id="Timkiemvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Tìm kiếm vật tư</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form action="" method="GET">
+                  <input type="text" value="" name="project_id" hidden>
+                <div class="col-sm-12">
+                  <div class="form-check d-flex align-items-center mt-2">
+                    <!-- Checkbox -->
+                    <div class="form-check col-sm-3">
+                      <input class="form-check-input" type="checkbox" id="tenvattu" >
+                      <label class="form-check-label" for="tenvattu">
+                        Tên vật tư:
+                      </label>
+                    </div>
+
+                    @csrf
+                    <!-- Select menu -->
+                    <input type="text" class="form-control" id="tenvattuSuppelies" disabled>
                   </div>
 
-                  @csrf
-                  <!-- Select menu -->
-                  <input type="text" class="form-control" id="tenvattuSuppelies" disabled>
-                </div>
+                  <div class="form-check d-flex align-items-center mt-2">
+                    <!-- Checkbox -->
+                    <div class="form-check col-sm-3">
+                      <input class="form-check-input" type="checkbox" id="ngaynhan" >
+                      <label class="form-check-label" for="ngaynhan">
+                        Ngày nhập kho:
+                      </label>
+                    </div>
 
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="ngaynhan" >
-                    <label class="form-check-label" for="ngaynhan">
-                      Ngày nhập kho:
-                    </label>
+                    <input type="date" name="ngaynhan" id="ngaynhanSuppelies" class="form-control" disabled>
+                  </div>
+                  <div class="form-check d-flex align-items-center mt-2">
+                    <!-- Checkbox -->
+                    <div class="form-check col-sm-3">
+                      <input class="form-check-input" type="checkbox" id="nhacungcap" >
+                      <label class="form-check-label" for="nhacungcap">
+                        Nhà cung cấp
+                      </label>
+                    </div>
+
+                    <select class="form-select ml-auto" id="nhacungcapSuppelies" name="nhacungcapSuppeliesSelect" aria-label="Default select example" required disabled>
+                      <option selected="">Chọn hạng mục</option>
+                      <option selected="">Nhà cung cấp 1</option>
+                      <option selected="">Nhà cung cấp 2</option>
+                    </select>
                   </div>
 
-                  <input type="date" name="ngaynhan" id="ngaynhanSuppelies" class="form-control" disabled>
-                </div>
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="nhacungcap" >
-                    <label class="form-check-label" for="nhacungcap">
-                      Nhà cung cấp
-                    </label>
+                  <div class="form-check d-flex align-items-center mt-2">
+                    <!-- Checkbox -->
+                    <div class="form-check col-sm-3">
+                      <input class="form-check-input" type="checkbox" id="maso" >
+                      <label class="form-check-label" for="maso">
+                        Mã số:
+                      </label>
+                    </div>
+
+                    <input type="number" class="form-control" id="masoSuppelies" disabled>
                   </div>
 
-                  <select class="form-select ml-auto" id="nhacungcapSuppelies" name="nhacungcapSuppeliesSelect" aria-label="Default select example" required disabled>
-                    <option selected="">Chọn hạng mục</option>
-                    <option selected="">Nhà cung cấp 1</option>
-                    <option selected="">Nhà cung cấp 2</option>
-                  </select>
-                </div>
+                  <div class="form-check d-flex align-items-center mt-2">
+                    <!-- Checkbox -->
+                    <div class="form-check col-sm-3">
+                      <input class="form-check-input" type="checkbox" id="status" >
+                      <label class="form-check-label" for="status">
+                        Trạng thái:
+                      </label>
+                    </div>
 
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="maso" >
-                    <label class="form-check-label" for="maso">
-                      Mã số:
-                    </label>
+                    <!-- Select menu -->
+                    <select class="form-select ml-auto" id="statusSuppeliesSelect" name="status" aria-label="Default select example" disabled>
+                      <option selected="">Chọn trạng thái</option>
+                      <option value="0">Đang chờ </option>
+                      <option value="1">Đã Nhập kho</option>
+                      <option value="-1">Đã lưu kho</option>
+                      <option value="-1">Đã xuất kho</option>
+                    </select>
                   </div>
-
-                  <input type="number" class="form-control" id="masoSuppelies" disabled>
-                </div>
-
-                <div class="form-check d-flex align-items-center mt-2">
-                  <!-- Checkbox -->
-                  <div class="form-check col-sm-3">
-                    <input class="form-check-input" type="checkbox" id="status" >
-                    <label class="form-check-label" for="status">
-                      Trạng thái:
-                    </label>
-                  </div>
-
-                  <!-- Select menu -->
-                  <select class="form-select ml-auto" id="statusSuppeliesSelect" name="status" aria-label="Default select example" disabled>
-                    <option selected="">Chọn trạng thái</option>
-                    <option value="0">Đang chờ </option>
-                    <option value="1">Đã Nhập kho</option>
-                    <option value="-1">Đã lưu kho</option>
-                    <option value="-1">Đã xuất kho</option>
-                  </select>
                 </div>
               </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="submit" class="btn btn-primary searchSuppelies">Tìm kiếm</button>
+              </div>
+            </form>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-              <button type="submit" class="btn btn-primary searchSuppelies">Tìm kiếm</button>
-            </div>
-          </form>
           </div>
-        </div>
-</div>
+  </div>
 {{-- THÊM DANH MỤC VẬT TƯ --}}
-<div class="modal fade" id="themdanhmucvattubangfileexcel" tabindex="-1" role="dialog">
-    <!-- Nội dung modal -->
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thêm vật tư từ file Excel</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <a href="{{ asset('bieumau/file mẫu.xlsx') }}" download>
-                        <button type="button" id="bieumau" class="btn btn-success">
-                            <i class="ri ri-download-2-fill"> Tải biểu mẫu</i>
-                        </button>
-                    </a>
-                </div>
-                <form action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
-                    @csrf
-                    <input type="number" class="form-control" value="{{$project->id}}" name="project_id" required hidden />
-                    <div class="mb-3">
-                        <input type="file" class="form-control" name="file" required />
-                    </div>
+  <div class="modal fade" id="themdanhmucvattubangfileexcel" tabindex="-1" role="dialog">
+      <!-- Nội dung modal -->
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title">Thêm vật tư từ file Excel</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div>
+                      <a href="{{ asset('bieumau/file mẫu.xlsx') }}" download>
+                          <button type="button" id="bieumau" class="btn btn-success">
+                              <i class="ri ri-download-2-fill"> Tải biểu mẫu</i>
+                          </button>
+                      </a>
+                  </div>
+                  <form action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
+                      @csrf
+                      <input type="number" class="form-control" value="{{$project->id}}" name="project_id" required hidden />
+                      <div class="mb-3">
+                          <input type="file" class="form-control" name="file" required />
+                      </div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Thêm</button>
-                    </div>
-                </form>
-        </div>
-    </div>
-</div>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                          <button type="submit" class="btn btn-primary">Thêm</button>
+                      </div>
+                  </form>
+          </div>
+      </div>
+  </div>
 @endsection
 
 @section('script')

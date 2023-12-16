@@ -14,7 +14,7 @@
 }
 
 body {
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
   background: #f6f9ff;
   color: #444444;
 }
@@ -35,7 +35,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 /*--------------------------------------------------------------
@@ -237,7 +237,7 @@ h6 {
   font-size: 18px;
   font-weight: 600;
   color: #012970;
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 .card-title span {
@@ -257,7 +257,7 @@ h6 {
 /* Alerts */
 .alert-heading {
   font-weight: 500;
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 20px;
 }
 
@@ -306,7 +306,7 @@ h6 {
 /* Breadcrumbs */
 .breadcrumb {
   font-size: 14px;
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
   color: #899bbd;
   font-weight: 600;
 }
@@ -354,13 +354,55 @@ h6 {
 /*--------------------------------------------------------------
 # Header
 --------------------------------------------------------------*/
+.header-container {
+  text-align: center;
+}
+
+.header {
+  background-color: #05438a;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  display: flex; /* Sử dụng flexbox */
+  justify-content: space-between; /* Khoảng cách đều giữa các thành phần */
+  align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+.header-title {
+  flex-grow: 1; /* Cho phép tiêu đề phát triển và chiếm không gian còn lại */
+  text-align: center; /* Căn giữa tiêu đề */
+  font-weight: bold;
+  text-shadow: 0px 4px 3px rgba(253, 233, 233, 0.2);
+}
+
+.logo {
+  flex-shrink: 0; /* Ngăn logo không bị thu nhỏ */
+}
+
+.toggle-sidebar-btn {
+  flex-shrink: 0; /* Ngăn nút menu không bị thu nhỏ */
+}
+
+/* Điều chỉnh cho màn hình nhỏ */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Các thành phần xếp chồng lên nhau */
+  }
+
+  .header-title {
+    display: none;
+  }
+}
+
 .logo {
   line-height: 1;
 }
 
 @media (min-width: 1200px) {
   .logo {
-    width: 280px;
+    width: 172px;
   }
 }
 
@@ -373,13 +415,13 @@ h6 {
   font-size: 26px;
   font-weight: 700;
   color: #012970;
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 .header {
   transition: all 0.5s;
   z-index: 997;
-  height: 60px;
+  height: 50px;
   box-shadow: 0px 2px 20px rgba(1, 41, 112, 0.1);
   background-color: #fff;
   padding-left: 20px;
@@ -599,10 +641,10 @@ h6 {
 --------------------------------------------------------------*/
 .sidebar {
   position: fixed;
-  top: 60px;
+  top: 50px;
   left: 0;
   bottom: 0;
-  width: 300px;
+  width: 230px;
   z-index: 996;
   transition: all 0.3s;
   padding: 20px;
@@ -633,7 +675,7 @@ h6 {
 
   #main,
   #footer {
-    margin-left: 300px;
+    margin-left: 230px;
   }
 }
 
@@ -684,7 +726,7 @@ h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #4154f1;
+  color: #173e86;
   transition: 0.3;
   background: #f6f9ff;
   padding: 10px 15px;
@@ -694,11 +736,11 @@ h6 {
 .sidebar-nav .nav-link i {
   font-size: 16px;
   margin-right: 10px;
-  color: #4154f1;
+  color: #173e86;
 }
 
 .sidebar-nav .nav-link.collapsed {
-  color: #012970;
+  color: #687181;
   background: #fff;
 }
 
@@ -707,12 +749,12 @@ h6 {
 }
 
 .sidebar-nav .nav-link:hover {
-  color: #4154f1;
+  color: #173e86;
   background: #f6f9ff;
 }
 
 .sidebar-nav .nav-link:hover i {
-  color: #4154f1;
+  color: #173e86;
 }
 
 .sidebar-nav .nav-link .bi-chevron-down {
@@ -735,7 +777,7 @@ h6 {
   align-items: center;
   font-size: 14px;
   font-weight: 600;
-  color: #012970;
+  color: #687181;
   transition: 0.3;
   padding: 10px 0 10px 40px;
   transition: 0.3s;
@@ -750,11 +792,11 @@ h6 {
 
 .sidebar-nav .nav-content a:hover,
 .sidebar-nav .nav-content a.active {
-  color: #4154f1;
+  color: #173e86;
 }
 
 .sidebar-nav .nav-content a.active i {
-  background-color: #4154f1;
+  background-color: #173e86;
 }
 
 /*--------------------------------------------------------------
@@ -1211,10 +1253,10 @@ h6 {
 }
 
 .container {
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
 }
 .header {
-  font-family: "Cambria", sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 
@@ -1245,18 +1287,37 @@ h6 {
 # Footer
 --------------------------------------------------------------*/
 .footer {
-  padding: 20px 0;
-  font-size: 14px;
-  transition: all 0.3s;
-  border-top: 1px solid #cddfff;
-  bottom: 0;
   display: flex;
-  justify-content: center;
-  align-items: left;
-  background-color: #f8f9fa; /* Set your desired background color */
-  z-index: 1000; /* Ensure footer is above other elements */
-  text-align: left;
+  justify-content: space-between;
+  align-items: center; /* Căn giữa các phần tử theo chiều dọc */
+  padding: 13px 30px;
+  font-size: 14px;
+  background-color: #173e86;
+  color: white;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: all 0.3s;
+  z-index: 1000; /* Đảm bảo footer luôn ở trên cùng */
+
 }
+.left-content,
+.right-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Căn giữa theo chiều dọc trong cột */
+}
+
+.right-content > div {
+  display: contents;
+  align-items: center; /* Căn giữa các phần tử theo chiều dọc trong từng dòng */
+}
+
+.fa-phone { /* Đảm bảo bạn đã liên kết với Font Awesome hoặc tương tự */
+  margin-right: 5px; /* Thêm không gian giữa icon và văn bản */
+}
+
 
 
 .footer .copyright {

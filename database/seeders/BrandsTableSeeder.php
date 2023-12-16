@@ -12,7 +12,7 @@ class BrandsTableSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(){
-        $brands = ['Xe Bus', 'Tải', 'Du lịch', 'Royal', '2 bánh', 'Nông nghiệp'];
+        $brands = ['Xe Bus', 'Xe Tải', 'Xe Du lịch', 'Xe Royal'];
 
         foreach ($brands as $brand) {
             Brand::create(['name' => $brand]);
