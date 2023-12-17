@@ -4,7 +4,7 @@ use App\Http\Controllers\Outsite;
 use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->prefix('Warehouse-Management')->group(function () {
     Route::get('/brand', [Outsite::class, 'listBrand'])->name('listBrand');
-    Route::get('/Project/{brand}', [Outsite::class, 'Project'])->name('listProject');
+    Route::get('/Project/{segment}', [Outsite::class, 'Project'])->name('listProject');
 });
 
 

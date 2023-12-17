@@ -17,37 +17,32 @@ use App\imports\SuppliesImport;
 class Insite extends Controller
 {
     public function listWarehouse($idProject){
-        $project = Project::withCount(['supplies as total_supplies' => function ($query) {
+        $project = Project::with('segment.brand')->withCount(['supplies as total_supplies' => function ($query) {
             $query->select(DB::raw("sum(soluong)"));
         }])->find($idProject);
-
+    
         if (!$project) {
             // Xử lý trường hợp không tìm thấy dự án
+            abort(404, 'Dự án không tìm thấy.');
         }
-
-        $brandId = $project->brand->id;
+    
+        // Lấy thông tin thương hiệu và phân khúc
+        $brandName = optional(optional($project->segment)->brand)->name;
+        $segmentId = $project->segment->id ?? null;
+        $segmentName = $project->segment->name ?? null;
+        
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-
+    
         // Lấy tổng số lượng vật tư
         $totalSupplies = $project->total_supplies;
-
-        //Lấy số vật tư theo id dự án
+    
+        // Lấy số vật tư theo id dự án
         $supplies = Supply::where('project_id', $idProject)->get();
-        // ->map(function ($supply) {
-        // $barcodeData = 'Số đơn hàng: ' . $supply->sodonhang . "\n" .
-        //                'Tên vật tư: ' . $supply->tenvattu . "\n" .
-        //                'Nhà cung cấp: ' . $supply->nhacungcap . "\n" .
-        //                'Mã số: ' . $supply->maso . "\n" .
-        //                'Đơn vị tính: ' . $supply->donvitinh . "\n" .
-        //                'Ngày nhận: ' . $supply->ngaynhan . "\n" .
-        //                'Chi phí: ' . $supply->chiphi;
-
-        // $supply->barcodeData = $barcodeData;
-        // return $supply;
-        // });
-
-        return view('Warehouse Management.Inside.quanlykehoach', compact('user', 'brandId', 'project', 'totalSupplies','supplies'));
+    
+        return view('Warehouse Management.Inside.quanlykehoach', compact('user','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
     }
+    
+    
     public function importSupplies(Request $request){
         $project_id = $request['project_id'];
         // Lấy tên file và phân tách để lấy thông tin

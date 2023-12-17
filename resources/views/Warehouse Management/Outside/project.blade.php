@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="pagetitle">
-        <h1>Dự án</h1>
+        <h1>Danh sách dự án</h1>
         <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
@@ -22,12 +22,10 @@
     <div class="col-lg-12">
         <div class="card">
         <div class="card-body">
-            <h5 class="mt-3" style="    font-size: 18px;
-            font-weight: 600;
-            color: #012970;" >Thương hiệu: {{$brand->name}}</h5>
-            <h5 class="mt-3" style="    font-size: 18px;
-            font-weight: 600;
-            color: #012970;">Danh sách dự án</h5>
+            <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
+                <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{ $brand->name }}</span> |
+                <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span  style="color: red">{{ $segmentName }}</span> 
+            </h5>  
             @if (in_array($user->appFunction->id, [3, 5]))
                 <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
             @endif
@@ -69,31 +67,37 @@
 <!-- MODAL THÊM DỰ ÁN-->
     <div class="modal fade" id="smallModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-          <div class="modal-content">
+        <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Thêm dự án</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">Thêm dự án</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row mb-3">
-                    <input type="text" id="Brand_id" value="{{$brandId}}" hidden class="form-control">
+                    {{-- Thêm trường input ẩn cho segmentId --}}
+                    <input type="text" id="Segment_id" value="{{ $segment->id ?? '' }}" hidden class="form-control">
+                    
+                    {{-- Giữ nguyên trường input ẩn cho brandId nếu bạn vẫn muốn truyền nó --}}
+                    <input type="text" id="Brand_id" value="{{ $brand->id ?? '' }}" hidden class="form-control">
+                    
                     <label for="inputText" class="col-sm-2 col-form-label">Tên:</label>
                     <div class="col-sm-10">
-                      <input type="text" id="name" class="form-control">
+                    <input type="text" id="name" class="form-control">
                     </div>
                     <label for="inputText" class="col-sm-2 col-form-label mt-2">Mô tả:</label>
                     <div class="col-sm-10">
-                      <textarea type="text" id="description" class="form-control mt-2"></textarea>
+                    <textarea type="text" id="description" class="form-control mt-2"></textarea>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-              <button type="button" class="btn btn-primary add-project">Thêm</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-primary add-project">Thêm</button>
             </div>
-          </div>
+        </div>
         </div>
     </div>
+
 <!-- MODAL SỬA DỰ ÁN--->
     <div class="modal fade" id="Edit-project" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -128,7 +132,7 @@
     <script>
         $(document).ready(function() {
             $('.add-project').on('click', function() {
-                let brandId = $('#Brand_id').val();
+                let segmentId = $('#Segment_id').val(); // Lấy segment ID từ input ẩn
                 let name = $('#name').val();
                 let description = $('#description').val();
 
@@ -136,7 +140,7 @@
                     type: "POST",
                     url: "{{ route('addProject') }}",
                     data: {
-                        brand_id: brandId,
+                        segment_id: segmentId, // Gửi segment ID thay vì brand ID
                         name: name,
                         description: description,
                         _token: '{{ csrf_token() }}'
@@ -164,6 +168,7 @@
             });
         });
     </script>
+
 
     <script>
         $(document).ready(function() {

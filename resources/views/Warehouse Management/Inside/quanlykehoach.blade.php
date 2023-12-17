@@ -12,7 +12,7 @@
         <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
         <li class="breadcrumb-item">Quản lý kế hoạch</li>
         <li class="breadcrumb-item"><a href="{{route('listBrand')}}">Thương hiệu</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('listProject', $brandId) }}">Dự án</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('listProject', $segmentId) }}">Dự án</a></li>
         <li class="breadcrumb-item active">Danh sách vật tư</li>
     </ol>
     </nav>
@@ -25,10 +25,10 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
-                        <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{$project->brand->name}}</span> |
-                        <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: red">{{$project->name}}</span> |
-                        <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red">{{ $totalSupplies ?? 0 }}</span>
-                    </h5>
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{ $brandName }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span style="color: red">{{ $segmentName }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: red">{{ $project->name }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red">{{ $totalSupplies ?? 0 }}</span>                                          </h5>
                     <button type="button" class="btn btn-outline-success ri-search-line" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
 
                         <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
