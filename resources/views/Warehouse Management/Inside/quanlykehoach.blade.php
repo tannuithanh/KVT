@@ -91,7 +91,7 @@
                         <tbody>
                             @forelse ($supplies as $index => $supply)
                                 <tr>
-                                    <td style="text-align: center;vertical-align: middle;"><input class="form-check-input" type="checkbox" id="gridCheck1"></td>
+                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;"><input class="form-check-input" type="checkbox" id="gridCheck1"></td>
                                     <td style="text-align: center;vertical-align: middle;">{{ $supply->sodonhang }}</td>
                                     <td style="text-align: center;vertical-align: middle;">{{ $supply->tenvattu }}</td>
                                     <td style="text-align: center;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
@@ -114,7 +114,7 @@
                                     </td>
 
                                     <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">
+                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
                                         <button onclick="printBarcode('{{$supply->barcodeData}}')" type="button" class="btn btn-secondary" title="In barcode"><i class="bi bi-collection"></i></button>
                                     </td>
                                 </tr>
@@ -331,20 +331,23 @@
 
   <script>
     //Hiển thị modal
-      document.addEventListener('DOMContentLoaded', function() {
-          var tableRows = document.querySelectorAll('.table-hover tbody tr');
+    document.addEventListener('DOMContentLoaded', function() {
+        var tableRows = document.querySelectorAll('.table-hover tbody tr');
 
-          tableRows.forEach(function(row) {
-              row.addEventListener('click', function(event) {
-                  // Kiểm tra xem click có phải là trên checkbox hay không
-                  if (event.target.type !== 'checkbox') {
-                      // Hiển thị modal
-                      var modal = new bootstrap.Modal(document.getElementById('lichsuvattu'));
-                      modal.show();
-                  }
-              });
-          });
-      });
-
+        tableRows.forEach(function(row) {
+            row.addEventListener('click', function(event) {
+                // Kiểm tra xem click có phải là trên các phần tử có lớp 'no-modal-trigger'
+                // hoặc trên checkbox hoặc button
+                if (!event.target.classList.contains('no-modal-trigger') &&
+                    event.target.type !== 'checkbox' &&
+                    event.target.nodeName !== 'BUTTON' &&
+                    !event.target.closest('.no-modal-trigger')) {
+                    // Hiển thị modal
+                    var modal = new bootstrap.Modal(document.getElementById('lichsuvattu'));
+                    modal.show();
+                }
+            });
+        });
+    });
   </script>
 @endsection
