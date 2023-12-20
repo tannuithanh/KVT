@@ -11,7 +11,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
                 <li class="breadcrumb-item">{{ $module }}</li>
-                <li class="breadcrumb-item"><a href="{{route('listBrand')}}">Thương hiệu</a></li>
+                <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
             </ol>
         </nav>
     </div>
@@ -39,11 +39,11 @@
                         @foreach ($brand->segments as $index => $segment)
                             <tr>
                                 @if ($index == 0) {{-- Chỉ thêm cột này cho hàng đầu tiên của mỗi thương hiệu --}}
-                                    <td style="text-align: center;vertical-align: middle" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
-                                    <td style="text-align: center;vertical-align: middle" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
+                                    <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
+                                    <td style="text-align: center;vertical-align: middle;color: red" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
                                 @endif
                                 <td style="text-align: center;">
-                                    <a href="{{ route('listProject', ['segment' => $segment->id]) }}">{{ $segment->name }}</a>
+                                    <a href="{{ route('listProject',['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
                                 </td>                                
                                 <td style="text-align: center;">{{ $segment->projects->count() }}</td>
                                 <td style="text-align: center;">

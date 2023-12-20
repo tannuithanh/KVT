@@ -24,9 +24,10 @@ class SuppliesImport implements ToModel
 
     public function model(array $row){
         $this->rowNumber++;
-        if ($this->rowNumber < 3) {
+        if ($this->rowNumber < 3 ) {
             return null;
         }
+        // dd($row);
         return new Supply([
             'project_id' => $this->project_id,
             'sodonhang' => $this->sodonhang,

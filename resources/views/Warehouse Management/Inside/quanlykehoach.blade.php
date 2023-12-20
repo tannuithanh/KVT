@@ -1,5 +1,11 @@
 @extends('Layout.app')
-
+@section('style')
+  <style>
+    .table-hover tbody tr:hover {
+        cursor: pointer;
+    }
+  </style>
+@endsection
 @section('title')
     Danh mục vật tư
 @endsection
@@ -10,9 +16,9 @@
     <nav>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
-        <li class="breadcrumb-item">Quản lý kế hoạch</li>
-        <li class="breadcrumb-item"><a href="{{route('listBrand')}}">Thương hiệu</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('listProject', $segmentId) }}">Dự án</a></li>
+        <li class="breadcrumb-item">{{ $module }}</li>
+        <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('listProject', [$segmentId,'module' => $module]) }}">Dự án</a></li>
         <li class="breadcrumb-item active">Danh sách vật tư</li>
     </ol>
     </nav>
@@ -44,6 +50,11 @@
                                   {{ session('success') }}
                                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                               </div>
+                          @elseif(session('error'))
+                              <div class="alert alert-danger bg-danger text-light border-0 alert-dismissible fade show mt-3" role="alert">
+                                {{ session('error') }}
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                              </div>
                           @endif
                     
                     <table class="table table-borderless table-bordered table-hover mt-2">
@@ -52,15 +63,14 @@
                             <tr>
                                 
                                 <tr>
-                                <th style="text-align: center" rowspan="2" scope="col">STT</th>
+                                <th style="text-align: center" rowspan="2" scope="col"></th>
                                 <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
                                 <th style="text-align: center" rowspan="2" scope="col">NCC</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Nội dung/phân cụm</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Đơn vị tính</th>
-                                <th style="text-align: center" colspan="3" scope="col">Số lượng</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Ngày nhận</th>
+                                <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Barcode</th>
                                 <th style="text-align: center" rowspan="2" scope="col">Trạng thái</th>
@@ -72,42 +82,49 @@
                                   <th style="text-align: center" scope="col">Tổng</th>
                                   <th style="text-align: center" scope="col">Đã nhận</th>
                                   <th style="text-align: center" scope="col">Chưa nhận</th>
+                                  <th style="text-align: center" scope="col">Đã xuất</th>
                                   <!-- Các cột khác ở đây -->
                               </tr>
                                
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($supplies as $index => $supply)
+                            @forelse ($supplies as $index => $supply)
                                 <tr>
-                                    <td style="text-align: center">{{ $index + 1 }}</td>
-                                    <td style="text-align: center">{{ $supply->sodonhang }}</td>
-                                    <td style="text-align: center">{{ $supply->tenvattu }}</td>
-                                    <td style="text-align: center">{{ $supply->nhacungcap }}</td>
-                                    <td style="text-align: center">{{ $supply->noidungphancum }}</td>
-                                    <td style="text-align: center">{{ $supply->maso }}</td>
-                                    <td style="text-align: center">{{ $supply->donvitinh }}</td>
-                                    <td style="text-align: center; color: red">{{ $supply->soluong }}</td>
-                                    <td style="text-align: center"></td>
-                                    <td style="text-align: center"></td>
-                                    <td style="text-align: center">{{ $supply->ngaynhan }}</td>
-                                    <td style="text-align: center">{{ $supply->chiphi }}</td>
-                                    <td style="text-align: center">
-                                      {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
+                                    <td style="text-align: center;vertical-align: middle;"><input class="form-check-input" type="checkbox" id="gridCheck1"></td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->sodonhang }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->tenvattu }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->noidungphancum }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->maso }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->donvitinh }}</td>
+                                    <td style="text-align: center;vertical-align: middle; color: red">{{ $supply->soluong }}</td>
+                                    <td style="text-align: center;vertical-align: middle;"></td>
+                                    <td style="text-align: center;vertical-align: middle;"></td>
+                                    <td style="text-align: center;vertical-align: middle;"></td>
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->chiphi }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">
+                                        {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
+                                        <div style="text-align: center;vertical-align: middle;">P - {{ $supply->maso }}</div>
                                     </td>
-                                    <td style="text-align: center">
-                                      @if ($supply->status == 0)
-                                        <span class="badge bg-secondary">Chưa nhận</span>
-                                      @endif
-                                       
+                                    <td style="text-align: center;vertical-align: middle;">
+                                        @if ($supply->status == 0)
+                                            <span class="badge bg-secondary">Chưa nhận</span>
+                                        @endif
                                     </td>
-                                    <td style="text-align: center">{{ $supply->note }}</td>
-                                    <td style="text-align: center">
-                                      <button onclick="printBarcode('{{$supply->barcodeData}}')">In Barcode</button>
+
+                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
+                                    <td style="text-align: center;vertical-align: middle;">
+                                        <button onclick="printBarcode('{{$supply->barcodeData}}')" type="button" class="btn btn-secondary" title="In barcode"><i class="bi bi-collection"></i></button>
                                     </td>
                                 </tr>
-                            @endforeach
-                        </tbody>
+                            @empty
+                                <tr>
+                                    <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
+                                </tr>
+                            @endforelse
+                      </tbody>
+                      
                     </table>
 
                 </div>
@@ -242,43 +259,92 @@
           </div>
       </div>
   </div>
-@endsection
+{{-- LỊCH SỬ VẬT TƯ --}}
+  <div class="modal fade show" id="lichsuvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Lịch sử vật tư</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-borderless table-bordered mt-2">
+            <thead>
+              <tr>
+                  <tr>
+                  <th style="text-align: center" rowspan="2" scope="col">Stt</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Nhập kho/ Xuất kho</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Ngày thực hiện</th>
+                  <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
+                </tr>                 
+              </tr>
+          </thead>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endsection
 
 @section('script')
-<script>
-  $(document).ready(function(){
-      $(".form-check-input").click(function(){
-          var checkboxId = $(this).attr('id');
-          var correspondingInput = $("#" + checkboxId + "Suppelies");
-          var correspondingSelect = $("#" + checkboxId + "SuppeliesSelect");
+  <script>
+    $(document).ready(function(){
+        $(".form-check-input").click(function(){
+            var checkboxId = $(this).attr('id');
+            var correspondingInput = $("#" + checkboxId + "Suppelies");
+            var correspondingSelect = $("#" + checkboxId + "SuppeliesSelect");
 
-          if ($(this).is(':checked')){
-              correspondingInput.removeAttr('disabled');
-              correspondingSelect.removeAttr('disabled');
-          } else {
-              correspondingInput.attr('disabled', 'disabled');
-              correspondingSelect.attr('disabled', 'disabled');
-          }
+            if ($(this).is(':checked')){
+                correspondingInput.removeAttr('disabled');
+                correspondingSelect.removeAttr('disabled');
+            } else {
+                correspondingInput.attr('disabled', 'disabled');
+                correspondingSelect.attr('disabled', 'disabled');
+            }
+        });
+    });
+  </script>
+  <script>
+        function printBarcode(barcodeData) {
+            var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+        
+            mywindow.document.write('<html><head><title>' + 'Barcode' + '</title>');
+            mywindow.document.write('</head><body >');
+            mywindow.document.write('<h1>' + 'Barcode' + '</h1>');
+            mywindow.document.write(document.getElementById(barcodeData).innerHTML);
+            mywindow.document.write('</body></html>');
+        
+            mywindow.document.close(); // necessary for IE >= 10
+            mywindow.focus(); // necessary for IE >= 10*/
+        
+            mywindow.print();
+            mywindow.close();
+        
+            return true;
+        }
+  </script>
+
+  <script>
+    //Hiển thị modal
+      document.addEventListener('DOMContentLoaded', function() {
+          var tableRows = document.querySelectorAll('.table-hover tbody tr');
+
+          tableRows.forEach(function(row) {
+              row.addEventListener('click', function(event) {
+                  // Kiểm tra xem click có phải là trên checkbox hay không
+                  if (event.target.type !== 'checkbox') {
+                      // Hiển thị modal
+                      var modal = new bootstrap.Modal(document.getElementById('lichsuvattu'));
+                      modal.show();
+                  }
+              });
+          });
       });
-  });
-</script>
-<script>
-      function printBarcode(barcodeData) {
-          var mywindow = window.open('', 'PRINT', 'height=400,width=600');
-      
-          mywindow.document.write('<html><head><title>' + 'Barcode' + '</title>');
-          mywindow.document.write('</head><body >');
-          mywindow.document.write('<h1>' + 'Barcode' + '</h1>');
-          mywindow.document.write(document.getElementById(barcodeData).innerHTML);
-          mywindow.document.write('</body></html>');
-      
-          mywindow.document.close(); // necessary for IE >= 10
-          mywindow.focus(); // necessary for IE >= 10*/
-      
-          mywindow.print();
-          mywindow.close();
-      
-          return true;
-      }
-</script>
+
+  </script>
 @endsection

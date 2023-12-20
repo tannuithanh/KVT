@@ -206,7 +206,7 @@
         <span>Ứng dụng quản lý vật tư linh kiện tại kho Trung Tâm R&D ÔTô</span>
     </div>
     <div class="right-content">
-        <div>Bản quyền © 2023 tại Trung tâm R&D</div>
+        <div>Bản quyền © 2023 tại Trung Tâm R&D</div>
         <div><i class="fa fa-phone"></i>✆ hotline: 0886418363</div>
     </div>
 </footer><!-- End Footer -->

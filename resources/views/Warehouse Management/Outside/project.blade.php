@@ -11,7 +11,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">{{ $module }}</li>
-            <li class="breadcrumb-item"><a href="{{route('listBrand')}}">Thương hiệu</a></li>
+            <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
             <li class="breadcrumb-item active">Dự án</li>
         </ol>
         </nav>
@@ -44,7 +44,7 @@
                 @foreach ($projects as $value)
                     <tr>
                         <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
-                        <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', $value->id) }}">{{$value->name}}</a></td>
+                        <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                         <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col">

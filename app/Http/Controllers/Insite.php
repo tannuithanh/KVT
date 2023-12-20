@@ -16,7 +16,7 @@ use App\imports\SuppliesImport;
 
 class Insite extends Controller
 {
-    public function listWarehouse($idProject){
+    public function listWarehouse($idProject,Request $request){
         $project = Project::with('segment.brand')->withCount(['supplies as total_supplies' => function ($query) {
             $query->select(DB::raw("sum(soluong)"));
         }])->find($idProject);
@@ -38,15 +38,32 @@ class Insite extends Controller
     
         // Lấy số vật tư theo id dự án
         $supplies = Supply::where('project_id', $idProject)->get();
-    
-        return view('Warehouse Management.Inside.quanlykehoach', compact('user','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
+        $module = $request->query('module', 'defaultModule');
+        return view('Warehouse Management.Inside.quanlykehoach', compact('user','module','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
     }
     
     
     public function importSupplies(Request $request){
         $project_id = $request['project_id'];
+
+        // Lấy file từ request
+        $file = $request->file('file');
+
+        // TH1: Kiểm tra định dạng file (chỉ chấp nhận Excel)
+        $allowedExtensions = ['xlsx', 'xls'];
+        if (!in_array($file->getClientOriginalExtension(), $allowedExtensions)) {
+            return back()->with('error', 'File không phải là file Excel.');
+        }
+
         // Lấy tên file và phân tách để lấy thông tin
-        $filename = pathinfo($request->file('file')->getClientOriginalName(), PATHINFO_FILENAME);
+        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        // TH2: Kiểm tra định dạng tên file
+        if (substr_count($filename, '_') != 2) {
+            return back()->with('error', 'Tên file không đúng định dạng. Định dạng yêu cầu là sodonhang_nhacungcap_chiphi.');
+        }
+
+        // Tách thông tin từ tên file
         [$sodonhang, $nhacungcap, $chiphi] = explode('_', $filename);
 
         // Kiểm tra và cắt bỏ phần mở rộng từ $chiphi
@@ -58,11 +75,16 @@ class Insite extends Controller
         $import = new SuppliesImport($sodonhang, $nhacungcap, $chiphi, $project_id);
 
         // Thực hiện import
-        Excel::import($import, $request->file('file'));
+        try {
+            Excel::import($import, $file);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Có lỗi xảy ra trong quá trình nhập dữ liệu: ' . $e->getMessage());
+        }
 
-        // Trả về response
+        // Trả về response thành công
         return back()->with('success', 'Dữ liệu đã được nhập thành công!');
     }
+
 
 
 }
