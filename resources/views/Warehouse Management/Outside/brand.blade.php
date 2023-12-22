@@ -40,7 +40,7 @@
                             <tr>
                                 @if ($index == 0) {{-- Chỉ thêm cột này cho hàng đầu tiên của mỗi thương hiệu --}}
                                     <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
-                                    <td style="text-align: center;vertical-align: middle;color: red" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
+                                    <td style="text-align: center;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
                                 @endif
                                 <td style="text-align: center;">
                                     <a href="{{ route('listProject',['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>

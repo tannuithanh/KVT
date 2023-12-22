@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Supply;
 use App\Models\Project;
+use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -39,7 +40,8 @@ class Insite extends Controller
         // Lấy số vật tư theo id dự án
         $supplies = Supply::where('project_id', $idProject)->get();
         $module = $request->query('module', 'defaultModule');
-        return view('Warehouse Management.Inside.quanlykehoach', compact('user','module','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
+        $providers = Provider::with('details')->get();
+        return view('Warehouse Management.Inside.quanlykehoach', compact('user', 'providers','module','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
     }
     
     
@@ -71,13 +73,14 @@ class Insite extends Controller
             $chiphi = substr($chiphi, 0, $pos);
         }
 
-        // Tạo instance của SuppliesImport với các thông tin từ tên file
-        $import = new SuppliesImport($sodonhang, $nhacungcap, $chiphi, $project_id);
+        DB::beginTransaction();
 
-        // Thực hiện import
         try {
+            $import = new SuppliesImport($sodonhang, $nhacungcap, $chiphi, $project_id);
             Excel::import($import, $file);
+            DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra trong quá trình nhập dữ liệu: ' . $e->getMessage());
         }
 
@@ -85,6 +88,39 @@ class Insite extends Controller
         return back()->with('success', 'Dữ liệu đã được nhập thành công!');
     }
 
+    public function importThuCong(Request $request) {
+        // Xác thực dữ liệu (tuỳ chọn)
+        $validatedData = $request->validate([
+            'project_id' => 'required|integer',
+            'sodonhang' => 'required|string',
+            'tenvattu' => 'required|string',
+            'nhacungcap' => 'required|string',
+            'noidungphancum' => 'nullable|string',
+            'donvitinh' => 'required|string',
+            'soluong' => 'required|integer',
+            'chiphi' => 'required|string',
+            'note' => 'required|string',
+        ]);
+        $supply = new Supply([
+            'project_id' => $validatedData['project_id'],
+            'sodonhang' => $validatedData['sodonhang'],
+            'tenvattu' => $validatedData['tenvattu'],
+            'nhacungcap' => $validatedData['nhacungcap'],
+            'noidungphancum' => $validatedData['noidungphancum'],
+            'donvitinh' => $validatedData['donvitinh'],
+            'soluong' => $validatedData['soluong'],
+            'chiphi' => $validatedData['chiphi'],
+            'stt' => 1,
+            'ngaynhan' => null,
+            'note' => $validatedData['note'],
+        ]);
+        // Tạo và lưu vật tư mới
+        $supply = new Supply($validated);
+        $supply->save();
+
+        // Chuyển hướng người dùng hoặc trả về response
+        return redirect()->back()->with('success', 'Vật tư đã được thêm thành công');
+    }
 
 
 }

@@ -23,8 +23,8 @@
         <div class="card">
         <div class="card-body">
             <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
-                <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{ $brand->name }}</span> |
-                <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span  style="color: red">{{ $segmentName }}</span> 
+                <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: black">{{ $brand->name }}</span> |
+                <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span  style="color: black">{{ $segmentName }}</span> 
             </h5>  
             @if (in_array($user->appFunction->id, [3, 5]))
                 <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
@@ -57,7 +57,6 @@
                 @endforeach
             </tbody>
         </table>
-
         </div>
         </div>
         </div>

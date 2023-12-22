@@ -4,6 +4,8 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\ProviderDetail;
+use Illuminate\Support\Facades\DB;
 use App\Models\Supply;
 
 class SuppliesImport implements ToModel
@@ -20,6 +22,10 @@ class SuppliesImport implements ToModel
         $this->sodonhang = $sodonhang;
         $this->nhacungcap = $nhacungcap;
         $this->chiphi = $chiphi;
+        $providerExists = ProviderDetail::where('name', $this->nhacungcap)->exists();
+            if (!$providerExists) {
+                throw new \Exception("Nhà cung cấp không tồn tại.");
+            }
     }
 
     public function model(array $row){
@@ -27,7 +33,6 @@ class SuppliesImport implements ToModel
         if ($this->rowNumber < 3 ) {
             return null;
         }
-        // dd($row);
         return new Supply([
             'project_id' => $this->project_id,
             'sodonhang' => $this->sodonhang,

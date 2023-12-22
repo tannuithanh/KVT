@@ -31,18 +31,18 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: red">{{ $brandName }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span style="color: red">{{ $segmentName }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: red">{{ $project->name }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: red">{{ $totalSupplies ?? 0 }}</span>                                          </h5>
-                    <button type="button" class="btn btn-outline-success ri-search-line" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: black">{{ $brandName }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span style="color: black">{{ $segmentName }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: black">{{ $project->name }}</span> |
+                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: black">{{ $totalSupplies ?? 0 }}</span>                                          </h5>
+                      <button type="button" class="btn btn-outline-primary ri-search-line" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
 
-                        <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                             Thêm vật tư
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#themdanhmucvattubangfileexcel">Thêm bằng cách import file</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalThemThuCong">Thêm thủ công</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#themvattuthucong">Thêm thủ công</a></li>
                         </ul>
                         <!-- Nội dung thông báo thành công -->
                           @if(session('success'))
@@ -63,19 +63,19 @@
                             <tr>
                                 
                                 <tr>
-                                <th style="text-align: center" rowspan="2" scope="col"></th>
-                                <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
-                                <th style="text-align: center" rowspan="2" scope="col">NCC</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Đơn vị tính</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Stt</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Số đơn hàng</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Tên vật tư</th>
+                                <th style="text-align: left" rowspan="2" scope="col">NCC</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Nội dung</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Mã số</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Đơn vị tính</th>
                                 <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Barcode</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Trạng thái</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Chi Phí</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Barcode</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Trạng thái</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Ghi chú</th>
+                                <th style="text-align: left" rowspan="2" scope="col">Thao tác</th>
                               </tr>
                               <tr>
                                   <!-- Các cột khác ở đây -->
@@ -89,20 +89,23 @@
                             </tr>
                         </thead>
                         <tbody>
+                          @php
+                            $stt = 1;
+                          @endphp
                             @forelse ($supplies as $index => $supply)
                                 <tr>
-                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;"><input class="form-check-input" type="checkbox" id="gridCheck1"></td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->sodonhang }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->tenvattu }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->noidungphancum }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->maso }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->donvitinh }}</td>
-                                    <td style="text-align: center;vertical-align: middle; color: red">{{ $supply->soluong }}</td>
+                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{$stt++}}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->sodonhang }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->tenvattu }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->noidungphancum }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->maso }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->donvitinh }}</td>
+                                    <td style="text-align: center;vertical-align: middle; color: black; font-weight: bold">{{ $supply->soluong }}</td>
                                     <td style="text-align: center;vertical-align: middle;"></td>
                                     <td style="text-align: center;vertical-align: middle;"></td>
                                     <td style="text-align: center;vertical-align: middle;"></td>
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->chiphi }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->chiphi }}</td>
                                     <td style="text-align: center;vertical-align: middle;">
                                         {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
                                         <div style="text-align: center;vertical-align: middle;">P - {{ $supply->maso }}</div>
@@ -113,9 +116,10 @@
                                         @endif
                                     </td>
 
-                                    <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
+                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->note }}</td>
                                     <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
-                                        <button onclick="printBarcode('{{$supply->barcodeData}}')" type="button" class="btn btn-secondary" title="In barcode"><i class="bi bi-collection"></i></button>
+                                      <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project">Sửa</button>
+                                      <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>      
                                     </td>
                                 </tr>
                             @empty
@@ -237,7 +241,7 @@
               </div>
               <div class="modal-body">
                   <div>
-                      <a href="{{ asset('bieumau/file mẫu.xlsx') }}" download>
+                      <a href="{{ asset('bieumau/sodonhang_nhacungcap_chiphi.xlsx') }}" download>
                           <button type="button" id="bieumau" class="btn btn-success">
                               <i class="ri ri-download-2-fill"> Tải biểu mẫu</i>
                           </button>
@@ -250,17 +254,18 @@
                           <input type="file" class="form-control" name="file" required />
                       </div>
 
-                      </div>
+                 
                       <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                           <button type="submit" class="btn btn-primary">Thêm</button>
                       </div>
                   </form>
+              </div>
           </div>
       </div>
   </div>
 {{-- LỊCH SỬ VẬT TƯ --}}
-  <div class="modal fade show" id="lichsuvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
+  <div class="modal fade" id="lichsuvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -289,10 +294,84 @@
       </div>
     </div>
   </div>
-  @endsection
+
+{{-- THÊM VẬT TƯ THỦ CÔNG --}}
+  <div class="modal fade" id="themvattuthucong" tabindex="-1" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Thêm thủ công</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body ">
+            <form action="{{ route('importThuCong') }}" class="row g-3" method="POST">
+              @csrf
+              <input value="{{$project->id}}" name="project_id" hidden>
+                <div class="col-md-12">
+                  <label for="inputName5" class="form-label">Số đơn hàng</label>
+                  <input type="text" class="form-control" name="sodonhang">
+                </div> 
+                <div class="col-md-6">
+                  <label for="inputName5" class="form-label">Tên vật tư</label>
+                  <input type="text" class="form-control"name="tenvattu">
+                </div> 
+                <div class="col-md-6">
+                  <label for="inputState" class="form-label">Nhà cung cấp</label>
+                  <select id="inputState" class="form-select" name="nhacungcap">
+                    @foreach($providers as $provider)
+                        <optgroup label="{{ $provider->name }}">
+                            @foreach($provider->details as $detail)
+                                <option value="{{ $detail->name }}">{{ $detail->name }}</option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+                </div> 
+                <div class="col-md-12">
+                  <label for="inputName5" class="form-label">Nội dung</label>
+                  <textarea class="form-control" name="noidungphancum"></textarea>
+                </div>          
+                <div class="col-md-12">
+                  <label for="inputName5" class="form-label">Mã số</label>
+                  <input type="text" style="text-transform: uppercase;" class="form-control" name="tenvattu">
+                </div> 
+                <div class="col-md-4">
+                  <label for="inputEmail5" class="form-label">Đơn vị tính</label>
+                  <select id="inputState" class="form-select" name="donvitinh">
+                    <option>Cái</option>
+                    <option>Bộ</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="inputEmail5" class="form-label">Số lượng</label>
+                  <input type="number" name="soluong" class="form-control" id="inputEmail5">
+                </div>
+                <div class="col-md-4">
+                  <label for="inputEmail5" class="form-label">Chi phí</label>
+                  <select id="inputState" class="form-select"  name="chiphi">
+                    <option value="BUS">BUS</option>
+                    <option value="TẢI">TẢI</option>
+                    <option value="ROYAL">ROYAL</option>
+                    <option value="MAZDA">MAZDA</option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <label for="inputName5" class="form-label">Ghi chú</label>
+                  <textarea class="form-control" name="note"></textarea>
+                </div>  
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" type="submit">Thêm</button>
+              </div>
+            </form>
+        </div>
+      </div>
+    </div>
+@endsection
 
 @section('script')
-  <script>
+  {{-- <script>
     $(document).ready(function(){
         $(".form-check-input").click(function(){
             var checkboxId = $(this).attr('id');
@@ -308,26 +387,7 @@
             }
         });
     });
-  </script>
-  <script>
-        function printBarcode(barcodeData) {
-            var mywindow = window.open('', 'PRINT', 'height=400,width=600');
-        
-            mywindow.document.write('<html><head><title>' + 'Barcode' + '</title>');
-            mywindow.document.write('</head><body >');
-            mywindow.document.write('<h1>' + 'Barcode' + '</h1>');
-            mywindow.document.write(document.getElementById(barcodeData).innerHTML);
-            mywindow.document.write('</body></html>');
-        
-            mywindow.document.close(); // necessary for IE >= 10
-            mywindow.focus(); // necessary for IE >= 10*/
-        
-            mywindow.print();
-            mywindow.close();
-        
-            return true;
-        }
-  </script>
+  </script> --}}
 
   <script>
     //Hiển thị modal
