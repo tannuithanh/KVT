@@ -73,9 +73,8 @@
                                 <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
                                 <th style="text-align: left" rowspan="2" scope="col">Chi Phí</th>
                                 <th style="text-align: left" rowspan="2" scope="col">Barcode</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Trạng thái</th>
                                 <th style="text-align: left" rowspan="2" scope="col">Ghi chú</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Thao tác</th>
+                                <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
                               </tr>
                               <tr>
                                   <!-- Các cột khác ở đây -->
@@ -110,16 +109,12 @@
                                         {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
                                         <div style="text-align: center;vertical-align: middle;">P - {{ $supply->maso }}</div>
                                     </td>
-                                    <td style="text-align: center;vertical-align: middle;">
-                                        @if ($supply->status == 0)
-                                            <span class="badge bg-secondary">Chưa nhận</span>
-                                        @endif
-                                    </td>
 
                                     <td style="text-align: left;vertical-align: middle;">{{ $supply->note }}</td>
                                     <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
                                       <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project">Sửa</button>
-                                      <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>      
+                                      <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>
+                                      <button class="btn btn-sm btn-secondary " data-id="">Thêm</button>      
                                     </td>
                                 </tr>
                             @empty
@@ -333,7 +328,7 @@
                 </div>          
                 <div class="col-md-12">
                   <label for="inputName5" class="form-label">Mã số</label>
-                  <input type="text" style="text-transform: uppercase;" class="form-control" name="tenvattu">
+                  <input type="text" style="text-transform: uppercase;" class="form-control" name="maso">
                 </div> 
                 <div class="col-md-4">
                   <label for="inputEmail5" class="form-label">Đơn vị tính</label>
@@ -362,7 +357,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" type="submit">Thêm</button>
+                <button class="btn btn-primary" type="submit">Thêm</button>
               </div>
             </form>
         </div>

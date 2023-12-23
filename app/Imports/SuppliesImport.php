@@ -15,6 +15,7 @@ class SuppliesImport implements ToModel
     private $nhacungcap;
     private $chiphi;
     private $project_id;
+    private $errors = [];
 
     public function __construct($sodonhang, $nhacungcap, $chiphi, $project_id)
     {
@@ -30,9 +31,18 @@ class SuppliesImport implements ToModel
 
     public function model(array $row){
         $this->rowNumber++;
-        if ($this->rowNumber < 3 ) {
+        if ($this->rowNumber < 3) {
             return null;
         }
+
+        $tenVatTuExists = Supply::where('tenvattu', $row[1])->exists(); // Cột B
+        $maSoExists = Supply::where('maso', $row[2])->exists(); // Cột C
+
+        if ($tenVatTuExists || $maSoExists) {
+            $this->errors[] = "Trùng tên vật tư hoặc mã số vật tư tại hàng {$this->rowNumber}.";
+            return null;
+        }
+        
         return new Supply([
             'project_id' => $this->project_id,
             'sodonhang' => $this->sodonhang,
@@ -47,5 +57,9 @@ class SuppliesImport implements ToModel
             'ngaynhan' => null, // Để trống
             'note' => $row[9], // Cột J
         ]);
+    }
+
+    public function getErrors() {
+        return $this->errors;
     }
 }

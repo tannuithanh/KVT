@@ -78,7 +78,15 @@ class Insite extends Controller
         try {
             $import = new SuppliesImport($sodonhang, $nhacungcap, $chiphi, $project_id);
             Excel::import($import, $file);
+
+            if ($import->getErrors()) {
+                DB::rollBack();
+                $errorMessages = implode(' ', $import->getErrors());
+                return back()->with('error', 'Có lỗi xảy ra trong quá trình nhập dữ liệu: ' . $errorMessages);
+            }
+
             DB::commit();
+            return back()->with('success', 'Dữ liệu đã được nhập thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Có lỗi xảy ra trong quá trình nhập dữ liệu: ' . $e->getMessage());
@@ -92,6 +100,7 @@ class Insite extends Controller
         // Xác thực dữ liệu (tuỳ chọn)
         $validatedData = $request->validate([
             'project_id' => 'required|integer',
+            'maso'=>'required|string',
             'sodonhang' => 'required|string',
             'tenvattu' => 'required|string',
             'nhacungcap' => 'required|string',
@@ -99,10 +108,23 @@ class Insite extends Controller
             'donvitinh' => 'required|string',
             'soluong' => 'required|integer',
             'chiphi' => 'required|string',
-            'note' => 'required|string',
+            'note' => 'nullable|string', // Ghi chú có thể không cần thiết
         ]);
+         // Kiểm tra xem đã có vật tư với tên hoặc mã số giống nhau trong cùng dự án chưa
+        $existingSupply = Supply::where('project_id', $validatedData['project_id'])
+                                ->where(function ($query) use ($validatedData) {
+                                    $query->where('tenvattu', $validatedData['tenvattu'])
+                                        ->orWhere('maso', $validatedData['maso']);
+                                })->exists();
+
+        if ($existingSupply) {
+            // Nếu tìm thấy vật tư trùng tên hoặc mã số, trả về lỗi
+            return back()->with('error', 'Vật tư đã tồn tại trong dự án, không thể thêm.');
+        }
+
         $supply = new Supply([
             'project_id' => $validatedData['project_id'],
+            'maso'=> $validatedData['maso'],
             'sodonhang' => $validatedData['sodonhang'],
             'tenvattu' => $validatedData['tenvattu'],
             'nhacungcap' => $validatedData['nhacungcap'],
@@ -110,14 +132,12 @@ class Insite extends Controller
             'donvitinh' => $validatedData['donvitinh'],
             'soluong' => $validatedData['soluong'],
             'chiphi' => $validatedData['chiphi'],
-            'stt' => 1,
+            'stt' => '1',
             'ngaynhan' => null,
             'note' => $validatedData['note'],
         ]);
         // Tạo và lưu vật tư mới
-        $supply = new Supply($validated);
         $supply->save();
-
         // Chuyển hướng người dùng hoặc trả về response
         return redirect()->back()->with('success', 'Vật tư đã được thêm thành công');
     }
