@@ -25,3 +25,9 @@ th {
     background: #555; /* Đổi màu nền khi hover */
   }
   
+  .table td,th {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+  }
+  

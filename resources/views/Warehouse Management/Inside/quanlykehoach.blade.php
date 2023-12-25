@@ -1,6 +1,7 @@
 @extends('Layout.app')
 @section('style')
   <style>
+
     .table-hover tbody tr:hover {
         cursor: pointer;
     }
@@ -56,76 +57,76 @@
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                               </div>
                           @endif
-                    
-                    <table class="table table-borderless table-bordered table-hover mt-2">
-                      
-                        <thead>
-                            <tr>
-                                
-                                <tr>
-                                <th style="text-align: center" rowspan="2" scope="col">Stt</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Số đơn hàng</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Tên vật tư</th>
-                                <th style="text-align: left" rowspan="2" scope="col">NCC</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Nội dung</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Mã số</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Đơn vị tính</th>
-                                <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Chi Phí</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Barcode</th>
-                                <th style="text-align: left" rowspan="2" scope="col">Ghi chú</th>
-                                <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
-                              </tr>
-                              <tr>
-                                  <!-- Các cột khác ở đây -->
-                                  <th style="text-align: center" scope="col">Tổng</th>
-                                  <th style="text-align: center" scope="col">Đã nhận</th>
-                                  <th style="text-align: center" scope="col">Chưa nhận</th>
-                                  <th style="text-align: center" scope="col">Đã xuất</th>
-                                  <!-- Các cột khác ở đây -->
-                              </tr>
-                               
-                            </tr>
-                        </thead>
-                        <tbody>
-                          @php
-                            $stt = 1;
-                          @endphp
-                            @forelse ($supplies as $index => $supply)
-                                <tr>
-                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{$stt++}}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->sodonhang }}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->tenvattu }}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->noidungphancum }}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->maso }}</td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->donvitinh }}</td>
-                                    <td style="text-align: center;vertical-align: middle; color: black; font-weight: bold">{{ $supply->soluong }}</td>
-                                    <td style="text-align: center;vertical-align: middle;"></td>
-                                    <td style="text-align: center;vertical-align: middle;"></td>
-                                    <td style="text-align: center;vertical-align: middle;"></td>
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->chiphi }}</td>
-                                    <td style="text-align: center;vertical-align: middle;">
-                                        {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
-                                        <div style="text-align: center;vertical-align: middle;">P - {{ $supply->maso }}</div>
-                                    </td>
+                          <div class="table-responsive">
+                            <table class="table table-borderless table-bordered table-hover mt-2">
+                              
+                                <thead>
+                                    <tr>
+                                        
+                                        <tr>
+                                        <th style="text-align: center" rowspan="2" scope="col">Stt</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">NCC</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Đơn vị tính</th>
+                                        <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Barcode</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
+                                        <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
+                                      </tr>
+                                      <tr>
+                                          <!-- Các cột khác ở đây -->
+                                          <th style="text-align: center" scope="col">Tổng</th>
+                                          <th style="text-align: center" scope="col">Đã nhận</th>
+                                          <th style="text-align: center" scope="col">Chưa nhận</th>
+                                          <th style="text-align: center" scope="col">Đã xuất</th>
+                                          <!-- Các cột khác ở đây -->
+                                      </tr>
+                                      
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  @php
+                                    $stt = 1;
+                                  @endphp
+                                    @forelse ($supplies as $index => $supply)
+                                        <tr>
+                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{$stt++}}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->sodonhang }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->tenvattu }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->nhacungcap }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->noidungphancum }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->maso }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->donvitinh }}</td>
+                                            <td style="text-align: center;vertical-align: middle; color: black; font-weight: bold">{{ $supply->soluong }}</td>
+                                            <td style="text-align: center;vertical-align: middle;"></td>
+                                            <td style="text-align: center;vertical-align: middle;"></td>
+                                            <td style="text-align: center;vertical-align: middle;"></td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->chiphi }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">
+                                                {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
+                                                <div style="text-align: center;vertical-align: middle;">P - {{ $supply->maso }}</div>
+                                            </td>
 
-                                    <td style="text-align: left;vertical-align: middle;">{{ $supply->note }}</td>
-                                    <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
-                                      <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project">Sửa</button>
-                                      <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>
-                                      <button class="btn btn-sm btn-secondary " data-id="">Thêm</button>      
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
-                                </tr>
-                            @endforelse
-                      </tbody>
-                      
-                    </table>
-
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
+                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
+                                              <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project">Sửa</button>
+                                              <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>
+                                              <button class="btn btn-sm btn-secondary " data-id="">Thêm</button>      
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
+                                        </tr>
+                                    @endforelse
+                              </tbody>
+                              
+                            </table>
+                          </div>
                 </div>
             </div>
         </div>
@@ -275,9 +276,9 @@
                   <th style="text-align: center" rowspan="2" scope="col">Stt</th>
                   <th style="text-align: center" rowspan="2" scope="col">Tên vật tư</th>
                   <th style="text-align: center" rowspan="2" scope="col">Mã số</th>
-                  <th style="text-align: center" rowspan="2" scope="col">Nhập kho/ Xuất kho</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Số lượng</th>
                   <th style="text-align: center" rowspan="2" scope="col">Ngày thực hiện</th>
-                  <th style="text-align: center" colspan="4" scope="col">Số lượng</th>
+                  <th style="text-align: center" rowspan="2" scope="col">Trạng thái</th>
                 </tr>                 
               </tr>
           </thead>

@@ -21,4 +21,10 @@ class Supply extends Model
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'supply_id');
+    }
+
 }
