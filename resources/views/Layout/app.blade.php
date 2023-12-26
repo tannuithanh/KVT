@@ -83,7 +83,7 @@
         <i class="bi bi-list toggle-sidebar-btn" style="color: white"></i>
     </div><!-- End Logo -->
     <div class="header-title" style="font-size: 25px;">
-        KHO VẬT TƯ R&D ÔTÔ
+        QUẢN LÝ VẬT TƯ LINH KIỆN TẠI KHO
     </div>
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
