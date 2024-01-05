@@ -113,9 +113,16 @@
 
                                             <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
                                             <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
-                                              <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project">Sửa</button>
-                                              <button class="btn btn-sm btn-danger delete-project" data-id="">Xóa</button>
-                                              <button class="btn btn-sm btn-secondary " data-id="">Thêm</button>      
+                                              <button class="btn btn-sm btn-primary edit-supperlies-model" 
+                                                  data-bs-toggle="modal" data-note="{{ $supply->note }}" 
+                                                  data-maso="{{ $supply->maso }}" 
+                                                  data-noidung="{{$supply->noidungphancum}}" 
+                                                  data-sodonhang="{{$supply->sodonhang}}" 
+                                                  data-tenvattu="{{$supply->tenvattu}}" 
+                                                  data-id="{{$supply->id}}" 
+                                                  data-bs-target="#EditSupperlies">Sửa</button>
+                                              <button class="btn btn-sm btn-danger delete-supplies" data-id="{{$supply->id}}">Xóa</button>
+                                              <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#themsoluongvattu" data-id="{{$supply->id}}">Thêm</button>      
                                             </td>
                                         </tr>
                                     @empty
@@ -364,6 +371,102 @@
         </div>
       </div>
     </div>
+{{-- THÊM SỐ LƯỢNG VẬT TƯ --}}
+  <div class="modal fade" id="themsoluongvattu" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm số lượng vật tư</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{{ route('addQuantity') }}">
+          @csrf
+          <div class="modal-body">
+            <div class="row mb-3">
+              <label for="inputText" class="col-sm-4 col-form-label">Số lượng</label>
+              <div class="col-sm-8">
+                <input type="hidden" id="supplyId" name="supplyId" value="">
+                <input type="number" name="soluong" class="form-control">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Thêm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{{-- SỬA VẬT TƯ THỦ CÔNG --}}
+  <div class="modal fade" id="EditSupperlies" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Sửa vật tư</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body ">
+          <form action="{{route('suavattu')}}" class="row g-3" method="POST">
+            @csrf
+            <input id="supplies-edit-input" name="supplies-edit-input" hidden>
+              <div class="col-md-12">
+                <label for="inputName5" class="form-label">Số đơn hàng</label>
+                <input type="text" class="form-control" name="sodonhang-edit">
+              </div> 
+              <div class="col-md-6">
+                <label for="inputName5" class="form-label">Tên vật tư</label>
+                <input type="text" class="form-control"name="tenvattu-edit">
+              </div> 
+              <div class="col-md-6">
+                <label for="inputState" class="form-label">Nhà cung cấp</label>
+                <select id="inputState" class="form-select" name="nhacungcap-edit">
+                  @foreach($providers as $provider)
+                      <optgroup label="{{ $provider->name }}">
+                          @foreach($provider->details as $detail)
+                              <option value="{{ $detail->name }}">{{ $detail->name }}</option>
+                          @endforeach
+                      </optgroup>
+                  @endforeach
+              </select>
+              </div> 
+              <div class="col-md-12">
+                <label for="inputName5" class="form-label">Nội dung</label>
+                <textarea class="form-control" name="noidungphancum-edit"></textarea>
+              </div>          
+              <div class="col-md-12">
+                <label for="inputName5" class="form-label">Mã số</label>
+                <input type="text" style="text-transform: uppercase;" class="form-control" name="maso-edit">
+              </div> 
+              <div class="col-md-6">
+                <label for="inputEmail5" class="form-label">Đơn vị tính</label>
+                <select id="inputState" class="form-select" name="donvitinh-edit">
+                  <option>Cái</option>
+                  <option>Bộ</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="inputEmail5" class="form-label">Chi phí</label>
+                <select id="inputState" class="form-select"  name="chiphi-edit">
+                  <option value="BUS">BUS</option>
+                  <option value="TẢI">TẢI</option>
+                  <option value="ROYAL">ROYAL</option>
+                  <option value="MAZDA">MAZDA</option>
+                </select>
+              </div>
+              <div class="col-md-12">
+                <label for="inputName5" class="form-label">Ghi chú</label>
+                <textarea class="form-control" name="note-edit"></textarea>
+              </div>  
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+              <button class="btn btn-primary" type="submit">Sửa</button>
+            </div>
+          </form>
+      </div>
+    </div>
+  </div>
 @endsection
 
 @section('script')
@@ -384,7 +487,6 @@
         });
     });
   </script> --}}
-
   <script>
     //Hiển thị modal
     document.addEventListener('DOMContentLoaded', function() {
@@ -405,5 +507,100 @@
             });
         });
     });
+  </script>
+
+  <script>
+    $('.btn-secondary').click(function() {
+        var supplyId = $(this).data('id'); // Lấy ID từ data-id của nút
+        $('#supplyId').val(supplyId); // Đặt ID vào trường ẩn
+    });
+  </script>
+
+  {{-- XÓA VẬT TƯ --}}
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          // Bắt sự kiện click cho nút xóa
+          const deleteButtons = document.querySelectorAll('.delete-supplies');
+          deleteButtons.forEach(function(button) {
+              button.addEventListener('click', function() {
+                  const supplyId = this.getAttribute('data-id');
+                  
+                  Swal.fire({
+                      title: 'Bạn có chắc chắn không?',
+                      text: "Bạn sẽ không thể phục hồi sau khi xóa!",
+                      icon: 'warning',
+                      showCancelButton: true,
+                      confirmButtonColor: '#d33',
+                      cancelButtonColor: '#3085d6',
+                      confirmButtonText: 'Có, xóa nó!',
+                      cancelButtonText: 'Không, hủy bỏ!'
+                  }).then((result) => {
+                      if (result.isConfirmed) {
+                          $.ajax({
+                              url: "{{route('deleteVatTu')}}",
+                              type: 'POST',
+                              data: {
+                                  _token: '{{ csrf_token() }}', // CSRF token (nếu sử dụng POST)
+                                  supplyId: supplyId
+                              },
+                              success: function(response) {
+                                  // Hiển thị SweetAlert khi xóa thành công
+                                  Swal.fire(
+                                      'Đã Xóa!',
+                                      'Vật tư đã được xóa thành công.',
+                                      'success'
+                                  ).then((result) => {
+                                      if (result.isConfirmed) {
+                                          window.location.reload(); // Tải lại trang
+                                      }
+                                  });
+                              },
+                              error: function(error) {
+                                  // Xử lý khi có lỗi
+                                  Swal.fire(
+                                      'Lỗi!',
+                                      'Không thể xóa vật tư.',
+                                      'error'
+                                  );
+                              }
+                          });
+                      }
+                  })
+              });
+          });
+      });
+  </script>
+
+  {{-- SỬA VẬT TƯ --}}
+  <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const editButtons = document.querySelectorAll('.edit-supperlies-model');
+
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Lấy dữ liệu từ data attributes
+                const id = this.getAttribute('data-id');
+                const sodonhang = this.getAttribute('data-sodonhang');
+                const tenvattu = this.getAttribute('data-tenvattu');
+                const noidung = this.getAttribute('data-noidung');
+                const maso = this.getAttribute('data-maso');
+                const note = this.getAttribute('data-note');
+                // console.log(id)
+                
+                // Lấy các giá trị khác tương tự
+
+                // Điền dữ liệu vào modal
+                const modal = document.querySelector('#EditSupperlies');
+                modal.querySelector('[name="sodonhang-edit"]').value = sodonhang;
+                modal.querySelector('[name="tenvattu-edit"]').value = tenvattu;
+                modal.querySelector('[name="noidungphancum-edit"]').value = noidung;
+                modal.querySelector('[name="maso-edit"]').value = maso;
+                modal.querySelector('[name="note-edit"]').value = note;
+                document.getElementById('supplies-edit-input').value = id;
+
+            });
+        });
+    });
+
   </script>
 @endsection

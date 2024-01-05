@@ -142,9 +142,14 @@
   <!-- ======= Sidebar ======= -->
   @php
     $currentRoute = Route::currentRouteName();
-    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listBrand', 'listProject','listWarehouse']);
+    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listBrand', 'listProject','listWarehouse','listNhapKho']);
     $isActiveDashboard = $currentRoute == 'dashboard';
+    // Định nghĩa isActivePlanManagement dựa trên điều kiện của bạn
+    $module = $module ?? 'default-value';
+    $isActivePlanManagement = $module == 'Quản lý kế hoạch';
+    $isActiveWarehouseEntry = $module == 'Nhập kho'
   @endphp
+
 
   <aside id="sidebar" class="sidebar">
 
@@ -162,23 +167,23 @@
               <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
           </a>
           @if (in_array($user->appFunction->id, [3, 5]))
-            <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-                <li>
-                    <a href="{{route('listBrand', ['module' => 'Quản lý kế hoạch'])}}" class="{{ in_array($currentRoute, ['listBrand', 'listProject','listWarehouse']) ? 'active' : '' }}">
-                        <i class="bi bi-circle"></i><span>Quản lý kế hoạch</span>
-                    </a>
-                </li>
-            </ul>
-          @endif
-        @if (in_array($user->appFunction->id, [1, 5]))
-            <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-                <li>
-                    <a href="{{route('listBrand', ['module' => 'Nhập kho'])}}" >
-                            <i class="bi bi-circle"></i><span>Nhập kho</span>
-                        </a>
-                </li>
-            </ul>
+          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+              <li>
+                  <a href="{{route('listBrand', ['module' => 'Quản lý kế hoạch'])}}" class="{{ $isActivePlanManagement ? 'active' : '' }}">
+                      <i class="bi bi-circle"></i><span>Quản lý kế hoạch</span>
+                  </a>
+              </li>
+          </ul>
         @endif
+        @if (in_array($user->appFunction->id, [1, 5]))
+          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+              <li>
+                  <a href="{{route('listBrand', ['module' => 'Nhập kho'])}}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
+                    <i class="bi bi-circle"></i><span>Nhập kho</span>
+                  </a>              
+              </li>
+          </ul>
+        @endif          
         @if (in_array($user->appFunction->id, [2, 5]))
             <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
                 <li>
@@ -189,7 +194,6 @@
             </ul>
         @endif
       </li>
-
     </ul>
 
   </aside><!-- End Sidebar-->

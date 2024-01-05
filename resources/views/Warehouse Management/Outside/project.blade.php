@@ -44,7 +44,13 @@
                 @foreach ($projects as $value)
                     <tr>
                         <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
-                        <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                        @if (in_array($user->appFunction->id, [3, 5]))
+                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                        @elseif (in_array($user->appFunction->id, [1, 5]))
+                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                        @elseif (in_array($user->appFunction->id, [2, 5]))
+                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                        @endif
                         <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
                         <td style="vertical-align: middle; text-align: center" scope="col">

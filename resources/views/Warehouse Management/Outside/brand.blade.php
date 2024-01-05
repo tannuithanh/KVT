@@ -43,7 +43,7 @@
                                     <td style="text-align: center;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
                                 @endif
                                 <td style="text-align: center;">
-                                    <a href="{{ route('listProject',['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
+                                    <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
                                 </td>                                
                                 <td style="text-align: center;">{{ $segment->projects->count() }}</td>
                                 <td style="text-align: center;">
