@@ -6,45 +6,59 @@ use App\Models\User;
 use App\Models\Supply;
 use App\Models\Project;
 use App\Models\Provider;
+use App\Models\Order;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
 use App\imports\SuppliesImport;
+use Carbon\Carbon;
+
+
 
 class Insite extends Controller
 {
 // QUẢN LÝ KẾ HOẠCH
-    public function listWarehouse($idProject,Request $request){
-        $project = Project::with('segment.brand')->withCount(['supplies as total_supplies' => function ($query) {
-            $query->select(DB::raw("sum(soluong)"));
+    public function listWarehouse($idProject, Request $request) {
+        // dd($request->toarray());
+        $project = Project::with(['orders' => function($query) {
+            $query->withSum('supplies as total_supplies', 'soluong');
         }])->find($idProject);
-    
+
         if (!$project) {
-            // Xử lý trường hợp không tìm thấy dự án
             abort(404, 'Dự án không tìm thấy.');
         }
-    
-        // Lấy thông tin thương hiệu và phân khúc
+        $totalSuppliesForProject = $project->orders->sum('total_supplies');
+        if (!$project) {
+            abort(404, 'Dự án không tìm thấy.');
+        }
+
         $brandName = optional(optional($project->segment)->brand)->name;
         $segmentId = $project->segment->id ?? null;
         $segmentName = $project->segment->name ?? null;
-        
+
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-    
-        // Lấy tổng số lượng vật tư
+
+        // Lấy tổng số lượng vật tư thông qua đơn hàng
         $totalSupplies = $project->total_supplies;
-    
-        // Lấy số vật tư theo id dự án
-        $supplies = Supply::where('project_id', $idProject)->get();
+
+        // Lấy số vật tư thông qua các đơn hàng của dự án
+        $orders = Order::where('project_id', $idProject)->with('supplies')->get();
+        $totals = [];
+        foreach ($orders as $order) {
+            $totalSupplies = $order->supplies->sum('soluong');
+            $totals[$order->id] = $totalSupplies;
+        }
+
+        $supplies = $orders->flatMap->supplies;
+        // dd($totalSupplies->toarray());
         $module = $request->query('module', 'defaultModule');
         $providers = Provider::with('details')->get();
-        return view('Warehouse Management.Inside.quanlykehoach', compact('user', 'providers','module','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
+        return view('Warehouse Management.Inside.quanlykehoach', compact('totals','orders', 'user', 'providers', 'module', 'segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies','totalSuppliesForProject'));
     }
-    
+
+
     public function importSupplies(Request $request){
         $project_id = $request['project_id'];
 
@@ -78,7 +92,7 @@ class Insite extends Controller
         try {
             $import = new SuppliesImport($sodonhang, $nhacungcap, $chiphi, $project_id);
             Excel::import($import, $file);
-
+            // dd($import);
             if ($import->getErrors()) {
                 DB::rollBack();
                 $errorMessages = implode(' ', $import->getErrors());
@@ -113,8 +127,7 @@ class Insite extends Controller
          // Kiểm tra xem đã có vật tư với tên hoặc mã số giống nhau trong cùng dự án chưa
         $existingSupply = Supply::where('project_id', $validatedData['project_id'])
                                 ->where(function ($query) use ($validatedData) {
-                                    $query->where('tenvattu', $validatedData['tenvattu'])
-                                        ->orWhere('maso', $validatedData['maso']);
+                                    $query->where('maso', $validatedData['maso']);
                                 })->exists();
 
         if ($existingSupply) {
@@ -165,57 +178,53 @@ class Insite extends Controller
         }
     }
 
-    public function deleteVatTu(Request $request) {
-        $supplyId = $request->input('supplyId');
-        $supply = Supply::find($supplyId);
+    public function deleteDonHang(Request $request) {
+        $orderId = $request->input('ordersId'); // Sửa lại tên biến cho phù hợp
+        $order = Order::with('supplies.transactions')->find($orderId);
 
-        if ($supply) {
-            $supply->delete();
-            return response()->json(['success' => 'Vật tư đã được xóa thành công.']);
+        if ($order) {
+            // Xóa các transactions liên quan đến supplies của đơn hàng
+            foreach ($order->supplies as $supply) {
+                foreach ($supply->transactions as $transaction) {
+                    $transaction->delete();
+                }
+            }
+
+            // Xóa tất cả supplies của đơn hàng
+            $order->supplies()->delete();
+
+            // Cuối cùng, xóa đơn hàng
+            $order->delete();
+
+            return response()->json(['success' => 'Đơn hàng và vật tư liên quan đã được xóa thành công.']);
         } else {
-            return response()->json(['error' => 'Không thể tìm thấy vật tư.'], 404);
+            return response()->json(['error' => 'Không thể tìm thấy đơn hàng.'], 404);
         }
     }
 
+
     public function suavattu(Request $request) {
+        // dd($request->toarray());
         // Validation và lấy dữ liệu từ request
         $validatedData = $request->validate([
-                'supplies-edit-input' => 'required|integer',
-                'maso-edit'=>'required|string',
-                'sodonhang-edit' => 'required|string',
-                'tenvattu-edit' => 'required|string',
-                'nhacungcap-edit' => 'required|string',
-                'noidungphancum-edit' => 'nullable|string',
-                'donvitinh-edit' => 'required|string',
-                'chiphi-edit' => 'required|string',
-                'note-edit' => 'nullable|string', 
-            ]);
-        // Kiểm tra xem có vật tư với mã số giống nhau không
-        $existingSupply = Supply::where('id', $validatedData['supplies-edit-input'])
-                                ->where(function ($query) use ($validatedData) {
-                                    $query->where('tenvattu', $validatedData['tenvattu-edit'])
-                                        ->orWhere('maso', $validatedData['maso-edit']);
-                                })
-                                ->first();
-
-        if ($existingSupply && $existingSupply->id != $validatedData['supplies-edit-input']) {
-            // Nếu tìm thấy vật tư trùng tên hoặc mã số, trả về lỗi
-            return back()->with('error', 'Vật tư đã tồn tại trong dự án, không thể cập nhật.');
-        }
-
-        // Tìm và cập nhật vật tư
-        $supply = Supply::find($validatedData['supplies-edit-input']);
-        if ($supply) {
-            $supply->sodonhang = $validatedData['sodonhang-edit'] ?? $supply->sodonhang;
-            $supply->tenvattu = $validatedData['tenvattu-edit'] ?? $supply->tenvattu;
-            $supply->maso = $validatedData['maso-edit'] ?? $supply->maso;
-            $supply->nhacungcap = $validatedData['nhacungcap-edit'] ?? $supply->nhacungcap;
-            $supply->noidungphancum = $validatedData['noidungphancum-edit'] ?? $supply->noidungphancum;
-            $supply->donvitinh = $validatedData['donvitinh-edit'] ?? $supply->donvitinh;
-            $supply->soluong = $validatedData['soluong-edit'] ?? $supply->soluong;
-            $supply->chiphi = $validatedData['chiphi-edit'] ?? $supply->chiphi;
-            $supply->note = $validatedData['note-edit'] ?? $supply->note;
-            $supply->save();
+            'OrderEdit' => 'required|integer',
+            'sodonhang-edit' => 'required|string',
+            'nhacungcap-edit' => 'required|string',
+            'noidungphancum-edit' => 'nullable|string',
+            'chiphi-edit' => 'required|string',
+            'note-edit' => 'nullable|string',
+        ]);
+        // dd($validatedData);
+        // Tìm và cập nhật đơn hàng
+        $Order = Order::find($validatedData['OrderEdit']);
+        // dd($Order->toarray());
+        if ($Order) {
+            $Order->sodonhang = $validatedData['sodonhang-edit'];
+            $Order->nhacungcap = $validatedData['nhacungcap-edit'];
+            $Order->noidung = $validatedData['noidungphancum-edit'];
+            $Order->chiphi = $validatedData['chiphi-edit'];
+            $Order->ghichu = $validatedData['note-edit'];
+            $Order->save();
 
             return back()->with('success', 'Vật tư đã được cập nhật thành công.');
         } else {
@@ -225,31 +234,72 @@ class Insite extends Controller
 
 
 
+
 // NHẬP KHO
     public function listNhapKho($idProject,Request $request){
         $project = Project::with('segment.brand')->withCount(['supplies as total_supplies' => function ($query) {
             $query->select(DB::raw("sum(soluong)"));
         }])->find($idProject);
-    
+
         if (!$project) {
             // Xử lý trường hợp không tìm thấy dự án
             abort(404, 'Dự án không tìm thấy.');
         }
-    
+
         // Lấy thông tin thương hiệu và phân khúc
         $brandName = optional(optional($project->segment)->brand)->name;
         $segmentId = $project->segment->id ?? null;
         $segmentName = $project->segment->name ?? null;
-        
+
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-    
+
         // Lấy tổng số lượng vật tư
         $totalSupplies = $project->total_supplies;
-    
+
         // Lấy số vật tư theo id dự án
         $supplies = Supply::where('project_id', $idProject)->get();
         $module = $request->query('module', 'defaultModule');
         $providers = Provider::with('details')->get();
         return view('Warehouse Management.Inside.nhapkho', compact('user', 'providers','module','segmentId', 'brandName', 'segmentName', 'project', 'totalSupplies', 'supplies'));
+    }
+
+    public function nhapKho(Request $request){
+        // Lấy dữ liệu từ request
+        $supplyId = $request->input('supply_id');
+        $soLuong = $request->input('soluong');
+
+        // Tạo bản ghi mới trong bảng transactions
+        $transaction = Transaction::create([
+            'supply_id' => $supplyId,
+            'soluong' => $soLuong,
+            'loaigiaodich' => 'Nhập kho',
+            'ngaygiaodich' => Carbon::now(),
+            'ghichu' => ''
+        ]);
+
+        // Kiểm tra và trả về phản hồi
+        if ($transaction) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Giao dịch được thêm thành công',
+                'transaction' => $transaction
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra trong quá trình thêm giao dịch'
+            ]);
+        }
+    }
+
+    public function laySoLuongKho(Request $request){
+        // dd($request->toarray());
+        $itemId = $request->id;
+        $transaction = Transaction::where('supply_id', $itemId)->first();
+
+        // Giả sử mỗi supply_id chỉ có một transaction liên quan
+        return response()->json([
+            'soluong' => $transaction ? $transaction->soluong : 0
+        ]);
     }
 }

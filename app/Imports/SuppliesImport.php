@@ -5,6 +5,7 @@ namespace App\Imports;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\ProviderDetail;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use App\Models\Supply;
 
@@ -31,33 +32,40 @@ class SuppliesImport implements ToModel
 
     public function model(array $row){
         $this->rowNumber++;
-        if ($this->rowNumber < 3) {
+        if ($this->rowNumber < 4) {
+            return null;
+        }
+        if (empty($row[1])) {
             return null;
         }
 
-        $tenVatTuExists = Supply::where('tenvattu', $row[1])->exists(); // Cột B
-        $maSoExists = Supply::where('maso', $row[2])->exists(); // Cột C
+        // Kiểm tra xem mã số vật tư đã tồn tại chưa
+        $maSoExists = Supply::join('orders', 'supplies.order_id', '=', 'orders.id')
+                            ->where('orders.project_id', $this->project_id)
+                            ->where('supplies.maso', $row[2])
+                            ->exists();
 
-        if ($tenVatTuExists || $maSoExists) {
-            $this->errors[] = "Trùng tên vật tư hoặc mã số vật tư tại hàng {$this->rowNumber}.";
+        if ($maSoExists) {
+            $this->errors[] = "Trùng mã số vật tư";
             return null;
         }
-        
+
+        // Kiểm tra và thêm mới đơn hàng vào bảng `orders`
+        $order = Order::firstOrCreate(
+            ['project_id' => $this->project_id, 'sodonhang' => $this->sodonhang, 'nhacungcap' => $this->nhacungcap, 'chiphi' => $this->chiphi],
+        );
+
+        // Thêm thông tin vào bảng `supplies` với `order_id`
         return new Supply([
-            'project_id' => $this->project_id,
-            'sodonhang' => $this->sodonhang,
-            'nhacungcap' => $this->nhacungcap,
-            'chiphi' => $this->chiphi,
-            'noidungphancum' => $row[3], // Cột D
-            'stt' => 1, // Giá trị mặc định
+            'order_id' => $order->id,
             'tenvattu' => $row[1], // Cột B
             'maso' => $row[2], // Cột C
             'donvitinh' => $row[7], // Cột H
             'soluong' => $row[8], // Cột I
-            'ngaynhan' => null, // Để trống
-            'note' => $row[9], // Cột J
+            'note' => $row[10], // Cột K
         ]);
     }
+
 
     public function getErrors() {
         return $this->errors;

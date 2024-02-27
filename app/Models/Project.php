@@ -20,4 +20,8 @@ class Project extends Model
     {
         return $this->hasMany(Supply::class, 'project_id');
     }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

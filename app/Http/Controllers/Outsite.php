@@ -12,32 +12,33 @@ use Illuminate\Support\Facades\Auth;
 
 class Outsite extends Controller
 {
-    public function listBrand(Request $request){
+    public function listBrand(Request $request) {
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-    
+
         // Truy vấn tất cả brands
-        $brands = Brand::with(['segments.projects.supplies'])
-            ->get();
-    
+        $brands = Brand::with(['segments.projects.orders.supplies'])->get();
+
         foreach ($brands as $brand) {
             $brandTotalSupplies = 0;
-    
+
             foreach ($brand->segments as $segment) {
                 foreach ($segment->projects as $project) {
-                    // Tính tổng số lượng vật tư của mỗi dự án
-                    $projectTotalSupplies = $project->supplies->sum('soluong');
-                    $brandTotalSupplies += $projectTotalSupplies;
+                    foreach ($project->orders as $order) {
+                        // Tính tổng số lượng vật tư của mỗi đơn hàng
+                        $orderTotalSupplies = $order->supplies->sum('soluong');
+                        $brandTotalSupplies += $orderTotalSupplies;
+                    }
                 }
             }
-    
-            // Gán tổng số lượng vật tư của tất cả các dự án trong tất cả các phân khúc cho mỗi thương hiệu
+
+            // Gán tổng số lượng vật tư của tất cả các đơn hàng trong tất cả các dự án trong tất cả các phân khúc cho mỗi thương hiệu
             $brand->totalSupplies = $brandTotalSupplies;
         }
-    
+
         $module = $request->query('module', 'defaultModule');
         return view('Warehouse Management.Outside.brand', compact('user', 'brands', 'module'));
     }
-    
+
 
     public function Project($segmentId, Request $request)
     {
@@ -55,25 +56,25 @@ class Outsite extends Controller
         return view('Warehouse Management.Outside.project', compact('projects', 'user', 'segment', 'brand', 'segmentName', 'module'));
     }
 
-    
-    
+
+
     public function addProject(Request $request)
     {
         // Cập nhật dữ liệu để lấy segment_id
         $data = $request->only(['name', 'description', 'segment_id']);
-        
+
         // Tạo dự án mới với segment_id
         $project = new Project($data);
         $project->segment_id = $data['segment_id']; // Đảm bảo rằng bạn đang set segment_id
         $saved = $project->save();
-    
+
         if ($saved) {
             return response()->json(['success' => true]);
         } else {
             return response()->json(['success' => false]);
         }
     }
-    
+
 
     public function editProject(Request $request)
     {

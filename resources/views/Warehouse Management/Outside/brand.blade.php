@@ -44,12 +44,16 @@
                                 @endif
                                 <td style="text-align: center;">
                                     <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
-                                </td>                                
+                                </td>
                                 <td style="text-align: center;">{{ $segment->projects->count() }}</td>
                                 <td style="text-align: center;">
-                                    @php $totalSupplies = $segment->projects->reduce(function ($carry, $project) {
-                                        return $carry + $project->supplies->sum('soluong');
-                                    }, 0); @endphp
+                                    @php
+                                    $totalSupplies = $segment->projects->reduce(function ($carry, $project) {
+                                        return $carry + $project->orders->reduce(function ($carryOrder, $order) {
+                                            return $carryOrder + $order->supplies->sum('soluong');
+                                        }, 0);
+                                    }, 0);
+                                    @endphp
                                     {{ $totalSupplies }}
                                 </td>
                             </tr>
@@ -57,8 +61,8 @@
                     @endforeach
                 </tbody>
             </table>
-            
-            
+
+
 
         </div>
         </div>

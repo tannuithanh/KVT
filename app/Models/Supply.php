@@ -9,22 +9,18 @@ class Supply extends Model
 {
     use HasFactory;
 
-    // Khai báo các cột trong bảng supplies
     protected $fillable = [
-        'project_id', 'sodonhang', 'nhacungcap', 'chiphi',
-        'noidungphancum', 'stt', 'tenvattu', 'maso',
-        'donvitinh', 'soluong', 'ngaynhan', 'note', 'status','barcode'
+        'order_id', 'tenvattu', 'maso', 'donvitinh',
+        'soluong', 'note', 'status',
     ];
 
-    // Quan hệ với bảng projects
-    public function project()
+    public function order()
     {
-        return $this->belongsTo(Project::class, 'project_id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
     public function transactions()
     {
         return $this->hasMany(Transaction::class, 'supply_id');
     }
-
 }

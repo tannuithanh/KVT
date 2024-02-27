@@ -8,6 +8,12 @@
             0% { top: 0; }
             100% { top: 100%; }
         }
+        #barcode-scanner {
+                max-width: 100%; /* Đảm bảo rằng camera không vượt quá chiều rộng của modal */
+                aspect-ratio: 16 / 9; /* Thiết lập tỷ lệ khung hình cho camera */
+                height: auto; /* Chiều cao tự động điều chỉnh theo chiều rộng */
+                overflow: hidden; /* Ẩn nội dung nằm ngoài khung */
+            }
 
         #scanner-line {
             position: absolute;
@@ -16,9 +22,7 @@
             top: 0;
             animation: scanner-animation 2s linear infinite;
         }
-
-
-
+        
     </style>
 @endsection
 @section('title')
@@ -139,12 +143,10 @@
                                             </td>
                                             <td style="text-align: center;vertical-align: middle;">
                                                 {!! DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33) !!}
-                                                <div style="vertical-align: middle;">P -
-                                                    {{ $supply->maso }}</div>
+                                                <div style="vertical-align: middle;">P -{{ $supply->maso }}</div>
                                             </td>
 
-                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}
-                                            </td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $supply->note }}</td>
                                             <td class="no-modal-trigger"
                                                 style="text-align: center;vertical-align: middle;">
 
@@ -338,47 +340,65 @@
           </div>
       </div>
     {{-- MODAL QUÉT BARCODE --}}
-    <div class="modal fade" id="fullscreenModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Quét Barcode và Nhập Vật Tư</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <!-- Bảng Vật Tư Đã Chọn -->
-                        <div class="col-12 col-lg-8">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên Vật Tư</th>
-                                        <th>Mã Số</th>
-                                        <th>Số Lượng Nhập</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Các dòng vật tư được thêm vào đây -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Camera Quét Barcode -->
-                        <div class="col-12 col-lg-4 d-flex align-items-center justify-content-center">
-                            <div id="barcode-scanner" class="border" style="position: relative; height: 200px; width: 100%;">
-                                <div id="scanner-line"></div>
+        <div class="modal fade" id="modalquetbarcode" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Quét Barcode và Nhập Vật Tư</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Bảng Vật Tư Đã Chọn -->
+                            <div class="col-12 col-lg-8">
+                                <table class="table table-borderless table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên Vật Tư</th>
+                                            <th>Mã Số</th>
+                                            <th>Số Lượng Nhập</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Các dòng vật tư được thêm vào đây -->
+                                    </tbody>
+                                </table>
                             </div>
+                            
+                            <!-- Camera Quét Barcode -->
+                            <div class="col-12 col-lg-4 d-flex align-items-center justify-content-center">
+                                <div id="barcode-scanner" class="border" style="position: relative;">
+                                    <div id="scanner-line"></div>
+                                </div>
+                            </div>                        
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    
+    {{-- NHẬP SỐ LƯỢNG VẬT TƯ --}}
+        <div class="modal fade" id="nhapsoluongvattu" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title titlenhapvattu">Nhập Số Lượng Vật Tư: </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <input type="number" id="idvattu" value="" hidden>
+                    <div class="modal-body">
+                        <input type="number" class="form-control inputSoLuong" id="itemQuantity" placeholder="Nhập số lượng">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" id="saveButton" class="btn btn-primary">Nhập kho</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     
 @endsection
 
@@ -471,58 +491,160 @@
                 });
             });
         </script>
-    {{-- QUÉT MÃ BARCODE --}}
+    {{-- QUÉT MÃ BARCODE --}}    
         <script>
-            $('#import-button').click(function() {
-                $('#fullscreenModal').modal('show'); // Hiển thị modal
-            });
-            $(document).ready(function() {
-                $('#fullscreenModal').on('shown.bs.modal', function() {
-                        Quagga.init({
-                            inputStream: {
-                                name: "Live",
-                                type: "LiveStream",
-                                target: document.querySelector('#barcode-scanner'), // Pass the element to render video
-                                constraints: {
-                                    width: 480,
-                                    height: 320,
-                                    facingMode: "environment" // Use the rear camera
-                                },
-                            },
-                            decoder: {
-                                readers: ["code_128_reader"] // You can add more readers here
-                            },
-                        }, function(err) {
-                            if (err) {
-                                console.log(err);
-                                return;
-                            }
-                            console.log("Initialization finished. Ready to start");
-                            Quagga.start();
+            var selectedBarcodes = [];
+            var isScanning = true;
+            document.getElementById('import-button').addEventListener('click', function() {
+                Swal.fire({
+                    // Cấu hình SweetAlert
+                    title: 'Bạn có chắc chắn?',
+                    text: "Bạn có chắc chắn chọn các vật tư này để nhập kho không?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Có',
+                    cancelButtonText: 'Không'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var selectedItems = [];
+                        var itemIds = [];
+                        $('.row-checkbox:checked').each(function() {
+                            var row = $(this).closest('tr');
+                            var itemName = row.find('td:nth-child(3)').text();
+                            var itemCode = row.find('td:nth-child(6)').text();
+                            var itemId = $(this).data('id');
+
+                            selectedItems.push({id: itemId, name: itemName, code: itemCode});
+                            itemIds.push(itemId); // Lưu ID để sau này gửi AJAX
                         });
 
-                        Quagga.onDetected(function(data) {
-                            var barcode = data.codeResult.code;
-                            console.log("Barcode detected: ", barcode);
-                            
-                            // Gửi mã barcode đến máy chủ hoặc kiểm tra dữ liệu của vật tư
-                            // Ví dụ: Gửi yêu cầu AJAX
-                            $.ajax({
-                                url: 'your-server-endpoint',
-                                method: 'POST',
-                                data: { barcode: barcode },
-                                success: function(response) {
-                                    // Xử lý phản hồi từ máy chủ
-                                    // Ví dụ: Hiển thị thông tin vật tư
-                                    console.log(response);
-                                }
+                        var ajaxRequests = itemIds.map(function(itemId) {
+                            return $.ajax({
+                                url: "{{ route('laySoLuongKho') }}", // Sửa lại URL tương ứng
+                                method: 'GET',
+                                data: { id: itemId }
+                            });
+                        });
+
+                        // Xử lý khi tất cả yêu cầu AJAX hoàn thành
+                        $.when(...ajaxRequests).done(function(...responses) {
+                            responses.forEach(function(response, index) {
+                                var quantity = response[0].soluong; // Lấy giá trị 'soluong' từ kết quả trả về
+                                var item = selectedItems[index];
+                                item.quantity = quantity; // Lưu số lượng vào mảng selectedItems
                             });
 
-                            Quagga.stop(); // Dừng camera
-                            $('#fullscreenModal').modal('hide'); // Ẩn modal
+                            // Cập nhật bảng với thông tin mới
+                            var tableBody = $('#modalquetbarcode').find('table tbody');
+                            tableBody.empty();
+                            selectedItems.forEach(function(item, index) {
+                                var stt = index + 1;
+                                tableBody.append('<tr><td style="text-align: center;vertical-align: middle;" data-id="' + item.id + '">' + stt + '</td><td style="text-align: center;vertical-align: middle;">' + item.name + '</td><td style="text-align: center;vertical-align: middle;">' + item.code + '</td><td style="text-align: center;vertical-align: middle;">' + item.quantity + '</td></tr>');
+                            });
+
+                            $('#modalquetbarcode').modal('show');
+                        });
+                    }
+                });
+            });
+
+
+            $(document).ready(function() {
+                var isScanning = true;
+
+                $('#modalquetbarcode').on('shown.bs.modal', function() {
+                    Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: document.querySelector('#barcode-scanner'),
+                            constraints: {
+                                width: 450,
+                                height: 320,
+                                facingMode: "environment"
+                            },
+                        },
+                        decoder: {
+                            readers: ["code_128_reader"]
+                        },
+                    }, function(err) {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        Quagga.start();
+                        console.log("Quagga is initialized and started");
+                    });
+
+                    Quagga.onDetected(function(data) {
+
+                        var scannedBarcode = data.codeResult.code;
+
+                        $('#modalquetbarcode').find('table tbody tr').each(function() {
+                            var itemCode = $(this).find('td:nth-child(3)').text();
+                            var itemName = $(this).find('td:nth-child(2)').text();
+                            var itemId = $(this).find('td:first-child').data('id');
+                            if (itemCode === scannedBarcode) {
+                                $('#nhapsoluongvattu').find('.titlenhapvattu').text('Nhập Số Lượng Vật Tư: ' + itemName);
+                                $('#nhapsoluongvattu').find('#idvattu').val(itemId);
+                                // Mã vạch phù hợp, hiển thị #nhapsoluongvattu
+                                $('#nhapsoluongvattu').modal('show');
+                            }
                         });
 
+                        if (!isMatchFound) {
+                            // Mã vạch không phù hợp, xử lý tương ứng
+                        }
                     });
                 });
+
+                $('#modalquetbarcode').on('hidden.bs.modal', function() {
+                    Quagga.stop(); // Dừng Quagga khi Modal đóng
+                });
+            });
+
+            $(document).ready(function() {
+                $('#saveButton').on('click', function() {
+                    var soluong = $('#itemQuantity').val(); // Lấy giá trị từ input #itemQuantity
+                    var supplyId = $('#idvattu').val(); // Lấy ID từ input #idvattu
+                    sendTransactionData(supplyId, soluong);
+                });
+
+                function sendTransactionData(supplyId, soluong) {
+                    $.ajax({
+                        url: "{{route('nhapKho')}}", // Thay thế bằng URL thực tế
+                        method: 'POST',
+                        data: {
+                            supply_id: supplyId,
+                            soluong: soluong,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Tìm hàng trong bảng với supply_id tương ứng và cập nhật số lượng
+                                $('#modalquetbarcode').find('table tbody tr').each(function() {
+                                    var rowSupplyId = $(this).find('td:first-child').data('id');
+                                    if (rowSupplyId == supplyId) {
+                                        // Cập nhật cột số lượng ở đây
+                                        $(this).find('td:nth-child(4)').text(soluong);
+                                    }
+                                });
+
+                                // Hiển thị thông báo thành công
+                                alert("Giao dịch được thêm thành công");
+                            } else {
+                                // Hiển thị thông báo lỗi
+                                alert("Có lỗi xảy ra: " + response.message);
+                            }
+                        },
+                        error: function(error) {
+                            console.error(error);
+                        }
+                    });
+                }
+            });
+
         </script>
 @endsection

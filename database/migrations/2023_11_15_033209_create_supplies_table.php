@@ -13,25 +13,17 @@ return new class extends Migration
     {
         Schema::create('supplies', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('project_id');
-            $table->string('sodonhang')->nullable(false);
-            $table->string('nhacungcap')->nullable(false);
-            $table->string('chiphi')->nullable(false);
-            $table->string('noidungphancum')->nullable();
-            $table->integer('stt')->nullable(false);
-            $table->string('tenvattu')->nullable(false);
-            $table->string('maso')->nullable(false);
-            $table->string('donvitinh')->nullable(false);
-            $table->integer('soluong')->nullable(false);
-            $table->dateTime('ngaynhan')->nullable();
+            $table->unsignedBigInteger('order_id');
+            $table->foreign('order_id')
+                  ->references('id')
+                  ->on('orders')
+                  ->onDelete('cascade');
+            $table->string('tenvattu');
+            $table->string('maso');
+            $table->string('donvitinh');
+            $table->integer('soluong');
             $table->string('note')->nullable();
             $table->integer('status')->default(0);
-            $table->string('barcode')->nullable();
-            $table->foreign('project_id')
-                  ->references('id')
-                  ->on('projects')
-                  ->onDelete('cascade');
-
             $table->timestamps();
         });
     }
