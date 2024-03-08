@@ -24,8 +24,8 @@
         <div class="card-body">
             <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
                 <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: black">{{ $brand->name }}</span> |
-                <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span  style="color: black">{{ $segmentName }}</span> 
-            </h5>  
+                <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span  style="color: black">{{ $segmentName }}</span>
+            </h5>
             @if (in_array($user->appFunction->id, [3, 5]))
                 <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
             @endif
@@ -44,11 +44,11 @@
                 @foreach ($projects as $value)
                     <tr>
                         <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
-                        @if (in_array($user->appFunction->id, [3, 5]))
+                        @if ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý kế hoạch")
                             <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                        @elseif (in_array($user->appFunction->id, [1, 5]))
+                        @elseif ((in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1) && $module=="Nhập kho")
                             <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                        @elseif (in_array($user->appFunction->id, [2, 5]))
+                        @elseif ((in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1) && $module=="Xuất kho")
                             <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                         @endif
                         <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
@@ -81,10 +81,10 @@
                 <div class="row mb-3">
                     {{-- Thêm trường input ẩn cho segmentId --}}
                     <input type="text" id="Segment_id" value="{{ $segment->id ?? '' }}" hidden class="form-control">
-                    
+
                     {{-- Giữ nguyên trường input ẩn cho brandId nếu bạn vẫn muốn truyền nó --}}
                     <input type="text" id="Brand_id" value="{{ $brand->id ?? '' }}" hidden class="form-control">
-                    
+
                     <label for="inputText" class="col-sm-2 col-form-label">Tên:</label>
                     <div class="col-sm-10">
                     <input type="text" id="name" class="form-control">

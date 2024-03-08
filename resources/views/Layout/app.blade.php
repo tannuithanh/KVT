@@ -58,17 +58,17 @@
   </style>
 </head>
  <!-- ======= Loading Page ======= -->
-<div class='container1'>
-    <div class='loader'>
-      <div class='loader--dot'></div>
-      <div class='loader--dot'></div>
-      <div class='loader--dot'></div>
-      <div class='loader--dot'></div>
-      <div class='loader--dot'></div>
-      <div class='loader--dot'></div>
-      <div class='loader--text'></div>
+    <div class='container1'>
+        <div class='loader'>
+        <div class='loader--dot'></div>
+        <div class='loader--dot'></div>
+        <div class='loader--dot'></div>
+        <div class='loader--dot'></div>
+        <div class='loader--dot'></div>
+        <div class='loader--dot'></div>
+        <div class='loader--text'></div>
+        </div>
     </div>
-</div>
 <body>
 
   <!-- ======= Header ======= -->
@@ -166,7 +166,7 @@
           <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
               <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
           </a>
-          @if (in_array($user->appFunction->id, [3, 5]))
+        @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1)
           <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
               <li>
                   <a href="{{route('listBrand', ['module' => 'Quản lý kế hoạch'])}}" class="{{ $isActivePlanManagement ? 'active' : '' }}">
@@ -175,19 +175,19 @@
               </li>
           </ul>
         @endif
-        @if (in_array($user->appFunction->id, [1, 5]))
+        @if (in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1)
           <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
               <li>
                   <a href="{{route('listBrand', ['module' => 'Nhập kho'])}}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
-                    <i class="bi bi-circle"></i><span>Nhập kho</span>
-                  </a>              
+                        <i class="bi bi-circle"></i><span>Nhập kho</span>
+                  </a>
               </li>
           </ul>
-        @endif          
-        @if (in_array($user->appFunction->id, [2, 5]))
+        @endif
+        @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1)
             <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
                 <li>
-                <a href="{{route('listBrand', ['module' => 'Xuất kho'])}}" >
+                    <a href="{{route('listBrand', ['module' => 'Xuất kho'])}}" >
                         <i class="bi bi-circle"></i><span>Xuất kho</span>
                     </a>
                 </li>

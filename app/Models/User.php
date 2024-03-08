@@ -26,5 +26,4 @@ class User extends Authenticatable
     {
         return $this->belongsTo(AppFunction::class, 'function_id');
     }
-
 }
