@@ -22,46 +22,47 @@
         <div class="card">
         <div class="card-body">
             <h5 class="card-title">Danh sách thương hiệu</h5>
-            <table class="table table-borderless table-bordered">
-                <thead>
-                    <tr>
-                        <th style="text-align: center; background-color: #12236d; color: white" scope="col">STT</th>
-                        <th style="text-align: center; background-color: #12236d; color: white" scope="col">Thương hiệu</th>
-                        <th style="text-align: center; background-color: #12236d; color: white" scope="col">Phân khúc</th>
-                        <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng dự án</th>
-                        <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng vật tư</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $stt = 1; @endphp
-                    @foreach ($brands as $brand)
-                        @php $brandSegmentsCount = $brand->segments->count(); @endphp
-                        @foreach ($brand->segments as $index => $segment)
-                            <tr>
-                                @if ($index == 0) {{-- Chỉ thêm cột này cho hàng đầu tiên của mỗi thương hiệu --}}
-                                    <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
-                                    <td style="text-align: center;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
-                                @endif
-                                <td style="text-align: center;">
-                                    <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
-                                </td>
-                                <td style="text-align: center;">{{ $segment->projects->count() }}</td>
-                                <td style="text-align: center;">
-                                    @php
-                                    $totalSupplies = $segment->projects->reduce(function ($carry, $project) {
-                                        return $carry + $project->orders->reduce(function ($carryOrder, $order) {
-                                            return $carryOrder + $order->supplies->sum('soluong');
+            <div class="table-responsive">
+                <table class="table table-borderless table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">STT</th>
+                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Thương hiệu</th>
+                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Phân khúc</th>
+                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng dự án</th>
+                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng vật tư</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $stt = 1; @endphp
+                        @foreach ($brands as $brand)
+                            @php $brandSegmentsCount = $brand->segments->count(); @endphp
+                            @foreach ($brand->segments as $index => $segment)
+                                <tr>
+                                    @if ($index == 0) {{-- Chỉ thêm cột này cho hàng đầu tiên của mỗi thương hiệu --}}
+                                        <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
+                                        <td style="text-align: center;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
+                                    @endif
+                                    <td style="text-align: center;">
+                                        <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
+                                    </td>
+                                    <td style="text-align: center;">{{ $segment->projects->count() }}</td>
+                                    <td style="text-align: center;">
+                                        @php
+                                        $totalSupplies = $segment->projects->reduce(function ($carry, $project) {
+                                            return $carry + $project->orders->reduce(function ($carryOrder, $order) {
+                                                return $carryOrder + $order->supplies->sum('soluong');
+                                            }, 0);
                                         }, 0);
-                                    }, 0);
-                                    @endphp
-                                    {{ $totalSupplies }}
-                                </td>
-                            </tr>
+                                        @endphp
+                                        {{ $totalSupplies }}
+                                    </td>
+                                </tr>
+                            @endforeach
                         @endforeach
-                    @endforeach
-                </tbody>
-            </table>
-
+                    </tbody>
+                </table>
+            </div>
 
 
         </div>

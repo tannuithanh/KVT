@@ -7,6 +7,8 @@ use App\Models\Supply;
 use App\Models\Project;
 use App\Models\Provider;
 use App\Models\Order;
+use App\Models\Brand;
+use App\Models\Segment;
 use App\Models\Transaction;
 use Exception;
 use Illuminate\Http\Request;
@@ -33,29 +35,24 @@ class Insite extends Controller
         if (!$project) {
             abort(404, 'Dự án không tìm thấy.');
         }
-        $totalOrdersDanhan = 0;
-        $totalOrdersChuanhan = 0;
-        $totalOrdersDaxuat = 0;
-        $orders = $project->orders->map(function($order) {
+        $orders = $project->orders->map(function($order) use (&$totalOrdersDanhan, &$totalOrdersChuanhan, &$totalOrdersDaxuat) {
             $order->total_supplies = $order->supplies->sum('soluong');
             $order->total_danhan = $order->supplies->sum(function($supply) {
                 return $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
             });
-            $order->total_chuanhan = $order->supplies->sum(function($supply) {
-                return $supply->transactions->where('loaigiaodich', 'Chưa nhận')->sum('soluong');
-            });
             $order->total_daxuat = $order->supplies->sum(function($supply) {
                 return $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
             });
-            if ($order->total_danhan > 0) {
-                $totalOrdersDanhan++;
-            }
-            if ($order->total_chuanhan > 0) {
-                $totalOrdersChuanhan++;
-            }
-            if ($order->total_daxuat > 0) {
-                $totalOrdersDaxuat++;
-            }
+
+            $order->total_chuanhan = $order->supplies->sum(function($supply) {
+                $totalReceived = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+
+                return $supply->soluong - $totalReceived;
+            });
+
+            $totalOrdersDanhan += $order->total_danhan;
+            $totalOrdersChuanhan += $order->total_chuanhan;
+            $totalOrdersDaxuat += $order->total_daxuat;
             return $order;
         });
         if ($sodonhangSelect || $nhacungcapSelect || $nhacungcapSuppeliesSelect) {
@@ -249,7 +246,7 @@ class Insite extends Controller
     }
 
     public function suavattu(Request $request) {
-        // dd($request->toarray());
+        dd($request->toarray());
         // Validation và lấy dữ liệu từ request
         $validatedData = $request->validate([
             'OrderEdit' => 'required|integer',
@@ -289,10 +286,8 @@ class Insite extends Controller
 
         $suppliesDetail = $supplies->map(function ($supply) use (&$totalSupplies, &$totalDanhan, &$totalChuanhan, &$totalDaxuat) {
             $danhan = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
-            $chuanhan = $supply->transactions->where('loaigiaodich', 'Chưa nhận')->sum('soluong');
             $daxuat = $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
-
-            // Cộng dồn vào tổng số lượng cho mỗi loại giao dịch
+            $chuanhan = $supply->soluong - $danhan;
             $totalSupplies += $supply->soluong;
             $totalDanhan += $danhan;
             $totalChuanhan += $chuanhan;
@@ -425,9 +420,11 @@ class Insite extends Controller
     }
 
     public function suavattuchitiet(Request $request){
+        // dd($request->toarray());
         $id = $request->id;
-        $newQuantity = $request->id;
-        $supply = Supply::find($id);
+        $newQuantity = $request->soluong;
+        $supply = Supply::with(['transactions'])->where('id', $id)->first();
+
         if (!$supply) {
             return response()->json(['error' => 'Vật tư không tồn tại.'], 404);
         }
@@ -437,6 +434,9 @@ class Insite extends Controller
                 return response()->json(['error' => 'Vật tư này đã giao dịch, bạn không thể giảm số lượng.'], 400);
             }
         }
+        $danhan = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+        $daxuat = $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+        $chuanhan = $request->soluong - $danhan;
         $barcodeHtml = BarcodeDNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33);
         $supply->update([
             'tenvattu' => $request->tenvattu,
@@ -450,7 +450,9 @@ class Insite extends Controller
             'success' => 'Cập nhật vật tư thành công.',
             'barcodeHtml' => $barcodeHtml,
             'id' => $supply->id,
-            // Bạn có thể trả về thêm thông tin nếu cần
+            'danhan' => $danhan,
+            'daxuat' => $daxuat,
+            'chuanhan' => $chuanhan,
         ]);
     }
 
@@ -496,6 +498,61 @@ class Insite extends Controller
         ]);
     }
 
+    public function timkiemvattuchitiet(Request $request) {
+        // dd($request->toarray());
+        // Bỏ qua orderId vì chúng ta đang tìm kiếm trên toàn bộ cơ sở dữ liệu
+        $query = Supply::with(['transactions'])->where('order_id', $request->orderId);
+
+        if ($request->filled('tenvattu')) {
+            $query->where('tenvattu', 'like', '%' . $request->tenvattu . '%');
+        }
+
+        if ($request->filled('maso')) {
+            $query->where('maso', $request->maso);
+        }
+
+        if ($request->filled('donvitinh')) {
+            $query->where('donvitinh', $request->donvitinh);
+        }
+
+        $supplies = $query->get();
+
+        $totalSupplies = $totalDanhan = $totalChuanhan = $totalDaxuat = 0;
+
+        $suppliesDetail = $supplies->map(function ($supply) use (&$totalSupplies, &$totalDanhan, &$totalChuanhan, &$totalDaxuat) {
+            $danhan = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+            $daxuat = $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+            $chuanhan = $supply->soluong - $danhan;
+
+            $totalSupplies += $supply->soluong;
+            $totalDanhan += $danhan;
+            $totalChuanhan += $chuanhan;
+            $totalDaxuat += $daxuat;
+
+            // Giả sử bạn vẫn muốn tạo mã vạch cho mỗi vật tư
+            $barcodeHtml = BarcodeDNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33); // Thay thế bằng cách thực tế tạo mã vạch của bạn
+
+            return [
+                'id' => $supply->id,
+                'tenvattu' => $supply->tenvattu,
+                'maso' => $supply->maso,
+                'donvitinh' => $supply->donvitinh,
+                'soluong' => $supply->soluong,
+                'danhan' => $danhan,
+                'chuanhan' => $chuanhan,
+                'daxuat' => $daxuat,
+                'barcodeHtml' => $barcodeHtml,
+            ];
+        });
+
+        return response()->json([
+            'supplies' => $suppliesDetail,
+            'totalSupplies' => $totalSupplies,
+            'totalDanhan' => $totalDanhan,
+            'totalChuanhan' => $totalChuanhan,
+            'totalDaxuat' => $totalDaxuat,
+        ]);
+    }
 // NHẬP KHO
     public function listNhapKho($idProject,Request $request){
         $sodonhangSelect = $request->get('sodonhangSelect');
@@ -511,28 +568,27 @@ class Insite extends Controller
         $totalOrdersDanhan = 0;
         $totalOrdersChuanhan = 0;
         $totalOrdersDaxuat = 0;
-        $orders = $project->orders->map(function($order) {
+        $orders = $project->orders->map(function($order) use (&$totalOrdersDanhan, &$totalOrdersChuanhan, &$totalOrdersDaxuat) {
             $order->total_supplies = $order->supplies->sum('soluong');
             $order->total_danhan = $order->supplies->sum(function($supply) {
                 return $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
             });
-            $order->total_chuanhan = $order->supplies->sum(function($supply) {
-                return $supply->transactions->where('loaigiaodich', 'Chưa nhận')->sum('soluong');
-            });
             $order->total_daxuat = $order->supplies->sum(function($supply) {
                 return $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
             });
-            if ($order->total_danhan > 0) {
-                $totalOrdersDanhan++;
-            }
-            if ($order->total_chuanhan > 0) {
-                $totalOrdersChuanhan++;
-            }
-            if ($order->total_daxuat > 0) {
-                $totalOrdersDaxuat++;
-            }
+
+            $order->total_chuanhan = $order->supplies->sum(function($supply) {
+                $totalReceived = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+
+                return $supply->soluong - $totalReceived;
+            });
+
+            $totalOrdersDanhan += $order->total_danhan;
+            $totalOrdersChuanhan += $order->total_chuanhan;
+            $totalOrdersDaxuat += $order->total_daxuat;
             return $order;
         });
+
         if ($sodonhangSelect || $nhacungcapSelect || $nhacungcapSuppeliesSelect) {
             $orders = $orders->filter(function ($order) use ($sodonhangSelect, $nhacungcapSelect, $nhacungcapSuppeliesSelect) {
                 $matchesSodonhang = $sodonhangSelect ? $order->sodonhang == $sodonhangSelect : true;
@@ -615,4 +671,136 @@ class Insite extends Controller
             'soluong' => $transaction ? $transaction->soluong : 0
         ]);
     }
+
+    public function laythongtinvattu(Request $request){
+        $ids = $request->ids;
+        $supplies = Supply::whereIn('id', $ids)->get();
+
+        $data = $supplies->map(function($supply) {
+            $barcodeHtml = BarcodeDNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33);
+            return [
+                'tenvattu' => $supply->tenvattu,
+                'maso' => $supply->maso,
+                'donvitinh' => $supply->donvitinh,
+                'soluong' => $supply->soluong,
+                'barcode' => $barcodeHtml,
+            ];
+        });
+        return response()->json($data);
+    }
+
+// TỒN kho
+    public function trangTonKho(Request $request){
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        $module = $request->query('module', 'defaultModule');
+        return view('Warehouse Management.Inside.quanLyTonKho', compact('user','module'));}
+
+    public function slectedPhanKhuc(Request $request){
+        $thuongHieuId = $request->thuongHieuId;
+        $brand = Brand::find($thuongHieuId);
+        if (!$brand) {
+            return response()->json(['message' => 'Thương hiệu không tồn tại'], 404);
+        }
+        $segments = $brand->segments()->get(['id', 'name']);
+        return response()->json($segments);
+    }
+
+    public function slectedDuAn(Request $request){
+        $segmentId = $request->segmentId;
+        $segment = Segment::find($segmentId);
+
+        if (!$segment) {
+            return response()->json(['message' => 'Phân khúc không tồn tại'], 404);
+        }
+
+        $projects = $segment->projects()->get(['id', 'name']);
+
+        return response()->json($projects);
+    }
+
+    public function listTonKho(Request $request){
+        $duAnId = $request->duAnId;
+        $phanKhucId = $request->phanKhucId;
+        $thuongHieuId = $request->thuongHieuId;
+        $donHangId = $request->donHangId;
+
+        // Lấy thông tin dự án, phân khúc, và thương hiệu dựa trên ID
+        $project = Project::find($duAnId);
+        $segment = Segment::find($phanKhucId);
+        $brand = Brand::find($thuongHieuId);
+
+        if (!$project || !$segment || !$brand) {
+            return response()->json(['message' => 'Thông tin không tồn tại'], 404);
+        }
+
+        $ordersQuery = $project->orders();
+
+        // Nếu donHangId có giá trị, chỉ lấy các supplies từ đơn hàng đó
+        if ($donHangId) {
+            $ordersQuery = $ordersQuery->where('id', $donHangId);
+        }
+
+        $orders = $ordersQuery->with(['supplies' => function($query) {
+            $query->with(['transactions']);
+        }])->get();
+
+        $data = [
+            'brand' => [
+                'id' => $brand->id,
+                'name' => $brand->name,
+            ],
+            'segment' => [
+                'id' => $segment->id,
+                'name' => $segment->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'orders' => $orders->map(function ($order) {
+                    return [
+                        'id' => $order->id,
+                        'sodonhang' => $order->sodonhang,
+                        'nhacungcap' => $order->nhacungcap,
+                        'chiphi' => $order->chiphi,
+                        'noidung' => $order->noidung,
+                        'ghichu' => $order->ghichu,
+                        'supplies' => $order->supplies->map(function ($supply) {
+                            $danhan = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+                            $daxuat = $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                            $soLuongTon = $danhan - $daxuat;
+                            return [
+                                'id' => $supply->id,
+                                'tenvattu' => $supply->tenvattu,
+                                'maso' => $supply->maso,
+                                'donvitinh' => $supply->donvitinh,
+                                'soluongTon' => $soLuongTon,
+                                'note' => $supply->note,
+                                'status' => $supply->status,
+                            ];
+                        }),
+                    ];
+                }),
+            ]
+        ];
+
+        return response()->json($data);
+    }
+
+
+    public function selectedDonHang(Request $request){
+        $projectId = $request->projectId;
+        $orders = Order::where('project_id', $projectId)->get();
+        // dd($orders->toarray());
+        return response()->json($orders);
+    }
+
+    public function quetBarcodeNhapKho(Request $request){
+        // Lấy mảng các ID được gửi lên từ request
+        $selectedItems = $request->input('selectedItems', []);
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        $supplies = Supply::with('order')->whereIn('id', $selectedItems)->get();
+        // dd($supplies->toArray());
+        return view('Warehouse Management.Inside.nhapKhoBarcode', compact('supplies','user'));
+    }
+
 }

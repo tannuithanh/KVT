@@ -31,10 +31,12 @@ class SuppliesImport implements ToModel
     }
 
     public function model(array $row){
+
         $this->rowNumber++;
         if ($this->rowNumber < 4) {
             return null;
         }
+        // dd($row);
         if (empty($row[1])) {
             return null;
         }

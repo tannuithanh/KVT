@@ -27,3 +27,5 @@ use Illuminate\Support\Facades\Route;
     Route::POST('/suavattuchitiet', [Insite::class, 'suavattuchitiet'])->name('suavattuchitiet')->middleware('auth');
 
     Route::POST('/lichsuvattu', [Insite::class, 'lichsuvattu'])->name('lichsuvattu')->middleware('auth');
+
+    Route::POST('/timkiemvattuchitiet', [Insite::class, 'timkiemvattuchitiet'])->name('timkiemvattuchitiet')->middleware('auth');

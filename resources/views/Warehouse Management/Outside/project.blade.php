@@ -29,39 +29,43 @@
             @if (in_array($user->appFunction->id, [3, 5]))
                 <button type="button" class="btn btn-outline-primary add-project" data-bs-toggle="modal" data-bs-target="#smallModal">+ Thêm dự án</button>
             @endif
-            <table class="table table-borderless table-bordered mt-2">
-            <thead>
-                <tr>
-                    <th style="vertical-align: middle; text-align: center;" scope="col" >STT</th>
-                    <th style="vertical-align: middle; text-align: center;" scope="col">Tên dự án</th>
-                    <th style="vertical-align: middle; text-align: center;" scope="col">Mô tả dự án</th>
-                    <th style="vertical-align: middle; text-align: center;" scope="col">Ngày tạo</th>
-                    <th style="vertical-align: middle; text-align: center;" scope="col">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $stt = 1; @endphp
-                @foreach ($projects as $value)
+            <div class="table-responsive">
+                <table class="table table-borderless table-bordered mt-2">
+                <thead>
                     <tr>
-                        <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
-                        @if ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý kế hoạch")
-                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                        @elseif ((in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1) && $module=="Nhập kho")
-                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                        @elseif ((in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1) && $module=="Xuất kho")
-                            <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                        @endif
-                        <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
-                        <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
-                        <td style="vertical-align: middle; text-align: center" scope="col">
-                            @if (in_array($user->appFunction->id, [3, 5]))
-                                <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project" data-bs-toggle="modal" data-id="{{$value->id}}" data-name="{{$value->name}}" data-description="{{$value->description}}">Sửa</button>
-                                <button class="btn btn-sm btn-danger delete-project" data-id="{{$value->id}}">Xóa</button>
-                            @endif
-                        </td>
+                        <th style="vertical-align: middle; text-align: center;" scope="col" >STT</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Tên dự án</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Mô tả dự án</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Ngày tạo</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Thao tác</th>
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
+                <tbody>
+                    @php $stt = 1; @endphp
+                    @foreach ($projects as $value)
+                        <tr>
+                            <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
+                            @if ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý đơn hàng")
+                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                            @elseif ((in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1) && $module=="Nhập kho")
+                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                            @elseif ((in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1) && $module=="Xuất kho")
+                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                            @elseif ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý tồn kho")
+                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                            @endif
+                            <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
+                            <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
+                            <td style="vertical-align: middle; text-align: center" scope="col">
+                                @if (in_array($user->appFunction->id, [3, 5]))
+                                    <button class="btn btn-sm btn-primary edit-project-model" data-bs-target="#Edit-project" data-bs-toggle="modal" data-id="{{$value->id}}" data-name="{{$value->name}}" data-description="{{$value->description}}">Sửa</button>
+                                    <button class="btn btn-sm btn-danger delete-project" data-id="{{$value->id}}">Xóa</button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </div>
         </table>
         </div>
         </div>
