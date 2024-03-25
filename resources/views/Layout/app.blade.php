@@ -70,15 +70,13 @@
         </div>
     </div>
 <body>
-
+    <iframe id="printFrame" style="display: none;"></iframe>
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center" style="background-color: #05438a;color: white !important; font-family:Arial, Helvetica, sans-serif " >
 
-    <div class="d-flex align-items-center justify-content-between" >
-        <a class="logo d-flex align-items-center bg-rounded-white" style="text-align: center;border-radius: 30px; align-items: center; background-color: white; justify-content: center; padding: 5px;">
-            <div style="text-align: center;">
-                <img src="{{asset('assets/img/logo.png')}}" alt="" style="max-height: 25px ">
-            </div>
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="{{ route('dashboard') }}" class="logo d-flex align-items-center justify-content-center" style="text-align: center; border-radius: 30px; background-color: white; padding: 5px;">
+            <img src="{{ asset('assets/img/logo.png') }}" alt="" style="max-height: 25px;">
         </a>
         <i class="bi bi-list toggle-sidebar-btn" style="color: white"></i>
     </div><!-- End Logo -->
@@ -215,12 +213,13 @@
   <!-- ======= Sidebar ======= -->
   @php
     $currentRoute = Route::currentRouteName();
-    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listBrand', 'listProject','listWarehouse','listNhapKho','trangTonKho']);
+    $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listExportWarehouse','listBrand', 'listProject','listWarehouse','listNhapKho','trangTonKho']);
     $isActiveDashboard = $currentRoute == 'dashboard';
     // Định nghĩa isActivePlanManagement dựa trên điều kiện của bạn
     $module = $module ?? 'default-value';
     $quanLyDonHang = $module == 'Quản lý đơn hàng';
     $quanLyTonKho = $module == 'Quản lý tồn kho';
+    $xuatkho = $module == 'Xuất kho';
     $isActiveWarehouseEntry = $module == 'Nhập kho'
   @endphp
 
@@ -249,7 +248,7 @@
               </li>
           </ul>
         @endif
-        @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1)
+        @if ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin==1) && $user->department_id==4)
           <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{{route('trangTonKho', ['module' => 'Quản lý tồn kho'])}}" class="{{ $quanLyTonKho ? 'active' : '' }}">
@@ -270,12 +269,15 @@
         @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1)
             <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
                 <li>
-                    <a href="{{route('listBrand', ['module' => 'Xuất kho'])}}" >
+                    <a href="{{route('listBrand', ['module' => 'Xuất kho'])}}" class="{{ $xuatkho ? 'active' : '' }}">
                         <i class="bi bi-circle"></i><span>Xuất kho</span>
                     </a>
                 </li>
             </ul>
         @endif
+
+
+
 
       </li>
     </ul>

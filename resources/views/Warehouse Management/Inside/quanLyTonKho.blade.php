@@ -53,334 +53,502 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="filter-box mt-3">
-                        <div class="row">
-                            <div class="col-sm-2">
-                                <select class="form-select thuonghieu" aria-label="Default select example">
-                                    <option value="">Chọn thương hiệu</option>
-                                    <option value="1">Xe Bus</option>
-                                    <option value="2">Xe Tải</option>
-                                    <option value="3">Xe du lịch</option>
-                                    <option value="4">Xe Royal</option>
-                                </select>
+                  <h5 class="card-title">Quản lý tồn kho</h5>
+                            <div class="filter-box mt-1">
+                                <div class="row">
+                                    <div class="col-6 col-sm-2">
+                                        <select class="form-select thuongHieuDonHang" aria-label="Default select example">
+                                            <option value="">Chọn thương hiệu</option>
+                                            <option value="1">Xe Bus</option>
+                                            <option value="2">Xe Tải</option>
+                                            <option value="3">Xe du lịch</option>
+                                            <option value="4">Xe Royal</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-sm-2">
+                                        <select class="form-select phanKhucDonHang" aria-label="Default select example" disabled>
+                                            <option selected="">Chọn phân khúc</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-sm-2">
+                                        <select class="form-select duAnDonHang" aria-label="Default select example" disabled>
+                                            <option selected="">Chọn dự án</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-sm-2">
+                                        <select class="donHangChiTiet" aria-label="Default select example">
+                                            <option selected="">Chọn đơn hàng</option>
+                                            @foreach($orders as $order)
+                                                <option value="{{ $order->id }}">{{ $order->sodonhang }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-6 col-sm-2">
+                                        <button type="submit" id="timkiemTonKhoDonHang" class="btn btn-primary" style="margin-left: -5px">Tìm kiếm</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-sm-2">
-                                <select class="form-select phankhuc" aria-label="Default select example" disabled>
-                                    <option selected="">Chọn phân khúc</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <select class="form-select duan" aria-label="Default select example" disabled>
-                                    <option selected="">Chọn dự án</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2" style="width: 10%">
-                                <select class="donhang" aria-label="Default select example" disabled>
-                                    <option selected="">Chọn đơn hàng</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="submit" id="timkiemTonKho" class="btn btn-primary" style="margin-left: -5px">Tìm kiếm</button>
-                            </div>
+                            <div class="table-responsive">
+                                <label  id="labelThuongHieuDonHang">Thương Hiệu:...</label> | <span  id="labelPhanKhucDonHang">Phân khúc:...</span> | <span  id="labelDuAnDonHang">Dự án:...</span>
+                                <table class="table table-borderless table-bordered table-hover mt-1" style="max-height: 400px;" id="bangTonKhoTheoDonHang" >
+                                    <thead>
+                                            <tr>
+                                                <th style="text-align: center"  scope="col">Stt</th>
+
+                                                <th style="text-align: center"  scope="col">Đơn hàng</th>
+                                                <th style="text-align: center"  scope="col">Tổng</th>
+                                                <th style="text-align: center"  scope="col">Nhập</th>
+                                                <th style="text-align: center"  scope="col">Xuất</th>
+                                                <th style="text-align: center"  scope="col">Tồn</th>
+                                            </tr>
+                                    </thead>
+                                    <tbody>
+                                            <tr>
+                                                <td colspan="10" style="text-align: center">Vui lòng chọn dữ liệu</td>
+                                            </tr>
+                                    </tbody>
+                                </table>
                         </div>
                     </div>
-                    <div class="table-responsive">
-                        <label  id="labelThuongHieu">Thương Hiệu:...</label> | <span  id="labelPhanKhuc">Phân khúc:...</span> | <span  id="labelDuAn">Dự án:...</span>
-                        <table class="table table-borderless table-bordered mt-1" id="bangTonKho">
-                            <thead>
-                                    <tr>
-                                        <th style="text-align: center"  scope="col">Stt</th>
-
-                                        <th style="text-align: center"  scope="col">Mã đơn hàng</th>
-                                        <th style="text-align: center"  scope="col">Tên vật tư</th>
-                                        <th style="text-align: center"  scope="col">Mã vật tư</th>
-                                        <th style="text-align: center"  scope="col">ĐVT</th>
-                                        <th style="text-align: center"  scope="col">số lượng tồn</th>
-                                    </tr>
-                            </thead>
-                            <tbody>
-                                    <tr>
-                                        <td colspan="7" style="text-align: center">Vui lòng chọn dữ liệu</td>
-                                    </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+              </div>
         </div>
     </div>
 </section>
+<!-- MODAL VẬT TƯ CHI TIẾT -->
+    <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vật tư chi tiết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-box mt-3">
+                    <div class="row">
+                        <div class="col-6 col-md-2" >
+                            <select class="tenvattuchitiet" aria-label="Default select example" >
+                                <option selected="">Tên vật tư</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2" >
+                            <select class="masochitiet" aria-label="Default select example" >
+                                <option selected="">Mã số</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2" >
+                            <select class="form-select donvitinhchitiet" aria-label="Default select example" >
+                                <option selected="">Chọn đơn vị tính</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <button type="submit" id="timkiemVatTuChiTiet" class="btn btn-primary" style="margin-left: -5px">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <h6 class="modal-title" id="orderTitle">Đơn hàng:</h6>
+                    <span style="margin-left: 8px;">|</span>
+                    <h6 style="margin-left: 8px;" class="modal-title" id="tongsovattu">Tổng vật tư:</h6>
+                    <span style="margin-left: 8px;">|</span>
+                    <h6 style="margin-left: 8px;" class="modal-title" id="tongdanhan">Tổng đã nhận:</h6>
+                    <span style="margin-left: 8px;">|</span>
+                    <h6 style="margin-left: 8px;" class="modal-title" id="tongchuanhan">Tổng chưa nhận:</h6>
+                    <span style="margin-left: 8px;">|</span>
+                    <h6 style="margin-left: 8px;" class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-bordered table-hover danhmucvattuchitiet">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center; vertical-align: middle;">STT</th>
+                            <th style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                            <th style="text-align: center; vertical-align: middle;">Mã số</th>
+                            <th style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
+                            <th style="text-align: center; vertical-align: middle;">Số lượng nhận</th>
+                            <th style="text-align: center; vertical-align: middle;">Thực nhận</th>
+                            <th style="text-align: center; vertical-align: middle;">ghi chú</th>
+                            <th style="text-align: center; vertical-align: middle;">Mã vật tư trên đơn hàng</th>
+                            <th style="text-align: center; vertical-align: middle;">Số đơn hàng/hợp đồng</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
 @endsection
 @section('script')
 <script src="{{asset('assets/js/select2.min.js')}}"></script>
-{{-- LẤY PHÂN KHÚC --}}
-    <script>
-        $(document).ready(function(){
-            $('.thuonghieu').change(function(){
-                var phanKhucSelect = $('.phankhuc'); // Chọn select box thứ hai
-                var duanSelect = $('.duan'); // Chọn select box thứ hai
-                var donhangSelect = $('.donhang'); // Chọn select box thứ hai
-                if($(this).val() != ''){
-                    $.ajax({
-                        url: "{{ route('slectedPhanKhuc') }}",
-                        method: 'GET',
-                        data: {thuongHieuId: $(this).val()},
-                        success: function(data){
-                            phanKhucSelect.empty(); // Xóa các option hiện tại
-                            phanKhucSelect.prop('disabled', false); // Kích hoạt select box
+<!-- QUẢN LÝ THEO ĐƠN HÀNG -->
+    {{-- LẤY PHÂN KHÚC --}}
+        <script>
+            $(document).ready(function(){
+                $('.thuongHieuDonHang').change(function(){
+                    var phanKhucSelect = $('.phanKhucDonHang'); // Chọn select box thứ hai
+                    var duanSelect = $('.duAnDonHang'); // Chọn select box thứ hai
+                    var donhangSelect = $('.donHangChiTiet'); // Chọn select box thứ hai
+                    if($(this).val() != ''){
+                        $.ajax({
+                            url: "{{ route('slectedPhanKhuc') }}",
+                            method: 'GET',
+                            data: {thuongHieuId: $(this).val()},
+                            success: function(data){
+                                phanKhucSelect.empty(); // Xóa các option hiện tại
+                                phanKhucSelect.prop('disabled', false); // Kích hoạt select box
 
-                            // Thêm option mặc định
-                            phanKhucSelect.append($('<option>', {
-                                value: '',
-                                text: 'Chọn phân khúc',
-                                selected: true
-                            }));
-
-                            // Lặp qua và thêm các option mới từ dữ liệu trả về
-                            $.each(data, function(index, value){
+                                // Thêm option mặc định
                                 phanKhucSelect.append($('<option>', {
-                                    value: value.id,
-                                    text: value.name
-                                }));
-                            });
-                        }
-                    });
-                } else {
-                    // Nếu không chọn giá trị nào, xóa các option và disable select box
-                    phanKhucSelect.empty(); // Xóa các option hiện tại
-                    phanKhucSelect.prop('disabled', true); // Disable select box
-                    // Thêm lại option mặc định
-                    phanKhucSelect.append($('<option>', {
-                        value: '',
-                        text: 'Chọn phân khúc',
-                        selected: true
-                    }));
-                    duanSelect.empty(); // Xóa các option hiện tại
-                    duanSelect.prop('disabled', true); // Disable select box
-                    // Thêm lại option mặc định
-                    duanSelect.append($('<option>', {
-                        value: '',
-                        text: 'Chọn dự án',
-                        selected: true
-                    }));
-                    donhangSelect.empty(); // Xóa các option hiện tại
-                    donhangSelect.prop('disabled', true); // Disable select box
-                    // Thêm lại option mặc định
-                    donhangSelect.append($('<option>', {
-                        value: '',
-                        text: 'Chọn đơn hàng',
-                        selected: true
-                    }));
-                }
-            });
-        });
-    </script>
-{{-- LẤY DỰ ÁN --}}
-    <script>
-        $(document).ready(function(){
-            $('.phankhuc').change(function(){
-                var segmentId = $(this).val();
-                var projectSelect = $('.duan');
-                projectSelect.empty(); // Xóa các option hiện tại ngay khi có sự thay đổi
-                projectSelect.prop('disabled', true); // Mặc định là disable, cho đến khi có dữ liệu hợp lệ
-
-                if(segmentId != ''){
-                    $.ajax({
-                        url: "{{ route('slectedDuAn') }}",
-                        method: 'GET',
-                        data: {segmentId: segmentId},
-                        success: function(data){
-                            if(data.length > 0){
-                                projectSelect.prop('disabled', false); // Kích hoạt select box khi có dữ liệu
-                                projectSelect.append($('<option>', {
                                     value: '',
-                                    text: 'Chọn dự án',
+                                    text: 'Chọn phân khúc',
                                     selected: true
                                 }));
-                                $.each(data, function(index, project){
-                                    projectSelect.append($('<option>', {
-                                        value: project.id,
-                                        text: project.name
+
+                                // Lặp qua và thêm các option mới từ dữ liệu trả về
+                                $.each(data, function(index, value){
+                                    phanKhucSelect.append($('<option>', {
+                                        value: value.id,
+                                        text: value.name
                                     }));
                                 });
-                            } else {
-                                // Thêm option "Không có dữ liệu" nếu không có dự án nào trong phân khúc
-                                projectSelect.append($('<option>', {
-                                    value: '',
-                                    text: 'Không có dữ liệu',
-                                    selected: true
-                                }));
                             }
-                        }
-                    });
-                } else {
-                    // Nếu không chọn phân khúc nào, reset select box với option mặc định
-                    projectSelect.append($('<option>', {
-                        value: '',
-                        text: 'Chọn dự án',
-                        selected: true
-                    }));
-                }
+                        });
+                    } else {
+                        // Nếu không chọn giá trị nào, xóa các option và disable select box
+                        phanKhucSelect.empty(); // Xóa các option hiện tại
+                        phanKhucSelect.prop('disabled', true); // Disable select box
+                        // Thêm lại option mặc định
+                        phanKhucSelect.append($('<option>', {
+                            value: '',
+                            text: 'Chọn phân khúc',
+                            selected: true
+                        }));
+                        duanSelect.empty(); // Xóa các option hiện tại
+                        duanSelect.prop('disabled', true); // Disable select box
+                        // Thêm lại option mặc định
+                        duanSelect.append($('<option>', {
+                            value: '',
+                            text: 'Chọn dự án',
+                            selected: true
+                        }));
+                        donhangSelect.empty(); // Xóa các option hiện tại
+                        donhangSelect.prop('disabled', true); // Disable select box
+                        // Thêm lại option mặc định
+                        donhangSelect.append($('<option>', {
+                            value: '',
+                            text: 'Chọn đơn hàng',
+                            selected: true
+                        }));
+                    }
+                });
             });
-        });
-    </script>
-{{-- LẤY ĐƠN HÀNG --}}
-    <script>
-        $(document).ready(function(){
-            // Khởi tạo Select2 cho select box đơn hàng ban đầu
-            $('.donhang').select2({
-                placeholder: "Chọn đơn hàng",
-                allowClear: true,
-                width: '100%' // Tùy chỉnh chiều rộng
+        </script>
+    {{-- LẤY DỰ ÁN --}}
+        <script>
+            $(document).ready(function(){
+                $('.phanKhucDonHang').change(function(){
+                    var segmentId = $(this).val();
+                    var projectSelect = $('.duAnDonHang');
+                    projectSelect.empty(); // Xóa các option hiện tại ngay khi có sự thay đổi
+                    projectSelect.prop('disabled', true); // Mặc định là disable, cho đến khi có dữ liệu hợp lệ
+
+                    if(segmentId != ''){
+                        $.ajax({
+                            url: "{{ route('slectedDuAn') }}",
+                            method: 'GET',
+                            data: {segmentId: segmentId},
+                            success: function(data){
+                                if(data.length > 0){
+                                    projectSelect.prop('disabled', false); // Kích hoạt select box khi có dữ liệu
+                                    projectSelect.append($('<option>', {
+                                        value: '',
+                                        text: 'Chọn dự án',
+                                        selected: true
+                                    }));
+                                    $.each(data, function(index, project){
+                                        projectSelect.append($('<option>', {
+                                            value: project.id,
+                                            text: project.name
+                                        }));
+                                    });
+                                } else {
+                                    // Thêm option "Không có dữ liệu" nếu không có dự án nào trong phân khúc
+                                    projectSelect.append($('<option>', {
+                                        value: '',
+                                        text: 'Không có dữ liệu',
+                                        selected: true
+                                    }));
+                                }
+                            }
+                        });
+                    } else {
+                        // Nếu không chọn phân khúc nào, reset select box với option mặc định
+                        projectSelect.append($('<option>', {
+                            value: '',
+                            text: 'Chọn dự án',
+                            selected: true
+                        }));
+                    }
+                });
             });
+        </script>
+    {{-- LẤY ĐƠN HÀNG --}}
+        <script>
+            $(document).ready(function(){
+                // Khởi tạo Select2 cho select box đơn hàng ban đầu
+                $('.donHangChiTiet').select2({
+                    placeholder: "Chọn...",
+                    allowClear: true,
+                    width: '100%' // Tùy chỉnh chiều rộng
+                });
 
-            $('.duan').change(function(){
-                var projectId = $(this).val(); // Lấy ID của dự án được chọn
-                var orderSelect = $('.donhang'); // Chọn select box đơn hàng
-                // Làm mới Select2 bằng cách xóa các option hiện có
-                orderSelect.empty().append('<option></option>'); // Thêm một option trống để giữ placeholder
+                $('.duAnDonHang').change(function(){
+                    var projectId = $(this).val(); // Lấy ID của dự án được chọn
+                    var orderSelect = $('.donHangChiTiet'); // Chọn select box đơn hàng
+                    orderSelect.empty().append('<option></option>'); // Thêm một option trống
 
-                if(projectId != ''){
+                    if(projectId != ''){
+                        $.ajax({
+                            url: "{{ route('selectedDonHang') }}", // Sửa lại route cho đúng nếu cần
+                            method: 'GET',
+                            data: {projectId: projectId}, // Gửi ID dự án như một tham số
+                            success: function(data){
+                                var suppliesSet = new Set();
+                                if(data.length > 0){
+                                    // Thêm các option đơn hàng mới vào select box
+                                    $.each(data, function(index, order){
+                                        var newOption = new Option(order.sodonhang, order.id, false, false);
+                                        orderSelect.append(newOption);
+                                    });
+
+                                    // Cập nhật Select2 cho đơn hàng và vật tư
+                                    orderSelect.prop('disabled', false).select2({
+                                        placeholder: "Chọn đơn hàng",
+                                        allowClear: true,
+                                        width: '100%'
+                                    });
+
+                                } else {
+                                    // Xử lý trường hợp không có dữ liệu đơn hàng
+                                    orderSelect.prop('disabled', true).select2({
+                                        placeholder: "Không có dữ liệu",
+                                        allowClear: true,
+                                        width: '100%'
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        // Khởi tạo lại Select2 với placeholder mặc định nếu không chọn dự án
+                        orderSelect.select2({
+                            placeholder: "Chọn đơn hàng",
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+                });
+            });
+        </script>
+    {{-- TÌM KIẾM THÔNG TIN TỒN KHO --}}
+        <script>
+            $(document).ready(function(){
+                $('#timkiemTonKhoDonHang').click(function(event){
+                    event.preventDefault(); // Ngăn chặn hành vi mặc định của form submit
+
+                    // Lấy giá trị từ các select box, nếu disabled thì gửi giá trị rỗng
+                    var thuongHieuIdDonHang = $('.thuongHieuDonHang').prop('disabled') ? '' : $('.thuongHieuDonHang').val();
+                    var phanKhucIdDonHang = $('.phanKhucDonHang').prop('disabled') ? '' : $('.phanKhucDonHang').val();
+                    var duAnIdDonHang = $('.duAnDonHang').prop('disabled') ? '' : $('.duAnDonHang').val();
+                    var donHangIdChiTiet = $('.donHangChiTiet').prop('disabled') ? '' : $('.donHangChiTiet').val();
+
                     $.ajax({
-                        url: "{{ route('selectedDonHang') }}", // Sửa lại route cho đúng nếu cần
-                        method: 'GET',
-                        data: {projectId: projectId}, // Gửi ID dự án như một tham số
-                        success: function(data){
-                            if(data.length > 0){
-                                // Thêm các option mới vào select box từ dữ liệu nhận được
-                                $.each(data, function(index, order){
-                                    var newOption = new Option(order.sodonhang, order.id, false, false);
-                                    orderSelect.append(newOption).trigger('change');
-                                });
+                        url: "{{ route('listTonKhoDonHang') }}",
+                        type: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            thuongHieuIdDonHang: thuongHieuIdDonHang,
+                            phanKhucIdDonHang: phanKhucIdDonHang,
+                            duAnIdDonHang: duAnIdDonHang,
+                            donHangIdChiTiet: donHangIdChiTiet,
+                        },
+                        success: function(response) {
+                            console.log(response);
+                            // Cập nhật thông tin thương hiệu, phân khúc, dự án nếu có dữ liệu
+                            $('#labelThuongHieuDonHang').text(response.brand ? 'Thương Hiệu: ' + response.brand.name : 'Thương Hiệu: N/A');
+                            $('#labelPhanKhucDonHang').text(response.segment ? 'Phân khúc: ' + response.segment.name : 'Phân khúc: N/A');
+                            $('#labelDuAnDonHang').text(response.project ? 'Dự án: ' + response.project.name : 'Dự án: N/A');
 
-                                // Sau khi cập nhật các option, khởi tạo lại Select2
-                                orderSelect.prop('disabled', false).select2({
-                                    placeholder: "Chọn đơn hàng",
-                                    allowClear: true,
-                                    width: '100%'
-                                });
-                            } else {
-                                // Khởi tạo lại Select2 mà không có option mới nếu không có đơn hàng
-                                orderSelect.prop('disabled', true).select2({
-                                    placeholder: "Không có dữ liệu",
-                                    allowClear: true,
-                                    width: '100%'
-                                });
-                            }
-                        }
-                    });
-                } else {
-                    // Khởi tạo lại Select2 với placeholder mặc định nếu không chọn dự án
-                    orderSelect.select2({
-                        placeholder: "Chọn đơn hàng",
-                        allowClear: true,
-                        width: '100%'
-                    });
-                }
-            });
-        });
-    </script>
-{{-- TÌM KIẾM THÔNG TIN TỒN KHO --}}
-    <script>
-        $(document).ready(function(){
-            $('#timkiemTonKho').click(function(event){
-                event.preventDefault(); // Ngăn chặn hành vi mặc định của form submit
+                            var tableBody = $("#bangTonKhoTheoDonHang tbody");
+                            tableBody.empty();
 
-                // Lấy giá trị từ các select box, nếu disabled thì gửi giá trị rỗng
-                var thuongHieuId = $('.thuonghieu').prop('disabled') ? '' : $('.thuonghieu').val();
-                var phanKhucId = $('.phankhuc').prop('disabled') ? '' : $('.phankhuc').val();
-                var duAnId = $('.duan').prop('disabled') ? '' : $('.duan').val();
-                var donHangId = $('.donhang').prop('disabled') ? '' : $('.donhang').val();
-
-                // Kiểm tra nếu phân khúc rỗng
-                if(!phanKhucId && !duAnId) {
-                    Swal.fire({ // Sử dụng SweetAlert2
-                        title: 'Thông báo',
-                        text: 'Vui lòng chọn phân khúc và dự án!',
-                        icon: 'warning',
-                        confirmButtonText: 'Đóng'
-                    });
-                    return; // Dừng thực thi thêm nếu không chọn phân khúc
-                }else if(!phanKhucId){
-                    Swal.fire({ // Sử dụng SweetAlert2
-                        title: 'Thông báo',
-                        text: 'Vui lòng chọn phân khúc!',
-                        icon: 'warning',
-                        confirmButtonText: 'Đóng'
-                    });
-                    return; // Dừng thực thi thêm nếu không chọn phân khúc
-                }else if(!duAnId){
-                    Swal.fire({ // Sử dụng SweetAlert2
-                        title: 'Thông báo',
-                        text: 'Vui lòng chọn dự án!',
-                        icon: 'warning',
-                        confirmButtonText: 'Đóng'
-                    });
-                    return; // Dừng thực thi thêm nếu không chọn phân khúc
-                }
-
-                $.ajax({
-                    url: "{{ route('listTonKho') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        thuongHieuId: thuongHieuId,
-                        phanKhucId: phanKhucId,
-                        duAnId: duAnId,
-                        donHangId: donHangId,
-                    },
-                    success: function(response) {
-                        $('#labelThuongHieu').text('Thương Hiệu: ' + response.brand.name);
-                        $('#labelPhanKhuc').text('Phân khúc: ' + response.segment.name);
-                        $('#labelDuAn').text('Dự án: ' + response.project.name);
-
-                        var tableBody = $("#bangTonKho tbody");
-                        tableBody.empty();
-
-                        if (response.project.orders.length > 0) {
-                            var orderMap = new Map(); // Sử dụng Map để nhóm các vật tư theo số đơn hàng
-
-                            // Lặp qua và nhóm các vật tư theo số đơn hàng
-                            response.project.orders.forEach(function(order) {
-                                order.supplies.forEach(function(supply) {
-                                    if (!orderMap.has(order.sodonhang)) {
-                                        orderMap.set(order.sodonhang, {
-                                            sodonhang: order.sodonhang,
-                                            supplies: []
-                                        });
-                                    }
-                                    orderMap.get(order.sodonhang).supplies.push(supply);
-                                });
-                            });
-
-                            // Tạo hàng cho mỗi nhóm đơn hàng
-                            var indexstt = 1;
-                            orderMap.forEach(function(order, sodonhang) {
-                                order.supplies.forEach(function(supply, index) {
-                                    var rowSpan = index === 0 ? order.supplies.length : 0; // Chỉ set rowspan cho hàng đầu tiên của mỗi nhóm
-                                    var row = `<tr>
-                                        ${rowSpan ? `<td rowspan="${rowSpan}" style="text-align: center;vertical-align: middle;">${indexstt++}</td>
-                                        <td rowspan="${rowSpan}" style="text-align: center;vertical-align: middle;">${sodonhang}</td>` : ''}
-                                        <td style="text-align: center">${supply.tenvattu}</td>
-                                        <td style="text-align: center">${supply.maso}</td>
-                                        <td style="text-align: center">${supply.donvitinh}</td>
-                                        <td style="text-align: center">${supply.soluongTon}</td>
+                            // Cập nhật bảng đơn hàng
+                            if (response.orders && response.orders.length > 0) {
+                                $.each(response.orders, function(index, order) {
+                                    var stt = index + 1; // Số thứ tự, bắt đầu từ 1
+                                    var row = `<tr data-id="${order.id}">
+                                        <td style="text-align: center">${stt}</td>
+                                        <td style="text-align: center">${order.sodonhang}</td>
+                                        <td style="text-align: center">${order.tongSoLuongNhan + order.tongSoLuongXuat}</td>
+                                        <td style="text-align: center">${order.tongSoLuongNhan}</td>
+                                        <td style="text-align: center">${order.tongSoLuongXuat}</td>
+                                        <td style="text-align: center">${order.soluongTon}</td>
                                     </tr>`;
                                     tableBody.append(row);
                                 });
+                            } else {
+                                tableBody.append('<tr><td colspan="6" style="text-align: center">Không có dữ liệu</td></tr>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(error);
+                        }
+                    });
+                });
+            });
+        </script>
+    {{-- LẤY THÔNG TIN VẬT TƯ CHI TIẾT --}}
+        <script>
+            $(document).ready(function() {
+                    $('#bangTonKhoTheoDonHang tbody').on('click', 'tr', function(event) {
+                        if ($(event.target).closest('.no-modal-trigger').length) {
+                            // Ngăn chặn hiển thị modal khi click vào vùng không mong muốn
+                            return;
+                        }
+
+                        var orderId = $(this).data('id'); // Giả sử mỗi hàng trong bảng có attribute 'data-id' chứa ID của đơn hàng
+
+                        // Thực hiện AJAX call để lấy dữ liệu chi tiết vật tư
+                        $.ajax({
+                            url: "{{ route('DuLieuVatTuChiTiet') }}", // Sửa lại URL theo route của bạn
+                            type: 'POST',
+                            data: {
+                                id: orderId,
+                                _token: '{{ csrf_token() }}' // CSRF token của Laravel
+                            },
+                            success: function(data) {
+                                $('#timkiemVatTuChiTiet').attr('data-id', orderId);
+                                var selectTenVatTu = $('.tenvattuchitiet').empty().append('<option selected="">Tên vật tư</option>');
+                                var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
+                                var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
+
+                                var donvitinhSet = new Set();
+                                $.each(data.supplies, function(index, item) {
+                                    selectTenVatTu.append(new Option(item.tenvattu, item.tenvattu));
+                                    selectMaSo.append(new Option(item.maso, item.maso));
+                                    if (!donvitinhSet.has(item.donvitinh)) {
+                                        selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                        donvitinhSet.add(item.donvitinh);
+                                    }
+                                });
+                                var tbody = $('#danhMucVatTuChiTiet').find('.danhmucvattuchitiet tbody');
+                                tbody.empty();
+                                // Cập nhật các thông tin chi tiết về đơn hàng vào modal
+                                $('#orderTitle').text('Đơn hàng: ' + data.orderName);
+                                $('#tongsovattu').text('Tổng vật tư: ' + data.totalSupplies);
+                                $('#tongdanhan').text('Tổng đã nhận: ' + data.totalDanhan);
+                                $('#tongchuanhan').text('Tổng chưa nhận: ' + data.totalChuanhan);
+
+                                // Thêm dữ liệu vật tư vào bảng trong modal
+                                $.each(data.supplies, function(index, item) {
+                                    console.log(item)
+                                    var row = $('<tr>').append(
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(index + 1),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.tenvattu),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.maso),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.donvitinh),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.soluong),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.danhan),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text(item.ghichu),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text('-'),
+                                        $('<td style="text-align: center; vertical-align: middle;">').text('-')
+                                    );
+                                    tbody.append(row);
+                                });
+
+                                // Hiển thị modal sau khi đã cập nhật xong dữ liệu
+                                $('#danhMucVatTuChiTiet').modal('show');
+                            },
+                            error: function(error) {
+                                console.log(error);
+                                alert('Có lỗi xảy ra');
+                            }
+                        });
+                    });
+
+                    // Cấu hình select2 cho các trường select trong modal sau khi modal được hiển thị
+                    $('#danhMucVatTuChiTiet').on('shown.bs.modal', function() {
+                        $('.tenvattuchitiet, .masochitiet, .donvitinhchitiet').select2({
+                            placeholder: "Chọn...",
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#danhMucVatTuChiTiet')
+                        });
+                    });
+                });
+
+
+        </script>
+    {{-- TÌM KIẾM TÊN VẬT TƯ CHI TIẾT --}}
+    <script>
+        $(document).ready(function(){
+            $("#timkiemVatTuChiTiet").click(function() {
+                var tenvattu = $(".tenvattuchitiet").val() === "Tên vật tư" ? "" : $(".tenvattuchitiet").val();
+                var maso = $(".masochitiet").val() === "Mã số" ? "" : $(".masochitiet").val();
+                var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
+                var orderId = $(this).attr('data-id'); // Đảm bảo đã lưu orderId vào attribute 'data-id' của nút tìm kiếm
+                $.ajax({
+                    url: "{{ route('timkiemvattuchitiet') }}", // Sửa lại URL cho đúng với route của bạn
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        _token: '{{ csrf_token() }}', // CSRF token
+                        tenvattu: tenvattu,
+                        maso: maso,
+                        donvitinh: donvitinh,
+                        orderId: orderId,
+                    },
+                    success: function(data) {
+                        // Xử lý dữ liệu trả về và hiển thị trong bảng
+                        var tbody = $("#danhMucVatTuChiTiet .table-responsive tbody");
+                        tbody.empty(); // Xóa nội dung hiện tại của tbody
+                        if(data.supplies && data.supplies.length > 0){
+                            $.each(data.supplies, function(index, supply) {
+                                tbody.append(
+                                    `<tr>
+                                        <td style="text-align:center;vertical-align: middle">${index + 1}</td>
+                                        <td style="text-align:center;vertical-align: middle">${supply.tenvattu}</td>
+                                        <td style="text-align:center;vertical-align: middle">${supply.maso}</td>
+                                        <td style="text-align:center;vertical-align: middle">${supply.donvitinh}</td>
+                                        <td style="text-align:center;vertical-align: middle">${supply.soluong}</td>
+                                        <td style="text-align:center;vertical-align: middle">${supply.danhan}</td>
+                                        <td style="text-align:center;vertical-align: middle">-</td>
+                                        <td style="text-align:center;vertical-align: middle">-</td>
+                                        <td style="text-align:center;vertical-align: middle">-</td>
+                                    </tr>`
+                                );
                             });
                         } else {
-                            tableBody.append('<tr><td colspan="7" style="text-align: center">Không có dữ liệu</td></tr>');
+                            tbody.append(
+                                `<tr>
+                                    <td colspan="9" style="text-align:center;vertical-align: middle">Không có dữ liệu</td>
+                                </tr>`
+                            );
                         }
                     },
                     error: function(xhr, status, error) {
-                        // Xử lý lỗi nếu có
-                        console.error(error);
+                        alert("Có lỗi xảy ra: " + error);
                     }
                 });
             });
         });
     </script>
-
 
 @endsection

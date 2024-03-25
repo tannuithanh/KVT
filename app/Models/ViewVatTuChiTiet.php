@@ -5,16 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class ViewVatTuChiTiet extends Model
 {
     use HasFactory;
 
-    // Khai báo các cột trong bảng transactions
+    protected $table = 'view_vattuchitiet'; // Đảm bảo rằng Laravel sử dụng đúng tên bảng
+
     protected $fillable = [
-        'supply_id', 'soluong', 'loaigiaodich', 'ngaygiaodich', 'ghichu'
+        'supply_id',
+        'soluongnhapkho',
+        'soluongdatchatluong',
+        'status',
     ];
 
-    // Quan hệ với bảng supplies
     public function supply()
     {
         return $this->belongsTo(Supply::class, 'supply_id');

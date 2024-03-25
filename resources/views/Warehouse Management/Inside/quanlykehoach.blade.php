@@ -76,9 +76,9 @@
                         <button class="btn btn-outline-primary" type="button" data-bs-target="#themdanhmucvattubangfileexcel" data-bs-toggle="modal">
                             + Đơn hàng và vật tư
                         </button>
-                        <button class="btn btn-outline-primary" type="button" data-bs-target="#themdonhangthucong" data-bs-toggle="modal">
+                        {{-- <button class="btn btn-outline-primary" type="button" data-bs-target="#themdonhangthucong" data-bs-toggle="modal">
                             + Đơn hàng thủ công
-                        </button>
+                        </button> --}}
                         <!-- Nội dung thông báo thành công -->
                           @if(session('success'))
                               <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
@@ -94,22 +94,24 @@
                           <div class="table-responsive">
                             <table class="table table-borderless table-bordered table-hover mt-2">
                                 <thead>
-                                        <tr>
+                                    <tr>
                                         <th style="text-align: center" rowspan="2" scope="col">Stt</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
                                         <th style="text-align: center" rowspan="2" scope="col">NCC</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
-                                        <th style="text-align: center" colspan="4" scope="col">Tình trạng</th>
+                                        <th style="text-align: center" colspan="5" scope="col">Tình trạng</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
-                                      </tr>
-                                      <tr>
-                                          <th style="text-align: center" scope="col">Tổng</th>
-                                          <th style="text-align: center" scope="col">Đã nhận</th>
-                                          <th style="text-align: center" scope="col">Chưa nhận</th>
-                                          <th style="text-align: center" scope="col">Đã xuất</th>
-                                      </tr>
+                                    </tr>
+                                    <tr>
+
+                                            <th style="text-align: center" scope="col">Tổng</th>
+                                            <th style="text-align: center" scope="col">Đã nhận</th>
+                                            <th style="text-align: center" scope="col">Lưu kho</th>
+                                            <th style="text-align: center" scope="col">Chưa nhận</th>
+                                            <th style="text-align: center" scope="col">Đã xuất</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                   @php
@@ -122,18 +124,13 @@
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">-</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_chuanhan ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_daxuat ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->chiphi }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->ghichu }}</td>
                                             <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
-                                              <button class="btn btn-sm btn-primary edit-supperlies-model"
-                                                  data-bs-toggle="modal" data-note="{{ $order->ghichu }}"
-                                                  data-noidung="{{$order->noidung}}"
-                                                  data-sodonhang="{{$order->sodonhang}}"
-                                                  data-id="{{$order->id}}"
-                                                  data-bs-target="#EditSupperlies">Sửa</button>
                                               <button class="btn btn-sm btn-danger delete-supplies" data-id="{{$order->id}}">Xóa</button>
                                             </td>
                                         </tr>
@@ -284,7 +281,7 @@
     </div>
   </div>
 {{-- SỬA ĐƠN HÀNG THỦ CÔNG --}}
-  <div class="modal fade" id="EditSupperlies" tabindex="-1" style="display: none;" aria-hidden="true">
+  {{-- <div class="modal fade" id="EditSupperlies" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -336,14 +333,14 @@
           </form>
       </div>
     </div>
-  </div>
+  </div> --}}
 {{-- MODAL DANH MỤC VẬT TƯ--}}
     <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
+        <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title">Vật tư chi tiết</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Vật tư chi tiết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="filter-box mt-3">
@@ -379,32 +376,37 @@
                     <span style="margin-left: 8px;">|</span>
                     <h6 style="margin-left: 8px;" class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                 </div>
-                <table class="table table-bordered table-hover danhmucvattuchitiet">
-                    <thead>
-                    <tr>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
-                        <th colspan="4" style="text-align: center;">Tình trạng</th>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
-                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
-                    </tr>
-                    <tr>
-                        <th style="text-align: center; vertical-align: middle;">Tổng</th>
-                        <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
-                        <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
-                        <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-bordered table-hover danhmucvattuchitiet">
+                        <thead>
+                        <tr>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
+                            <th colspan="5" style="text-align: center;">Tình trạng</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
+                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center; vertical-align: middle;">Tổng</th>
+                            <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
+                            <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
+                            <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
+                            <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
+                        </tr>
+                        </thead>
+                        <tbody>
 
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button>
+                        </tbody>
+                    </table>
                 </div>
+                {{-- <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button> --}}
+
                 <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                </div>
             </div>
         </div>
         </div>
@@ -438,6 +440,10 @@
                         <label for="inputName5" class="form-label">số lượng</label>
                         <input type="number" class="form-control" name="soluongvattuthemvao-edit">
                     </div>
+                    <div class="col-md-12">
+                        <label for="inputName5" class="form-label">ghi chú</label>
+                        <textarea type="number" class="form-control" name="ghichuvattuchitiet-edit"></textarea>
+                    </div>
                     </div>
                     <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -448,7 +454,7 @@
         </div>
     </div>
 {{-- THÊM VẬT TƯ THỦ CÔNG --}}
-    <div class="modal fade" style="background-color: #000000bb" id="themvattuthucong" tabindex="-1" style="display: none;" aria-hidden="true">
+    {{-- <div class="modal fade" style="background-color: #000000bb" id="themvattuthucong" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -476,6 +482,10 @@
                         <label for="inputName5" class="form-label">số lượng</label>
                         <input type="number" class="form-control" name="soluongvattuthemvao">
                     </div>
+                    <div class="col-md-12">
+                        <label for="inputName5" class="form-label">ghi chú</label>
+                        <textarea type="number" class="form-control" name="ghichuvattuchitiet"></textarea>
+                    </div>
                     </div>
                     <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -483,7 +493,7 @@
                     </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 {{-- LỊCH SỬ GIAO DỊCH VẬT TƯ --}}
     <div class="modal fade" style="background-color: #000000bb" id="lichsugiaodich" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -493,29 +503,30 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body ">
-                    <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Loại giao dịch</th>
-                            <th colspan="4" style="text-align: center;">Ngày giao dịch</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Ghi chú</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th style="text-align: center; vertical-align: middle;">STT</th>
+                                <th style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                                <th style="text-align: center; vertical-align: middle;">Mã số</th>
+                                <th style="text-align: center; vertical-align: middle;">Loại giao dịch</th>
+                                <th style="text-align: center; vertical-align: middle;">Số lượng</th>
+                                <th style="text-align: center;">Ngày giao dịch</th>
+                                <th style="text-align: center; vertical-align: middle;">Ghi chú</th>
+                            </tr>
+                            </thead>
+                            <tbody>
 
-                        </tbody>
-                    </table>
-
-
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 {{-- THÊM ĐƠN HÀNG THỦ CÔNG --}}
-    <div class="modal fade" id="themdonhangthucong" tabindex="-1" style="display: none;" aria-hidden="true">
+    {{-- <div class="modal fade" id="themdonhangthucong" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -567,9 +578,15 @@
             </form>
         </div>
         </div>
-    </div>
+    </div> --}}
 @endsection
-
+{{-- <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
+    data-orderId="${orderId}"
+    data-id="${item.id}"
+    data-tenvattu="${item.tenvattu}"
+    data-maso="${item.maso}"
+    data-donvitinh="${item.donvitinh}"
+    data-soluong="${item.soluong}">Sửa</button> --}}
 @section('script')
 <script src="{{asset('assets/js/select2.min.js')}}"></script>
   <script>
@@ -634,7 +651,7 @@
     </script>
 
   {{-- SỬA VẬT TƯ --}}
-    <script>
+    {{-- <script>
           $(document).ready(function() {
               $('.edit-supperlies-model').on('click', function() {
                   var id = $(this).data('id');
@@ -654,7 +671,7 @@
           });
 
 
-    </script>
+    </script> --}}
   {{-- HIỂN THỊ MODAL VẬT TƯ CHI TIẾT --}}
     <script>
             $(document).ready(function() {
@@ -693,21 +710,19 @@
                                     var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
                                     var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
 
+                                    var donvitinhSet = new Set();
                                     $.each(data.supplies, function(index, item) {
                                         selectTenVatTu.append(new Option(item.tenvattu, item.tenvattu));
                                         selectMaSo.append(new Option(item.maso, item.maso));
-                                        selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                        if (!donvitinhSet.has(item.donvitinh)) {
+                                            selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                            donvitinhSet.add(item.donvitinh);
+                                        }
                                     });
 
                                     if (item) {
                                         var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
-                                            <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
-                                                data-orderId="${orderId}"
-                                                data-id="${item.id}"
-                                                data-tenvattu="${item.tenvattu}"
-                                                data-maso="${item.maso}"
-                                                data-donvitinh="${item.donvitinh}"
-                                                data-soluong="${item.soluong}">Sửa</button>
+
                                             <button class="btn btn-sm btn-danger xoavattuchitiet"
                                                 data-id="${item.id}">Xóa</button>
                                             </td>`;
@@ -718,10 +733,12 @@
                                             '<td style="text-align:center;vertical-align: middle" class="maso">' + (item.maso) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="donvitinh">' + (item.donvitinh) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="soluong">' + (item.soluong) + '</td>' +
+                                            '<td style="text-align:center;vertical-align: middle" class="soluong"> - </td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="danhan">' + (item.danhan) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="chuanhan">' + (item.chuanhan) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="daxuat">' + (item.daxuat) + '</td>' +
                                             '<td class="barcode">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
+                                            '<td style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
                                             buttonsHtml +
                                             '</tr>';
                                         tbody.append(row);
@@ -764,6 +781,7 @@
                         var maso = $('input[name="maso-edit"]').val();
                         var donvitinh = $('select[name="donvitinh-edit"]').val();
                         var soluong = $('input[name="soluongvattuthemvao-edit"]').val();
+                        var ghichu = $('textarea[name="ghichuvattuchitiet-edit"]').val();
                         var id = $(this).data('id'); // Lấy ID của vật tư từ nút "Sửa vật tư"
                             $.ajax({
                                 url: "{{ route('suavattuchitiet') }}",
@@ -774,6 +792,7 @@
                                     maso: maso,
                                     donvitinh: donvitinh,
                                     soluong: soluong,
+                                    ghichu: ghichu,
                                     _token: $('meta[name="csrf-token"]').attr('content')
                                 },
                                 success: function(response) {
@@ -785,6 +804,7 @@
                                     $(rowId).find(".danhan").text(response.danhan);
                                     $(rowId).find(".chuanhan").text(response.chuanhan);
                                     $(rowId).find(".daxuat").text(response.daxuat);
+                                    $(rowId).find(".ghichu").text(ghichu);
                                     var updatedColumnContent = response.barcodeHtml + '<div>' + maso + '</div>';
                                     $(rowId).find('td.barcode').html(updatedColumnContent);
                                     Swal.fire({
@@ -868,6 +888,7 @@
                 var maso = $('input[name="maso"]').val();
                 var donvitinh = $('select[name="donvitinh"]').val();
                 var soluong = $('input[name="soluongvattuthemvao"]').val();
+                var ghichu = $('textarea[name="ghichuvattuchitiet"]').val();
                 $.ajax({
                     url: "{{ route('themvattuchitiet') }}",
                     type: 'POST',
@@ -878,6 +899,7 @@
                         donvitinh: donvitinh,
                         soluong: soluong,
                         order_id: order_id,
+                        ghichu:ghichu,
                     },
                     success: function(data) {
                         if (!data.success) {
@@ -912,6 +934,7 @@
                                     '<td style="text-align:center;vertical-align: middle">' + (item.chuanhan) + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle">' + (item.daxuat) + '</td>' +
                                     '<td>' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
+                                    '<td style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
                                     buttonsHtml +
                                     '</tr>';
                                 tbody.append(row);
@@ -957,12 +980,14 @@
                     } else {
                         // Nếu có dữ liệu giao dịch, xây dựng bảng
                         response.forEach(function(transaction, index) {
+                            console.log(transaction)
                             htmlContent += `<tr>
                                                 <td style="text-align: center; vertical-align: middle;">${index + 1}</td>
-                                                <td style="text-align: center; vertical-align: middle;">${transaction.tenvattu}</td>
-                                                <td style="text-align: center; vertical-align: middle;">${transaction.maso}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.supply.tenvattu}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.supply.maso}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.loaigiaodich}</td>
-                                                <td colspan="4" style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.soluong}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.ghichu}</td>
                                             </tr>`;
                         });

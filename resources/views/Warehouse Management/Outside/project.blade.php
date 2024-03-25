@@ -50,8 +50,8 @@
                             @elseif ((in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1) && $module=="Nhập kho")
                                 <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                             @elseif ((in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1) && $module=="Xuất kho")
-                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                            @elseif ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý tồn kho")
+                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listExportWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
+                            @elseif ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin==1) && $module=="Quản lý tồn kho")
                                 <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                             @endif
                             <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>

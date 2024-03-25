@@ -92,15 +92,34 @@ class Outsite extends Controller
         }
     }
 
-    public function deleteProject(Request $request)
-    {
-        $project = Project::find($request->id);
+    public function deleteProject(Request $request){
+        $project = Project::with(['orders.supplies.qualityChecks', 'orders.supplies.transactions'])->find($request->id);
 
         if ($project) {
+            // Xóa từng đơn hàng và các bảng liên quan
+            foreach ($project->orders as $order) {
+                foreach ($order->supplies as $supply) {
+                    // Xóa các kiểm định chất lượng liên quan đến vật tư
+                    foreach ($supply->qualityChecks as $qualityCheck) {
+                        $qualityCheck->delete();
+                    }
+                    // Xóa các giao dịch liên quan đến vật tư
+                    foreach ($supply->transactions as $transaction) {
+                        $transaction->delete();
+                    }
+                }
+                // Xóa tất cả vật tư của đơn hàng
+                $order->supplies()->delete();
+                // Xóa đơn hàng
+                $order->delete();
+            }
+
+            // Cuối cùng, xóa dự án
             $project->delete();
             return response()->json(['success' => true]);
         } else {
             return response()->json(['success' => false]);
         }
     }
+
 }

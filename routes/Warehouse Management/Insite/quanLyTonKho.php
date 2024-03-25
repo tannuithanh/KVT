@@ -8,5 +8,10 @@ Route::get('/ware-house-tk', [Insite::class, 'trangTonKho'])->name('trangTonKho'
 Route::get('/slectedPhanKhuc', [Insite::class, 'slectedPhanKhuc'])->name('slectedPhanKhuc')->middleware('auth');
 Route::get('/slectedDuAn', [Insite::class, 'slectedDuAn'])->name('slectedDuAn')->middleware('auth');
 Route::get('/selectedDonHang', [Insite::class, 'selectedDonHang'])->name('selectedDonHang')->middleware('auth');
+Route::get('/selectedTenVatTu', [Insite::class, 'selectedTenVatTu'])->name('selectedTenVatTu')->middleware('auth');
 
 Route::Post('/listTonKho', [Insite::class, 'listTonKho'])->name('listTonKho')->middleware('auth');
+Route::Post('/listTonKhoDonHang', [Insite::class, 'listTonKhoDonHang'])->name('listTonKhoDonHang')->middleware('auth');
+
+
+

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\imports\SuppliesImport;
+use App\Models\QualityCheck;
 use Carbon\Carbon;
 use Milon\Barcode\DNS1D as BarcodeDNS1D;
 
@@ -223,13 +224,18 @@ class Insite extends Controller
 
     public function deleteDonHang(Request $request) {
         $orderId = $request->input('ordersId'); // Sửa lại tên biến cho phù hợp
-        $order = Order::with('supplies.transactions')->find($orderId);
+        $order = Order::with(['supplies.transactions', 'supplies.qualityChecks'])->find($orderId);
 
         if ($order) {
             // Xóa các transactions liên quan đến supplies của đơn hàng
             foreach ($order->supplies as $supply) {
                 foreach ($supply->transactions as $transaction) {
                     $transaction->delete();
+                }
+
+                // Thêm bước xóa các bản ghi QualityCheck liên quan đến supply
+                foreach ($supply->qualityChecks as $qualityCheck) {
+                    $qualityCheck->delete();
                 }
             }
 
@@ -239,7 +245,7 @@ class Insite extends Controller
             // Cuối cùng, xóa đơn hàng
             $order->delete();
 
-            return response()->json(['success' => 'Đơn hàng và vật tư liên quan đã được xóa thành công.']);
+            return response()->json(['success' => 'Đơn hàng, vật tư liên quan và kiểm định chất lượng đã được xóa thành công.']);
         } else {
             return response()->json(['error' => 'Không thể tìm thấy đơn hàng.'], 404);
         }
@@ -302,6 +308,7 @@ class Insite extends Controller
                 'maso' => $supply->maso,
                 'donvitinh' => $supply->donvitinh,
                 'soluong' => $supply->soluong,
+                'ghichu' => $supply->note,
                 'danhan' => $danhan,
                 'chuanhan' => $chuanhan,
                 'daxuat' => $daxuat,
@@ -329,25 +336,29 @@ class Insite extends Controller
             // Lấy ID của vật tư cần xóa từ request
             $supplyId = $request->id;
 
-            // Kiểm tra và xóa các transactions liên quan trước khi xóa vật tư
-            $transactions = Transaction::where('supply_id', $supplyId)->get();
-            if ($transactions) {
-                foreach ($transactions as $transaction) {
-                    $transaction->delete();
-                }
+            // Kiểm tra và xóa các QualityChecks liên quan trước
+            $qualityChecks = QualityCheck::where('supply_id', $supplyId)->get();
+            foreach ($qualityChecks as $qualityCheck) {
+                $qualityCheck->delete();
             }
 
-            // Xóa vật tư sau khi đã xóa các transactions liên quan
+            // Tiếp theo, kiểm tra và xóa các transactions liên quan
+            $transactions = Transaction::where('supply_id', $supplyId)->get();
+            foreach ($transactions as $transaction) {
+                $transaction->delete();
+            }
+
+            // Xóa vật tư sau khi đã xóa các transactions và QualityChecks liên quan
             $supply = Supply::find($supplyId);
             if ($supply) {
                 $supply->delete();
-                 DB::commit(); // Commit transaction nếu không có lỗi
-                return response()->json(['success' => true, 'message' => 'Vật tư và các giao dịch liên quan đã được xóa thành công.']);
+                DB::commit(); // Commit transaction nếu không có lỗi
+                return response()->json(['success' => true, 'message' => 'Vật tư và các giao dịch, kiểm định chất lượng liên quan đã được xóa thành công.']);
             } else {
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy vật tư.']);
             }
         } catch (Exception $e) {
-             DB::rollBack(); // Rollback transaction nếu có lỗi xảy ra
+            DB::rollBack(); // Rollback transaction nếu có lỗi xảy ra
             return response()->json(['success' => false, 'message' => 'Lỗi trong quá trình xóa vật tư: ' . $e->getMessage()]);
         }
     }
@@ -377,6 +388,7 @@ class Insite extends Controller
                 'donvitinh' => $request->donvitinh,
                 'soluong' => $request->soluong,
                 'order_id' => $request->order_id,
+                'note' => $request->ghichu,
             ]);
 
             if ($supply) {
@@ -398,6 +410,7 @@ class Insite extends Controller
                         'maso' => $supply->maso,
                         'donvitinh' => $supply->donvitinh,
                         'soluong' => $supply->soluong,
+                        'ghichu' => $supply->note,
                         'danhan' => $danhan,
                         'chuanhan' => $chuanhan,
                         'daxuat' => $daxuat,
@@ -420,9 +433,10 @@ class Insite extends Controller
     }
 
     public function suavattuchitiet(Request $request){
-        // dd($request->toarray());
         $id = $request->id;
         $newQuantity = $request->soluong;
+        $ghichu = $request->ghichu;
+
         $supply = Supply::with(['transactions'])->where('id', $id)->first();
 
         if (!$supply) {
@@ -443,6 +457,7 @@ class Insite extends Controller
             'maso' => $request->maso,
             'donvitinh' => $request->donvitinh,
             'soluong' => $newQuantity,
+            'note' => $ghichu,
         ]);
 
 
@@ -453,15 +468,16 @@ class Insite extends Controller
             'danhan' => $danhan,
             'daxuat' => $daxuat,
             'chuanhan' => $chuanhan,
+            'ghichu' => $supply->ghichu,
         ]);
     }
 
     public function lichsuvattu(Request $request){
         $supplyId = $request->id;
-        $transactions = Transaction::where('supply_id', $supplyId)->get();
-        // dd($transactions->toarray());
+        $transactions = Transaction::with('supply.order')->where('supply_id', $supplyId)->get();
         return response()->json($transactions);
     }
+
 
     public function themdonhangthucong(Request $request){
         $validated = $request->validate([
@@ -499,10 +515,9 @@ class Insite extends Controller
     }
 
     public function timkiemvattuchitiet(Request $request) {
-        // dd($request->toarray());
+
         // Bỏ qua orderId vì chúng ta đang tìm kiếm trên toàn bộ cơ sở dữ liệu
         $query = Supply::with(['transactions'])->where('order_id', $request->orderId);
-
         if ($request->filled('tenvattu')) {
             $query->where('tenvattu', 'like', '%' . $request->tenvattu . '%');
         }
@@ -674,7 +689,8 @@ class Insite extends Controller
 
     public function laythongtinvattu(Request $request){
         $ids = $request->ids;
-        $supplies = Supply::whereIn('id', $ids)->get();
+        // Nạp trước (eager load) mối quan hệ order và order.project khi truy vấn supplies
+        $supplies = Supply::with('order.project')->whereIn('id', $ids)->get();
 
         $data = $supplies->map(function($supply) {
             $barcodeHtml = BarcodeDNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33);
@@ -684,16 +700,185 @@ class Insite extends Controller
                 'donvitinh' => $supply->donvitinh,
                 'soluong' => $supply->soluong,
                 'barcode' => $barcodeHtml,
+                // Thêm thông tin đơn hàng và dự án từ mối quan hệ
+                'donhang' => $supply->order ? [
+                    'sodonhang' => $supply->order->sodonhang,
+                    'nhacungcap' => $supply->order->nhacungcap,
+                    'chiphi' => $supply->order->chiphi,
+                    'noidung' => $supply->order->noidung,
+                    'ghichu' => $supply->order->ghichu,
+                ] : null,
+                // Thêm thông tin dự án từ mối quan hệ thông qua đơn hàng
+                'duan' => $supply->order && $supply->order->project ? [
+                    'name' => $supply->order->project->name,
+                    'description' => $supply->order->project->description,
+                    // Bạn có thể thêm 'segment_id' và thông tin phân khúc nếu cần
+                ] : null,
             ];
         });
         return response()->json($data);
     }
 
-// TỒN kho
+
+    public function KiemTraSoluongTruocKhiNhapKho(Request $request){
+        // dd($request->toarray());
+        $supplyId = $request->input('supplyId');
+        $quantity = $request->input('quantity');
+
+        // Tính số lượng "Đã nhận" từ bảng transactions
+        $receivedQuantity = Transaction::where('supply_id', $supplyId)
+                                        ->where('loaigiaodich', 'Đã nhận')
+                                        ->sum('soluong');
+
+        // Tính số lượng đang kiểm tra chất lượng (status = 0)
+        $checkingQuantity = QualityCheck::where('supply_id', $supplyId)
+                                         ->where('status', 0)
+                                         ->sum('soluongnhapkho');
+                                        //  dd($checkingQuantity);
+        $totalQuantity = $receivedQuantity + $checkingQuantity;
+
+        // Lấy số lượng tổng khai báo ban đầu từ bảng supplies
+        $initialQuantity = Supply::find($supplyId)->soluong;
+
+        $remainingQuantity = $initialQuantity - $totalQuantity;
+
+        // So sánh số lượng nhập với số lượng còn lại
+        if ($quantity <= $remainingQuantity) {
+            return response()->json(['message' => 'Số lượng nhập hợp lệ.']);
+        } else {
+            return response()->json(['message' => 'Số lượng nhập vượt quá số lượng còn lại.'], 400);
+        }
+    }
+
+    public function KiemTraSoluongTruocKhiNhapKhoV2(Request $request){
+        $supplyIds = $request->input('supplyIds');
+        // dd($supplyIds);
+        $results = [];
+
+        foreach ($supplyIds as $supplyId) {
+            $receivedQuantity = Transaction::where('supply_id', $supplyId)
+                                            ->where('loaigiaodich', 'Đã nhận')
+                                            ->sum('soluong');
+
+            $checkingQuantity = QualityCheck::where('supply_id', $supplyId)
+                                             ->where('status', 0)
+                                             ->sum('soluongnhapkho');
+
+            $totalQuantity = $receivedQuantity + $checkingQuantity;
+            $supply = Supply::find($supplyId);
+            $initialQuantity = $supply->soluong;
+            $remainingQuantity = $initialQuantity - $totalQuantity;
+
+            $results[$supplyId] = $remainingQuantity;
+        }
+
+        return response()->json($results);
+    }
+
+
+    public function updateQuanlity(Request $request){
+        // dd($request->toarray());
+        $suppliesData = $request->input('supplies');
+
+        foreach ($suppliesData as $supplyData) {
+            QualityCheck::create([
+                'supply_id' => $supplyData['id'],
+                'soluongnhapkho' => $supplyData['quantity'],
+            ]);
+        }
+
+        return response()->json(['success' => 'Dữ liệu đã được cập nhật thành công.']);
+    }
+
+    public function quetBarcodeNhapKho(Request $request){
+        // Lấy mảng các ID được gửi lên từ request
+        $selectedItems = $request->input('selectedItems', []);
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        $supplies = Supply::with(['order.project'])->whereIn('id', $selectedItems)->get();
+        return view('Warehouse Management.Inside.nhapKhoBarcode', compact('supplies','user'));
+    }
+
+    public function checkQuality($id, Request $request){
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        if ($user->department_id == 3 || $user->is_admin != 1) {
+            // Nếu không thỏa mãn, chuyển hướng người dùng trở lại trang trước
+            return back()->with('error', 'Bạn không có quyền truy cập vào chức năng này.');
+        }
+        $project = Project::with(['orders.supplies.qualityChecks'])->find($id);
+        $supplies = [];
+        if ($project) {
+            foreach ($project->orders as $order) {
+                foreach ($order->supplies as $supply) {
+                    array_push($supplies, $supply);
+                }
+            }
+        }
+        // dd($project->toarray());
+        return view('Warehouse Management.Inside.kiemTraChatLuong', compact('id', 'user', 'project', 'supplies'));
+    }
+
+
+    public function luuKiemTraChatLuong(Request $request){
+        $qualityCheck = QualityCheck::find($request->idQualityCheck);
+
+        // Kiểm tra xem QualityCheck đã có status là 1 chưa
+        if ($qualityCheck->status == 1) {
+            // Nếu đã có status là 1, trả về thông báo đã cập nhật
+            return response()->json(['success' => false, 'message' => 'Vật tư đã được kiểm tra chất lượng rồi.']);
+        }
+
+        // Nếu status chưa là 1, tiếp tục cập nhật
+        $qualityCheck->soluongdatchatluong = $request->quantityDat;
+        $qualityCheck->status = 1;
+        $qualityCheck->ngaykiemtra = Carbon::now()->format('Y-m-d');
+        $qualityCheck->save();
+
+        $transaction = new Transaction([
+            'supply_id' => $qualityCheck->supply_id,
+            'soluong' => $request->quantityDat,
+            'loaigiaodich' => 'Đã nhận',
+            'ngaygiaodich' => now(),
+            'ghichu' => ''
+        ]);
+        $transaction->save();
+
+        // Bao gồm status mới trong phản hồi
+        return response()->json(['success' => true, 'message' => 'Dữ liệu đã được cập nhật thành công.', 'status' => $qualityCheck->status]);
+    }
+
+    public function timKiemVatTuCheck(Request $request){
+        $idVatTu = $request->idVatTu;
+        $status = $request->status;
+        $ngayKiemTra = $request->ngayKiemTra; // Thêm biến này
+        $query = QualityCheck::query();
+
+        if (!empty($idVatTu)) {
+            $query->where('supply_id', $idVatTu);
+        }
+
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        if (!empty($ngayKiemTra)) {
+            // Thêm điều kiện tìm kiếm theo ngày kiểm tra
+            $query->whereDate('ngaykiemtra', '=', $ngayKiemTra);
+        }
+
+        $results = $query->with(['supply.order'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $results
+        ]);
+    }
+// TỒN KHO
     public function trangTonKho(Request $request){
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
         $module = $request->query('module', 'defaultModule');
-        return view('Warehouse Management.Inside.quanLyTonKho', compact('user','module'));}
+        $orders = Order::all();
+        return view('Warehouse Management.Inside.quanLyTonKho', compact('user', 'module', 'orders'));
+    }
 
     public function slectedPhanKhuc(Request $request){
         $thuongHieuId = $request->thuongHieuId;
@@ -718,89 +903,178 @@ class Insite extends Controller
         return response()->json($projects);
     }
 
-    public function listTonKho(Request $request){
-        $duAnId = $request->duAnId;
-        $phanKhucId = $request->phanKhucId;
-        $thuongHieuId = $request->thuongHieuId;
+    public function selectedDonHang(Request $request){
+        $projectId = $request->projectId;
+        $orders = Order::with(['supplies' => function($query){
+            $query->with('transactions');
+        }])->where('project_id', $projectId)->get();
+        // dd($orders->toarray());
+        return response()->json($orders);
+    }
+
+    public function selectedTenVatTu(Request $request){
         $donHangId = $request->donHangId;
+        $vattuList = Supply::where('order_id', $donHangId)->get(['id', 'tenvattu']);
+        if($vattuList->isEmpty()) {
+            return response()->json(['message' => 'Không tìm thấy vật tư cho đơn hàng này'], 404);
+        }
+        return response()->json($vattuList);
+    }
 
-        // Lấy thông tin dự án, phân khúc, và thương hiệu dựa trên ID
-        $project = Project::find($duAnId);
-        $segment = Segment::find($phanKhucId);
-        $brand = Brand::find($thuongHieuId);
+    public function listTonKhoDonHang(Request $request){
+        $duAnId = $request->duAnIdDonHang;
+        $phanKhucId = $request->phanKhucIdDonHang;
+        $thuongHieuId = $request->thuongHieuIdDonHang;
+        $donHangId = $request->donHangIdChiTiet;
 
-        if (!$project || !$segment || !$brand) {
-            return response()->json(['message' => 'Thông tin không tồn tại'], 404);
+        $project = null;
+        $segment = null;
+        $brand = null;
+        $ordersQuery = null;
+
+        if ($duAnId) {
+            $project = Project::find($duAnId);
+        }
+        if ($phanKhucId) {
+            $segment = Segment::find($phanKhucId);
+        }
+        if ($thuongHieuId) {
+            $brand = Brand::find($thuongHieuId);
         }
 
-        $ordersQuery = $project->orders();
-
-        // Nếu donHangId có giá trị, chỉ lấy các supplies từ đơn hàng đó
         if ($donHangId) {
-            $ordersQuery = $ordersQuery->where('id', $donHangId);
+            // Nếu chỉ có donHangId, tìm đơn hàng đó và lấy thông tin project, segment, brand từ đó
+            $order = Order::with(['project.segment.brand', 'supplies.transactions'])->find($donHangId);
+            if ($order) {
+                $project = $order->project;
+                $segment = $project ? $project->segment : null;
+                $brand = $segment ? $segment->brand : null;
+                $ordersQuery = collect([$order]); // Tạo collection với 1 đơn hàng để giữ cùng format
+            }
+        } else if ($project) {
+            // Nếu có duAnId, lọc đơn hàng theo dự án
+            $ordersQuery = $project->orders()->with(['supplies.transactions']);
+            if ($donHangId) {
+                $ordersQuery = $ordersQuery->where('id', $donHangId);
+            }
+            $ordersQuery = $ordersQuery->get();
         }
 
-        $orders = $ordersQuery->with(['supplies' => function($query) {
-            $query->with(['transactions']);
-        }])->get();
+        if (!$ordersQuery) {
+            return response()->json(['message' => 'Thông tin đơn hàng không tồn tại'], 404);
+        }
 
         $data = [
-            'brand' => [
-                'id' => $brand->id,
-                'name' => $brand->name,
-            ],
-            'segment' => [
-                'id' => $segment->id,
-                'name' => $segment->name,
-            ],
-            'project' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'orders' => $orders->map(function ($order) {
-                    return [
-                        'id' => $order->id,
-                        'sodonhang' => $order->sodonhang,
-                        'nhacungcap' => $order->nhacungcap,
-                        'chiphi' => $order->chiphi,
-                        'noidung' => $order->noidung,
-                        'ghichu' => $order->ghichu,
-                        'supplies' => $order->supplies->map(function ($supply) {
-                            $danhan = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
-                            $daxuat = $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
-                            $soLuongTon = $danhan - $daxuat;
-                            return [
-                                'id' => $supply->id,
-                                'tenvattu' => $supply->tenvattu,
-                                'maso' => $supply->maso,
-                                'donvitinh' => $supply->donvitinh,
-                                'soluongTon' => $soLuongTon,
-                                'note' => $supply->note,
-                                'status' => $supply->status,
-                            ];
-                        }),
-                    ];
-                }),
-            ]
+            'brand' => $brand ? ['id' => $brand->id, 'name' => $brand->name] : null,
+            'segment' => $segment ? ['id' => $segment->id, 'name' => $segment->name] : null,
+            'project' => $project ? ['id' => $project->id, 'name' => $project->name] : null,
+            'orders' => $ordersQuery->map(function ($order) {
+                $tongSoLuongNhan = $order->supplies->reduce(function ($carry, $supply) {
+                    // Tính tổng số lượng nhận từ các giao dịch có loại giao dịch là 'Đã nhận'
+                    return $carry + $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+                }, 0);
+
+                $tongSoLuongXuat = $order->supplies->reduce(function ($carry, $supply) {
+                    // Tính tổng số lượng xuất từ các giao dịch có loại giao dịch là 'Đã xuất'
+                    return $carry + $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                }, 0);
+
+                // Tính số lượng tồn dựa trên tổng số lượng nhận và tổng số lượng xuất
+                $soluongTon = $tongSoLuongNhan - $tongSoLuongXuat;
+
+                // Trả về thông tin cần thiết của đơn hàng
+                return [
+                    'id' => $order->id,
+                    'sodonhang' => $order->sodonhang,
+                    'tongSoLuongNhan' => $tongSoLuongNhan,
+                    'tongSoLuongXuat' => $tongSoLuongXuat,
+                    'soluongTon' => $soluongTon,
+                ];
+            }),
         ];
 
         return response()->json($data);
     }
 
+// XUẤT KHO
+    public function listExportWarehouse($id,request $request){
+        $sodonhangSelect = $request->get('sodonhangSelect');
+        $nhacungcapSelect = $request->get('nhacungcapSelect');
+        $nhacungcapSuppeliesSelect = $request->get('nhacungcapSuppeliesSelect');
+        $project = Project::with(['orders' => function($query) {
+            $query->with(['supplies' => function($query) {
+                $query->with(['transactions']);
+            }]);
+        }])->find($id);
+        if (!$project) {
+            abort(404, 'Dự án không tìm thấy.');
+        }
+        $orders = $project->orders->map(function($order) use (&$totalOrdersDanhan, &$totalOrdersChuanhan, &$totalOrdersDaxuat) {
+            $order->total_supplies = $order->supplies->sum('soluong');
+            $order->total_danhan = $order->supplies->sum(function($supply) {
+                return $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+            });
+            $order->total_daxuat = $order->supplies->sum(function($supply) {
+                return $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+            });
 
-    public function selectedDonHang(Request $request){
-        $projectId = $request->projectId;
-        $orders = Order::where('project_id', $projectId)->get();
-        // dd($orders->toarray());
-        return response()->json($orders);
-    }
+            $order->total_chuanhan = $order->supplies->sum(function($supply) {
+                $totalReceived = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
 
-    public function quetBarcodeNhapKho(Request $request){
-        // Lấy mảng các ID được gửi lên từ request
-        $selectedItems = $request->input('selectedItems', []);
+                return $supply->soluong - $totalReceived;
+            });
+
+            $totalOrdersDanhan += $order->total_danhan;
+            $totalOrdersChuanhan += $order->total_chuanhan;
+            $totalOrdersDaxuat += $order->total_daxuat;
+            return $order;
+        });
+        if ($sodonhangSelect || $nhacungcapSelect || $nhacungcapSuppeliesSelect) {
+            $orders = $orders->filter(function ($order) use ($sodonhangSelect, $nhacungcapSelect, $nhacungcapSuppeliesSelect) {
+                $matchesSodonhang = $sodonhangSelect ? $order->sodonhang == $sodonhangSelect : true;
+                $matchesNhacungcap = $nhacungcapSelect ? $order->nhacungcap == $nhacungcapSelect : true;
+
+                $matchesSuppliesStatus = true;
+                if ($nhacungcapSuppeliesSelect) {
+                    switch ($nhacungcapSuppeliesSelect) {
+                        case 'Đã nhận':
+                            // Kiểm tra đơn hàng có ít nhất một vật liệu đã nhận
+                            $matchesSuppliesStatus = $order->supplies->some(function ($supply) {
+                                return $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong') > 0;
+                            });
+                            break;
+                        case 'Chưa nhận':
+                            // Kiểm tra đơn hàng có ít nhất một vật liệu chưa nhận
+                            $matchesSuppliesStatus = $order->supplies->some(function ($supply) {
+                                return $supply->transactions->where('loaigiaodich', 'Chưa nhận')->count() > 0 || $supply->transactions->count() == 0;
+                            });
+                            break;
+                        case 'Đã xuất':
+                            // Kiểm tra đơn hàng có ít nhất một vật liệu đã xuất
+                            $matchesSuppliesStatus = $order->supplies->some(function ($supply) {
+                                return $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong') > 0;
+                            });
+                            break;
+                        default:
+                            $matchesSuppliesStatus = true;
+                            break;
+                    }
+                }
+
+                return $matchesSodonhang && $matchesNhacungcap && $matchesSuppliesStatus;
+            });
+        }
+        $brandName = optional(optional($project->segment)->brand)->name;
+        $segmentId = $project->segment->id ?? null;
+        $segmentName = $project->segment->name ?? null;
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-        $supplies = Supply::with('order')->whereIn('id', $selectedItems)->get();
-        // dd($supplies->toArray());
-        return view('Warehouse Management.Inside.nhapKhoBarcode', compact('supplies','user'));
+        $module = $request->query('module', 'defaultModule');
+
+        $providers = Provider::with('details')->get();
+        $totalSuppliesForProject = $orders->sum('total_supplies');
+
+        return view('Warehouse Management.Inside.xuatKho', compact('totalOrdersDanhan', 'totalOrdersChuanhan', 'totalOrdersDaxuat','orders', 'user', 'providers', 'module', 'segmentId', 'brandName', 'segmentName', 'project', 'totalSuppliesForProject'));
     }
+
 
 }

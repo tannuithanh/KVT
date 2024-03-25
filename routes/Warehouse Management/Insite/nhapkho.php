@@ -10,3 +10,9 @@ use Illuminate\Support\Facades\Route;
     Route::POST('/laythongtinvattu', [Insite::class, 'laythongtinvattu'])->name('laythongtinvattu')->middleware('auth');
 
     Route::get('/quetBarcodeNhapKho', [Insite::class, 'quetBarcodeNhapKho'])->name('quetBarcodeNhapKho')->middleware('auth');
+
+    Route::POST('/KiemTraSoluongTruocKhiNhapKho', [Insite::class, 'KiemTraSoluongTruocKhiNhapKho'])->name('KiemTraSoluongTruocKhiNhapKho')->middleware('auth');
+
+    Route::POST('/KiemTraSoluongTruocKhiNhapKhoV2', [Insite::class, 'KiemTraSoluongTruocKhiNhapKhoV2'])->name('KiemTraSoluongTruocKhiNhapKhoV2')->middleware('auth');
+
+    Route::POST('/update-Quanlity', [Insite::class, 'updateQuanlity'])->name('updateQuanlity')->middleware('auth');

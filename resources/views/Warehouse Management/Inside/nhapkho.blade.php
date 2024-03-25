@@ -7,7 +7,6 @@
     }
   </style>
   <style>
-
     .filter-box {
         border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
         padding: 11px;
@@ -73,7 +72,8 @@
                       <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng vật tư đã xuất: <span  style="color: black">{{ $totalOrdersDaxuat ?? 0 }}</span>
                     </h5>
                       <button type="button" class="btn btn-outline-primary ri-search-line timkiemdonhang" data-projectId="{{$project->id}}" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
-                        <!-- Nội dung thông báo thành công -->
+                      <a href="{{ route('checkQuality', ['id' => $project->id]) }}" class="btn btn-outline-primary bi bi-journal-check"> Kiểm tra chất lượng</a>
+                      <!-- Nội dung thông báo thành công -->
                           @if(session('success'))
                               <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
                                   {{ session('success') }}
@@ -98,10 +98,11 @@
                                             <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
                                         </tr>
                                       <tr>
-                                          <th style="text-align: center" scope="col">Tổng</th>
-                                          <th style="text-align: center" scope="col">Đã nhận</th>
-                                          <th style="text-align: center" scope="col">Chưa nhận</th>
-                                          <th style="text-align: center" scope="col">Đã xuất</th>
+
+                                            <th style="text-align: center" scope="col">Tổng</th>
+                                            <th style="text-align: center" scope="col">Đã nhận</th>
+                                            <th style="text-align: center" scope="col">Chưa nhận</th>
+                                            <th style="text-align: center" scope="col">Đã xuất</th>
                                       </tr>
                                 </thead>
                                 <tbody>
@@ -143,7 +144,7 @@
                 <h5 class="modal-title">Tìm kiếm vật tư</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <form action="{{ route('listWarehouse', ['project' => $project->id]) }}" method="GET">
+              <form action="{{ route('listNhapKho', ['project' => $project->id]) }}" method="GET">
               <div class="modal-body">
                 <input type="text" value="{{$module}}" name="module" hidden>
                   <input type="text" value="{{$project->id}}" name="project_id" hidden>
@@ -203,7 +204,7 @@
   </div>
 {{-- MODAL DANH MỤC VẬT TƯ--}}
     <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Vật tư chi tiết</h5>
@@ -229,7 +230,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-2">
-                                    <button type="submit" id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</button>
+                                    <a type="submit" id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</a>
                                 </div>
                             </div>
                         </div>
@@ -245,7 +246,7 @@
                             <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                         </div>
 
-                            <div class="table-responsive">
+                            <div class="table-responsive" style="max-height: 400px;">
                                 <table class="table table-bordered table-hover danhmucvattuchitiet">
                                     <thead>
                                     <tr>
@@ -255,7 +256,7 @@
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
                                         <th colspan="4" style="text-align: center;">Tình trạng</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
-                                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
+                                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Ghi chú</th>
                                     </tr>
                                     <tr>
                                         <th style="text-align: center; vertical-align: middle;">Tổng</th>
@@ -265,13 +266,14 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-
                                     </tbody>
                                 </table>
                             </div>
-                            <button type="button" class="btn btn-outline-primary" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</button>
-                            <a id="inVatTu" class="btn btn-outline-primary" style="display: none"><i class="bi bi-printer"></i> In mã barcode</a>
-                            <button id="nhapKho" type="submit" class="btn btn-outline-primary" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập Kho</button>
+                            @if ($user->department_id!=3)
+                            <a type="button" class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
+                            @endif
+                            <a id="inVatTu" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-printer"></i> In mã barcode</a>
+                            <button id="nhapKho" type="submit" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập Kho</button>
                     </form>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
@@ -288,23 +290,24 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body ">
-                    <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Loại giao dịch</th>
-                            <th colspan="4" style="text-align: center;">Ngày giao dịch</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Ghi chú</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th style="text-align: center; vertical-align: middle;">STT</th>
+                                <th style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                                <th style="text-align: center; vertical-align: middle;">Mã số</th>
+                                <th style="text-align: center; vertical-align: middle;">Loại giao dịch</th>
+                                <th style="text-align: center; vertical-align: middle;">Số lượng</th>
+                                <th style="text-align: center;">Ngày giao dịch</th>
+                                <th style="text-align: center; vertical-align: middle;">Ghi chú</th>
+                            </tr>
+                            </thead>
+                            <tbody>
 
-                        </tbody>
-                    </table>
-
-
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -318,18 +321,23 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
                 <div class="modal-body ">
-                    <table class="table table-bordered" id="tableVatTuDaChon">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên Vật Tư</th>
-                                <th>Mã Barcode</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tableVatTuDaChon">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Dự án</th>
+                                    <th>Đơn hàng</th>
+                                    <th>Tên Vật Tư</th>
+                                    <th>Mã Barcode</th>
+                                    <th>Số Lượng In</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                     <button id="inbarcode" class="btn btn-outline-primary" ><i class="bi bi-printer"></i> IN</button>
                 </div>
             </div>
@@ -379,29 +387,22 @@
                                 $('#tongchuanhan').text('Tổng chưa nhận: ' + totalChuanhan);
                                 $('#tongdaxuat').text('Tổng đã xuất: ' + totalDaxuat);
                                 $.each(data.supplies, function(index, item) {
+
                                     var selectTenVatTu = $('.tenvattuchitiet').empty().append('<option selected="">Tên vật tư</option>');
                                     var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
                                     var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
 
+                                    var donvitinhSet = new Set();
                                     $.each(data.supplies, function(index, item) {
                                         selectTenVatTu.append(new Option(item.tenvattu, item.tenvattu));
                                         selectMaSo.append(new Option(item.maso, item.maso));
-                                        selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                        if (!donvitinhSet.has(item.donvitinh)) {
+                                            selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                            donvitinhSet.add(item.donvitinh);
+                                        }
                                     });
 
                                     if (item) {
-                                        var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
-                                            <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
-                                                data-orderId="${orderId}"
-                                                data-id="${item.id}"
-                                                data-tenvattu="${item.tenvattu}"
-                                                data-maso="${item.maso}"
-                                                data-donvitinh="${item.donvitinh}"
-                                                data-soluong="${item.soluong}">Sửa</button>
-                                            <button class="btn btn-sm btn-danger xoavattuchitiet"
-                                                data-id="${item.id}">Xóa</button>
-                                            </td>`;
-
                                             var row = '<tr id="supply-row-' + item.id + '" data-id="' + item.id + '">' +
                                             '<td style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="tenvattu">' + (item.tenvattu) + '</td>' +
@@ -412,7 +413,7 @@
                                             '<td style="text-align:center;vertical-align: middle" class="chuanhan">' + (item.chuanhan) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="daxuat">' + (item.daxuat) + '</td>' +
                                             '<td class="barcode">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
-                                            buttonsHtml +
+                                            '<td style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu) + '</td>' +
                                             '</tr>';
                                         tbody.append(row);
                                     }
@@ -546,10 +547,11 @@
                         response.forEach(function(transaction, index) {
                             htmlContent += `<tr>
                                                 <td style="text-align: center; vertical-align: middle;">${index + 1}</td>
-                                                <td style="text-align: center; vertical-align: middle;">${transaction.tenvattu}</td>
-                                                <td style="text-align: center; vertical-align: middle;">${transaction.maso}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.supply.tenvattu}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.supply.maso}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.loaigiaodich}</td>
-                                                <td colspan="4" style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.soluong}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.ghichu}</td>
                                             </tr>`;
                         });
@@ -701,17 +703,22 @@
                         },
                         success: function(response) {
                             // Xử lý dữ liệu trả về
-                            // Giả sử response là một mảng các đối tượng với thông tin mã barcode
                             var tbody = $('#tableVatTuDaChon tbody');
                             tbody.empty(); // Xóa dữ liệu cũ
 
                             $.each(response, function(index, item) {
+                                console.log(item)
                                 var newRow = `<tr>
                                                 <td style="text-align:center;vertical-align: middle">${index + 1}</td>
+                                                <td style="text-align:center;vertical-align: middle">${item.duan.name || 'N/A'}</td> <!-- Cập nhật Dự án -->
+                                                <td style="text-align:center;vertical-align: middle">${item.donhang.sodonhang || 'N/A'}</td> <!-- Cập nhật Đơn hàng -->
                                                 <td style="text-align:center;vertical-align: middle">${item.tenvattu}</td>
-                                                <td class="barcode">${item.barcode}<div>${item.maso}</div></td>
+                                                <td style="text-align:center;vertical-align: middle">${item.barcode}<div>${item.maso}</div></td>
+                                                <td style="text-align:center;vertical-align: middle">
+                                                    <input type="number" class="form-control print-quantity" value="1" min="1" style="width: auto;"/>
+                                                </td>
                                             </tr>`;
-                                tbody.append(newRow); // Thêm hàng mới vào bảng
+                                tbody.append(newRow);
                             });
                             $('#indanhsachvattu').modal('show'); // Hiển thị modal
                         },
@@ -729,14 +736,47 @@
   {{-- THỰC HIỆN IN BARCODE --}}
     <script>
         $('#inbarcode').click(function() {
-            var printContent = document.getElementById('tableVatTuDaChon').outerHTML; // Lấy nội dung HTML của bảng
-            var originalContent = document.body.innerHTML; // Lưu nội dung hiện tại của body
+            var doc = printFrame.contentDocument || printFrame.contentWindow.document;
+            var stt = 1; // Khởi tạo số thứ tự ban đầu
+            doc.open();
+            doc.write('<html><head><title>In Barcode</title>');
+            // Thêm định dạng CSS cho bảng và các cột
+            doc.write('<style>');
+            doc.write('table { width: 100%; border-collapse: collapse; }');
+            doc.write('td, th { border: 1px dotted #ddd; text-align: left; padding: 8px; }');
+            doc.write('.ten-vat-tu { max-width: 200px; word-wrap: break-word; }');
+            doc.write('</style>');
+            doc.write('</head><body>');
+            doc.write('<table>'); // Bắt đầu bảng
 
-            document.body.innerHTML = printContent; // Đặt nội dung của body là bảng cần in
-            window.print(); // Gọi cửa sổ in của trình duyệt
+            // Duyệt qua mỗi hàng trong bảng
+            $('#tableVatTuDaChon tbody tr').each(function() {
+                var quantity = $(this).find('.print-quantity').val(); // Lấy giá trị số lượng từ input
+                var duAn = $(this).children('td:nth-child(2)').text(); // Lấy thông tin Dự án
+                var donHang = $(this).children('td:nth-child(3)').text(); // Lấy thông tin Đơn hàng
+                var tenVatTu = $(this).children('td:nth-child(4)').text(); // Lấy thông tin Tên Vật Tư
+                var barcode = $(this).children('td:nth-child(5)').html(); // Lấy thông tin Mã Barcode
 
-            document.body.innerHTML = originalContent; // Khôi phục nội dung body sau khi in
-            window.location.reload(); // Tải lại trang để áp dụng lại các sự kiện JavaScript đã bị mất khi thay đổi nội dung body
+                // Tạo HTML cho hàng muốn in
+                for (var i = 0; i < quantity; i++) {
+                    var printRow = `<tr>
+                                        <td style="text-align:center">${stt++}</td>
+                                        <td style="text-align:center">${duAn}</td>
+                                        <td style="text-align:center">${donHang}</td>
+                                        <td style="text-align:center" class="ten-vat-tu">${tenVatTu}</td>
+                                        <td>${barcode}</td>
+                                    </tr>`;
+                    doc.write(printRow);
+                }
+            });
+
+            doc.write('</table>'); // Kết thúc bảng
+            doc.write('</body></html>');
+            doc.close();
+
+            // In nội dung và không reload trang
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
         });
     </script>
   {{-- TÌM KIẾM VẬT TƯ CHI TIẾT --}}
@@ -748,7 +788,7 @@
                 var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
                 var orderId = $("#timkiemVatTuChiTiet").data('id');
                 $.ajax({
-                    url: '{{ route("timkiemvattuchitiet") }}', // Đường dẫn tới route xử lý tìm kiếm
+                    url: "{{ route('timkiemvattuchitiet') }}", // Đường dẫn tới route xử lý tìm kiếm
                     type: 'POST',
                     dataType: 'json',
                     data: {
@@ -759,23 +799,13 @@
                         orderId: orderId,
                     },
                     success: function(data) {
-                        console.log(data);
                         // Xử lý dữ liệu trả về và hiển thị trong bảng
                         var tbody = $("#danhMucVatTuChiTiet tbody");
                         tbody.empty(); // Xóa nội dung hiện tại của tbody
                         if(data.supplies && data.supplies.length > 0){
                             $.each(data.supplies, function(index, supply) {
                                 var barcodeHtml = supply.barcodeHtml;
-                                var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
-                                                    <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
-                                                        data-id="${supply.id}"
-                                                        data-tenvattu="${supply.tenvattu}"
-                                                        data-maso="${supply.maso}"
-                                                        data-donvitinh="${supply.donvitinh}"
-                                                        data-soluong="${supply.soluong}">Sửa</button>
-                                                    <button class="btn btn-sm btn-danger xoavattuchitiet"
-                                                        data-id="${supply.id}">Xóa</button>
-                                                    </td>`;
+
                                 tbody.append(
                                     `<tr id="supply-row-${supply.id}" data-id="${supply.id}">
                                         <td style="text-align:center;vertical-align: middle">${index + 1}</td>
@@ -787,7 +817,6 @@
                                         <td style="text-align:center;vertical-align: middle">${supply.chuanhan}</td>
                                         <td style="text-align:center;vertical-align: middle">${supply.daxuat}</td>
                                         <td class="barcode">${barcodeHtml}<div>${supply.maso}</div></td>
-                                        ${buttonsHtml}
                                     </tr>`
                                 );
                             });

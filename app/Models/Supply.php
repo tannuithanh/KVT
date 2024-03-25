@@ -23,4 +23,8 @@ class Supply extends Model
     {
         return $this->hasMany(Transaction::class, 'supply_id');
     }
+    public function qualityChecks()
+    {
+        return $this->hasMany(QualityCheck::class);
+    }
 }

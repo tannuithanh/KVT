@@ -6,3 +6,5 @@ require __DIR__.'/Warehouse Management/Outsite/outsite.php';
 require __DIR__.'/Warehouse Management/Insite/Quanlykehoach.php';
 require __DIR__.'/Warehouse Management/Insite/nhapkho.php';
 require __DIR__.'/Warehouse Management/Insite/quanLyTonKho.php';
+require __DIR__.'/Warehouse Management/Insite/kiemTraChatLuong.php';
+require __DIR__.'/Warehouse Management/Insite/xuatKho.php';
