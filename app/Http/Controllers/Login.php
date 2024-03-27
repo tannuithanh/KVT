@@ -21,7 +21,7 @@ class Login extends Controller
             'login_error' => 'Thông tin đăng nhập không chính xác.',
         ]);
     }
-    public function logout(){
+    public function logout(request $request){
         Auth::logout();
         return redirect()->route('login.get');
     }

@@ -87,7 +87,7 @@
     </div>
   </div>
 {{-- NHẬP SỐ LƯỢNG VẬT TƯ --}}
-    <div class="modal fade show" id="nhapsoluongvattu" tabindex="-1" style="display: block;background-color: #000000bb; " aria-hidden="true">
+    <div class="modal fade" id="nhapsoluongvattu" tabindex="-1" style="display: none;background-color: #000000bb; " aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">

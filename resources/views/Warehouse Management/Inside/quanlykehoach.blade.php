@@ -1,45 +1,49 @@
 @extends('Layout.app')
 @section('style')
-<link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
-  <style>
-    .table-hover tbody tr:hover {
-        cursor: pointer;
-    }
-  </style>
-  <style>
+    <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
+    <style>
+        .table-hover tbody tr:hover {
+            cursor: pointer;
+        }
+    </style>
+    <style>
 
-    .filter-box {
-        border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
-        padding: 11px;
-        margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
-        border-radius: 5px; /* Bo góc cho khung */
-    }
-    .select2-container--default .select2-selection--single,
-    .select2-selection .select2-selection--single {
-        border: 1px solid #ced4da;
-        border-radius: 0.30rem;
-        height: calc(2.25rem + 2px);
-        line-height: 1.5;
-    }
+        .blink-warning {
+            background-color: rgba(255, 255, 0, 0.329) !important
+        }
 
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: calc(2.25rem + 2px);
-    }
+        .filter-box {
+            border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
+            padding: 11px;
+            margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
+            border-radius: 5px; /* Bo góc cho khung */
+        }
+        .select2-container--default .select2-selection--single,
+        .select2-selection .select2-selection--single {
+            border: 1px solid #ced4da;
+            border-radius: 0.30rem;
+            height: calc(2.25rem + 2px);
+            line-height: 1.5;
+        }
 
-    .select2-container .select2-selection--single .select2-selection__rendered {
-        padding-left: 0.75rem;
-    }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(2.25rem + 2px);
+        }
 
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 2.25rem;
-    }
+        .select2-container .select2-selection--single .select2-selection__rendered {
+            padding-left: 0.75rem;
+        }
 
-    .select2-container--open .select2-dropdown {
-        border-color: #ced4da;
-        z-index: 9999;
-    }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 2.25rem;
+        }
 
-  </style>
+        .select2-container--open .select2-dropdown {
+            border-color: #ced4da;
+            z-index: 9999;
+        }
+
+    </style>
 @endsection
 @section('title')
     Quản lý đơn hàng
@@ -99,7 +103,7 @@
                                         <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
                                         <th style="text-align: center" rowspan="2" scope="col">NCC</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
-                                        <th style="text-align: center" colspan="5" scope="col">Tình trạng</th>
+                                        <th style="text-align: center" colspan="4" scope="col">Tình trạng</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
                                         <th style="text-align: center" rowspan="2" scope="col">Thao tác</th>
@@ -108,7 +112,6 @@
 
                                             <th style="text-align: center" scope="col">Tổng</th>
                                             <th style="text-align: center" scope="col">Đã nhận</th>
-                                            <th style="text-align: center" scope="col">Lưu kho</th>
                                             <th style="text-align: center" scope="col">Chưa nhận</th>
                                             <th style="text-align: center" scope="col">Đã xuất</th>
                                     </tr>
@@ -124,7 +127,6 @@
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">-</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_chuanhan ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_daxuat ?? '0' }}</td>
@@ -379,23 +381,23 @@
                 <div class="table-responsive" style="max-height: 400px;">
                     <table class="table table-bordered table-hover danhmucvattuchitiet">
                         <thead>
-                        <tr>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
-                            <th colspan="5" style="text-align: center;">Tình trạng</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
-                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
-                        </tr>
-                        <tr>
-                            <th style="text-align: center; vertical-align: middle;">Tổng</th>
-                            <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
-                            <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
-                            <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
-                            <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
-                        </tr>
+                            <tr>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
+                                <th colspan="5" style="text-align: center;">Tình trạng</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
+                                <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
+                            </tr>
+                            <tr>
+                                <th style="text-align: center; vertical-align: middle;">Tổng</th>
+                                <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
+                                <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
+                                <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
+                                <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
+                            </tr>
                         </thead>
                         <tbody>
 
@@ -690,7 +692,7 @@
                                 _token: '{{ csrf_token() }}' // Đảm bảo bạn thêm token CSRF
                             },
                             success: function(data) {
-
+                                console.log(data)
                                 var tbody = $('#danhMucVatTuChiTiet').find('tbody');
                                 tbody.empty(); // Xóa nội dung hiện tại của tbody
                                 $('#themvattuchitiet').attr('data-id', orderId);
@@ -709,6 +711,11 @@
                                     var selectTenVatTu = $('.tenvattuchitiet').empty().append('<option selected="">Tên vật tư</option>');
                                     var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
                                     var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
+                                    var totalNhapKho = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
+                                    var totalDatChatLuong = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+
+                                    // Kiểm tra điều kiện để thêm class blink-warning
+                                    var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
 
                                     var donvitinhSet = new Set();
                                     $.each(data.supplies, function(index, item) {
@@ -721,24 +728,25 @@
                                     });
 
                                     if (item) {
+
                                         var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
 
                                             <button class="btn btn-sm btn-danger xoavattuchitiet"
                                                 data-id="${item.id}">Xóa</button>
                                             </td>`;
 
-                                            var row = '<tr id="supply-row-' + item.id + '" data-id="' + item.id + '">' +
-                                            '<td style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="tenvattu">' + (item.tenvattu) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="maso">' + (item.maso) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="donvitinh">' + (item.donvitinh) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="soluong">' + (item.soluong) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="soluong"> - </td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="danhan">' + (item.danhan) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="chuanhan">' + (item.chuanhan) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="daxuat">' + (item.daxuat) + '</td>' +
-                                            '<td class="barcode">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
+                                            var row = '<tr id="supply-row-' + item.id + '"  data-id="' + item.id + '">' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="tenvattu">' + (item.tenvattu) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="maso">' + (item.maso) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="donvitinh">' + (item.donvitinh) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluong">' + (item.soluong) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluongnhapkho">' + totalNhapKho + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluongdatchatluong">' + totalDatChatLuong + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="chuanhan">' + (item.chuanhan) + '</td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="daxuat">' + (item.daxuat) + '</td>' +
+                                            '<td class="barcode ' + rowClass + '">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
+                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
                                             buttonsHtml +
                                             '</tr>';
                                         tbody.append(row);
@@ -988,7 +996,7 @@
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.loaigiaodich}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.soluong}</td>
                                                 <td style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
-                                                <td style="text-align: center; vertical-align: middle;">${transaction.ghichu}</td>
+                                                <td style="text-align: center; vertical-align: middle;">${transaction.ghichu ? transaction.ghichu : ''}</td>
                                             </tr>`;
                         });
                     }

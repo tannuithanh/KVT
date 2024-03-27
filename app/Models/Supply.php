@@ -27,4 +27,8 @@ class Supply extends Model
     {
         return $this->hasMany(QualityCheck::class);
     }
+    public function viewVatTuChiTiets()
+    {
+        return $this->hasMany(ViewVatTuChiTiet::class, 'supply_id');
+    }
 }

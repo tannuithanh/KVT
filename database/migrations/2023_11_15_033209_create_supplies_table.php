@@ -24,7 +24,10 @@ return new class extends Migration
             $table->integer('soluong');
             $table->string('note')->nullable();
             $table->integer('status')->default(0);
+            $table->string('codeorder');
+            $table->string('contract'); 
             $table->timestamps();
+
         });
     }
 

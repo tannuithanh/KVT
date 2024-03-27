@@ -10,13 +10,11 @@ return new class extends Migration
     {
         Schema::create('view_vattuchitiet', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('supply_id');
+            $table->unsignedBigInteger('supply_id')->unique();
             $table->integer('soluongnhapkho');
-            $table->integer('soluongdatchatluong');
-            $table->integer('status')->default(0); // Đảm bảo rằng giá trị mặc định là số 0 thay vì chuỗi '0'
+            $table->integer('soluongdatchatluong')->nullable();
+            $table->integer('status')->default(0);
             $table->timestamps();
-
-            // Tạo khóa ngoại tham chiếu đến bảng supplies và xử lý khi xóa (onDelete cascade)
             $table->foreign('supply_id')
                   ->references('id')
                   ->on('supplies')

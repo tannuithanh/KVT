@@ -180,7 +180,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <button id="scan-button" class="btn btn-outline-primary bi bi-upc-scan mt-2">Quét Mã</button>
+                    <button id="scan-button" class="btn btn-outline-primary bi bi-upc-scan mt-2"> Quét Mã</button>
                     <div id="barcode-scanner" class="fullscreen-scanner" style="display:none;">
                         <video id="camera-stream" autoplay></video>
                     </div>
@@ -205,6 +205,10 @@
                     <div class="form-group">
                         <label for="quantityInput">Nhập số lượng đã đạt chất lượng:</label>
                         <input type="number" class="form-control" id="quantityDat" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="quantityInput">Ghi chú:</label>
+                        <textarea class="form-control" id="ghichuText" ></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -296,20 +300,22 @@
     </script>
 {{-- LƯU KIỂM TRA CHẤT LƯỢNG --}}
     <script>
-        $(document).ready(function() {
+      $(document).ready(function() {
             $('#luuKiemTraChatLuong').click(function() {
                 var idQualityCheck = $('#idQualityCheck').val();
                 var quantityDat = $('#quantityDat').val();
+                var ghiChu = $('#ghichuText').val(); // Lấy giá trị từ textarea
+
                 $.ajax({
                     url: "{{ route('luuKiemTraChatLuong') }}",
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         idQualityCheck: idQualityCheck,
-                        quantityDat: quantityDat
+                        quantityDat: quantityDat,
+                        ghiChu: ghiChu // Thêm dữ liệu ghi chú vào request
                     },
                     success: function(response) {
-                        console.log(response);
                         if(response.success) {
                             alert('Dữ liệu đã được lưu thành công.');
                             var row = $('tr[data-id="' + idQualityCheck + '"]');
@@ -319,9 +325,9 @@
                             if(response.status == 1) {
                                 row.find('td').eq(6).css('background-color', '#00FF00'); // Đổi màu nền của cột thứ 7 (index bắt đầu từ 0)
                                 row.find('td').eq(6).text('Đã kiểm tra'); // Cập nhật văn bản cho cột thứ 7 là "Đã kiểm tra"
+                                row.find('td').eq(7).text(response.ngaykiemtra);
                             } else {
                                 row.css('background-color', '#FFFF00'); // Đổi màu nền của cả hàng nếu chưa kiểm tra
-                                // Nếu bạn muốn cập nhật văn bản cho cột thứ 7 ở trạng thái chưa kiểm tra, hãy thêm dòng dưới đây
                                 row.find('td').eq(6).text('Chưa kiểm tra');
                             }
                         }
@@ -332,6 +338,7 @@
                 });
             });
         });
+
     </script>
 {{--SELECT 2--}}
     <script>
