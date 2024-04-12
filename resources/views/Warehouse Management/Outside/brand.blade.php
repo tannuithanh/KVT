@@ -36,24 +36,25 @@
                     <tbody>
                         @php $stt = 1; @endphp
                         @foreach ($brands as $brand)
-                            @php $brandSegmentsCount = $brand->segments->count(); @endphp
+                            @php $brandSegmentsCount = $brand->segments ? $brand->segments->count() : 0; @endphp
                             @foreach ($brand->segments as $index => $segment)
                                 <tr>
-                                    @if ($index == 0) {{-- Chỉ thêm cột này cho hàng đầu tiên của mỗi thương hiệu --}}
+                                    @if ($index == 0 && $brandSegmentsCount)
                                         <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
                                         <td style="text-align: left;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
                                     @endif
                                     <td style="text-align: left;">
                                         <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
                                     </td>
-                                    <td style="text-align: center;">{{ $segment->projects->count() }}</td>
+                                    <td style="text-align: center;">{{ $segment->projects ? $segment->projects->count() : 0 }}</td>
                                     <td style="text-align: center;">
                                         @php
-                                        $totalSupplies = $segment->projects->reduce(function ($carry, $project) {
-                                            return $carry + $project->orders->reduce(function ($carryOrder, $order) {
-                                                return $carryOrder + $order->supplies->sum('soluong');
-                                            }, 0);
-                                        }, 0);
+                                        $totalSupplies = $segment->projects ? $segment->projects->reduce(function ($carry, $project) {
+                                            $projectOrderCount = $project->orders ? $project->orders->count() : 0;
+                                            return $carry + ($projectOrderCount ? $project->orders->reduce(function ($carryOrder, $order) {
+                                                return $carryOrder + ($order->supplies ? $order->supplies->sum('soluong') : 0);
+                                            }, 0) : 0);
+                                        }, 0) : 0;
                                         @endphp
                                         {{ $totalSupplies }}
                                     </td>
@@ -61,6 +62,8 @@
                             @endforeach
                         @endforeach
                     </tbody>
+
+
                 </table>
             </div>
 

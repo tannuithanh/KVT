@@ -10,14 +10,8 @@ class Supply extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'tenvattu', 'maso', 'donvitinh',
-        'soluong', 'note', 'status',
+        'catalog_id', 'tenvattu', 'maso', 'donvitinh', 'soluong', 'note'
     ];
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class, 'order_id');
-    }
 
     public function transactions()
     {
@@ -31,4 +25,10 @@ class Supply extends Model
     {
         return $this->hasMany(ViewVatTuChiTiet::class, 'supply_id');
     }
+    // Thay đổi hoặc thêm vào Supply model
+    public function catalog()
+    {
+        return $this->belongsTo(Catalog::class);
+    }
+
 }

@@ -6,7 +6,7 @@
     width: 100vw;
     z-index: 9999; /* Giá trị cao để nó nằm trên cùng */
     display: none; /* Ẩn container mặc định */
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(8 8 8 / 44%);
   }
 
   .loader {

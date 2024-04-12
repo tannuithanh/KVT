@@ -41,7 +41,9 @@
         z-index: 9999;
     }
 
+
   </style>
+
 @endsection
 @section('title')
     Nhập kho
@@ -75,7 +77,9 @@
                       <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng vật tư đã xuất: <span  style="color: black">{{ $totalOrdersDaxuat ?? 0 }}</span>
                     </h5>
                       <button type="button" class="btn btn-outline-primary ri-search-line timkiemdonhang" data-projectId="{{$project->id}}" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
-                      <a href="{{ route('checkQuality', ['id' => $project->id]) }}" class="btn btn-outline-primary bi bi-journal-check"> Kiểm tra chất lượng</a>
+                        @if ($user->department_id==3)
+                            <a href="{{ route('checkQuality', ['id' => $project->id]) }}" class="btn btn-outline-primary bi bi-journal-check"> Kiểm tra chất lượng</a>
+                        @endif
                       <!-- Nội dung thông báo thành công -->
                           @if(session('success'))
                               <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
@@ -97,7 +101,7 @@
                                             <th style="text-align: center" rowspan="2" scope="col">NCC</th>
                                             <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
                                             <th style="text-align: center" colspan="4" scope="col">Tình trạng</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">Chi Phí</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">Chi phí</th>
                                             <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
                                         </tr>
                                       <tr>
@@ -233,7 +237,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-2">
-                                    <a type="submit" id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</a>
+                                    <button id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</button>
                                 </div>
                             </div>
                         </div>
@@ -259,8 +263,7 @@
                                             <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
                                             <th colspan="5" style="text-align: center;">Tình trạng</th>
                                             <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
+                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Ghi chú</th>
                                         </tr>
                                         <tr>
                                             <th style="text-align: center; vertical-align: middle;">Tổng</th>
@@ -275,13 +278,14 @@
                                 </table>
                             </div>
                             @if ($user->department_id!=3)
-                            <a type="button" class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
+                            <a  class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
                             @endif
                             <a id="inVatTu" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-printer"></i> In mã barcode</a>
-                            <button id="nhapKho" type="submit" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập Kho</button>
-                    </form>
+                            <button id="nhapKho" type="submit" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</button>
+                        </form>
+
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
                 </div>
             </div>
         </div>
@@ -317,37 +321,7 @@
             </div>
         </div>
     </div>
-{{-- IN DANH SÁCH VẬT TƯ --}}
-    <div class="modal fade" id="indanhsachvattu" tabindex="-1" style="display: none;background-color: #000000bb" aria-modal="false" role="dialog" >
-        <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title">Danh sách in barcode</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-                <div class="modal-body ">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="tableVatTuDaChon">
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Dự án</th>
-                                    <th>Đơn hàng</th>
-                                    <th>Tên Vật Tư</th>
-                                    <th>Mã Barcode</th>
-                                    <th>Số Lượng In</th>
-                                </tr>
-                            </thead>
-                            <tbody>
 
-                            </tbody>
-                        </table>
-                    </div>
-                    <button id="inbarcode" class="btn btn-outline-primary" ><i class="bi bi-printer"></i> IN</button>
-                </div>
-            </div>
-        </div>
-    </div>
 {{-- IN DANH SÁCH VẬT TƯ --}}
 @endsection
 
@@ -413,25 +387,18 @@
 
                                     if (item) {
 
-                                        var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
-
-                                            <button class="btn btn-sm btn-danger xoavattuchitiet"
-                                                data-id="${item.id}">Xóa</button>
-                                            </td>`;
-
                                             var row = '<tr id="supply-row-' + item.id + '"  data-id="' + item.id + '">' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="tenvattu">' + (item.tenvattu) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="maso">' + (item.maso) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="donvitinh">' + (item.donvitinh) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluong">' + (item.soluong) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluongnhapkho">' + totalNhapKho + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="soluongdatchatluong">' + totalDatChatLuong + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="chuanhan">' + (item.chuanhan) + '</td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="daxuat">' + (item.daxuat) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' tenvattu">' + (item.tenvattu) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' maso">' + (item.maso) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' donvitinh">' + (item.donvitinh) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluong">' + (item.soluong) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongnhapkho">' + totalNhapKho + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongdatchatluong">' + totalDatChatLuong + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' chuanhan">' + (item.chuanhan) + '</td>' +
+                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' daxuat">' + (item.daxuat) + '</td>' +
                                             '<td class="barcode ' + rowClass + '">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
-                                            '<td class="' + rowClass + '" style="text-align:center;vertical-align: middle" class="ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
-                                            buttonsHtml +
+                                            '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
                                             '</tr>';
                                         tbody.append(row);
                                     }
@@ -537,14 +504,14 @@
     <script>
         $('.danhmucvattuchitiet tbody').on('click', 'tr', function(event) {
             if ($(event.target).closest('.stt-checkbox').length) {
-                // Nếu có, không làm gì cả để ngăn chặn hiển thị modal
                 return;
             }
             if ($(event.target).closest('.action-btn').length) {
-                // Bỏ qua nếu click vào nút thuộc class "action-btn"
                 return;
             }
-
+            if ($(event.target).is('input')) {
+                return;
+            }
             var supplyId = $(this).data('id'); // Lấy id của vật tư
 
             $.ajax({
@@ -679,123 +646,164 @@
                     $(this).html('<i class="bi bi-arrow-left"></i> Trở Về');
                 } else {
                     // Khôi phục bảng và nút "Chọn Vật Tư"
+                    // Loại bỏ các input bằng cách khôi phục nội dung gốc của các ô
                     $('.danhmucvattuchitiet tbody tr').each(function(index) {
+                        $(this).find('td').each(function() {
+                            // Lấy nội dung gốc từ data attribute và khôi phục nó
+                            var originalContent = $(this).data('original-content');
+                            if (originalContent !== undefined) {
+                                $(this).html(originalContent);
+                            }
+                        });
+                        // Khôi phục lại số thứ tự ban đầu cho mỗi hàng ở cột đầu tiên
                         $(this).find('td:first').html(index + 1);
                     });
 
+                    // Khôi phục tiêu đề cột STT và loại bỏ checkbox "Chọn Tất Cả"
                     $('.danhmucvattuchitiet thead th:first').html('STT');
+                    $('#selectAll').prop('checked', false).parent().html('STT'); // Giả định rằng checkbox "Chọn Tất Cả" nằm trong thẻ <th>
 
+                    $('#inVatTu, #nhapKho').hide();
                     isCheckboxAdded = false;
                     $(this).html('<i class="bi bi-folder-plus"></i> Chọn Vật Tư');
-                    $('#inVatTu, #nhapKho').hide();
                 }
             });
 
             // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi, bao gồm "Chọn Tất Cả"
             $(document).on('change', '.stt-checkbox', function() {
-                // Kiểm tra số lượng checkbox được chọn
-                var selectedCount = $('.stt-checkbox:checked').length;
-                $('#inVatTu, #nhapKho').toggle(selectedCount > 0);
+                var $row = $(this).closest('tr');
+                var soluong = parseInt($row.find('.soluong').text().trim(), 10); // Số lượng có sẵn
+                var totalNhapKho = parseInt($row.find('.soluongnhapkho').data('original-content') || 0, 10); // Số lượng đã nhập, từ dữ liệu lưu trữ
+
+                var $soluongnhapkhoCell = $row.find('.soluongnhapkho');
+
+                if ($(this).is(':checked')) {
+                    // Lưu giá trị hiện tại trước khi thay thế bằng input
+                    $soluongnhapkhoCell.data('original-content', totalNhapKho);
+
+                    // Giới hạn số lượng nhập không được vượt quá soluong - totalNhapKho
+                    var maxQty = soluong - totalNhapKho;
+
+                    // Thay đổi nội dung của cột 'soluongnhapkho' bằng input mới với giới hạn max
+                    var inputHtml = `<input type="number" class="form-control soluongnhapkho-input" value="0" min="0" max="${maxQty}" />`;
+                    $soluongnhapkhoCell.html(inputHtml);
+                } else {
+                    // Nếu checkbox bị bỏ chọn, khôi phục giá trị ban đầu
+                    var originalContent = $soluongnhapkhoCell.data('original-content');
+                    $soluongnhapkhoCell.html(originalContent);
+                }
+                checkInputsAndToggleButtons();
             });
+
+            // Thêm sự kiện kiểm tra giá trị nhập vào input
+            $(document).on('input', '.soluongnhapkho-input', function() {
+                var maxQty = parseInt($(this).attr('max'), 10);
+                var currentValue = parseInt($(this).val(), 10);
+
+                // Điều chỉnh giá trị nếu nó vượt quá giới hạn max
+                if (currentValue > maxQty) {
+                    $(this).val(maxQty);
+                } else if (currentValue < 0) {
+                    // Hoặc nếu người dùng nhập giá trị âm
+                    $(this).val(0);
+                }
+                checkInputsAndToggleButtons();
+            });
+
+
 
             // Sự kiện cho checkbox "Chọn Tất Cả"
             $(document).on('change', '#selectAll', function() {
                 var isChecked = $(this).is(':checked');
                 $('.stt-checkbox').prop('checked', isChecked).trigger('change');
             });
-        });
-    </script>
-  {{-- XÁC NHẬN VẬT TƯ IN BARCODE --}}
-    <script>
-        $(document).ready(function() {
-            $('#inVatTu').click(function() {
-                var selectedIds = $('.stt-checkbox:checked').map(function() {
-                    return $(this).val(); // Lấy giá trị của checkbox (ID vật tư)
-                }).get(); // Chuyển đổi thành mảng
-                if (selectedIds.length > 0) {
-                    $.ajax({
-                        url: '{{ route("laythongtinvattu") }}', // Đường dẫn đến route xử lý
-                        type: 'POST',
-                        data: {
-                            ids: selectedIds,
-                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF token cho Laravel
-                        },
-                        success: function(response) {
-                            // Xử lý dữ liệu trả về
-                            var tbody = $('#tableVatTuDaChon tbody');
-                            tbody.empty(); // Xóa dữ liệu cũ
 
-                            $.each(response, function(index, item) {
-                                console.log(item)
-                                var newRow = `<tr>
-                                                <td style="text-align:center;vertical-align: middle">${index + 1}</td>
-                                                <td style="text-align:center;vertical-align: middle">${item.duan.name || 'N/A'}</td> <!-- Cập nhật Dự án -->
-                                                <td style="text-align:center;vertical-align: middle">${item.donhang.sodonhang || 'N/A'}</td> <!-- Cập nhật Đơn hàng -->
-                                                <td style="text-align:center;vertical-align: middle">${item.tenvattu}</td>
-                                                <td style="text-align:center;vertical-align: middle">${item.barcode}<div>${item.maso}</div></td>
-                                                <td style="text-align:center;vertical-align: middle">
-                                                    <input type="number" class="form-control print-quantity" value="1" min="1" style="width: auto;"/>
-                                                </td>
-                                            </tr>`;
-                                tbody.append(newRow);
-                            });
-                            $('#indanhsachvattu').modal('show'); // Hiển thị modal
-                        },
-                        error: function(error) {
-                            console.log(error);
-                            alert('Có lỗi xảy ra');
-                        }
+            function checkInputsAndToggleButtons() {
+                var allCheckedBoxesHaveValue = true;
+                $('.stt-checkbox:checked').each(function() {
+                    var inputValue = $(this).closest('tr').find('.soluongnhapkho-input').val();
+                    if (!inputValue || parseInt(inputValue, 10) === 0) {
+                        allCheckedBoxesHaveValue = false;
+                        return false; // Dừng vòng lặp nếu tìm thấy một trường hợp không thoả mãn
+                    }
+                });
+
+                // Hiển thị hoặc ẩn các nút dựa trên kết quả kiểm tra
+                if (allCheckedBoxesHaveValue) {
+                    $('#inVatTu, #nhapKho').show();
+                } else {
+                    $('#inVatTu, #nhapKho').hide();
+                }
+            }
+            $('#inVatTu, #nhapKho').click(function(e) {
+                e.preventDefault(); // Ngăn chặn hành động mặc định
+                var isValid = true;
+                $('.stt-checkbox:checked').each(function() {
+                    var inputValue = $(this).closest('tr').find('.soluongnhapkho-input').val();
+                    if (parseInt(inputValue, 10) === 0) {
+                        isValid = false;
+                        return false; // Dừng vòng lặp nếu tìm thấy một trường hợp không thoả mãn
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Có vật tư bạn chưa nhập giá trị hoặc giá trị bằng 0!',
                     });
                 } else {
-                    alert('Vui lòng chọn ít nhất một vật tư');
+                    document.querySelector('form.modal-body').submit();
                 }
             });
         });
+
     </script>
+
   {{-- THỰC HIỆN IN BARCODE --}}
     <script>
-        $('#inbarcode').click(function() {
-            var doc = printFrame.contentDocument || printFrame.contentWindow.document;
-            var stt = 1; // Khởi tạo số thứ tự ban đầu
-            doc.open();
-            doc.write('<html><head><title>In Barcode</title>');
-            // Thêm định dạng CSS cho bảng và các cột
-            doc.write('<style>');
-            doc.write('table { width: 100%; border-collapse: collapse; }');
-            doc.write('td, th { border: 1px dotted #ddd; text-align: left; padding: 8px; }');
-            doc.write('.ten-vat-tu { max-width: 200px; word-wrap: break-word; }');
-            doc.write('</style>');
-            doc.write('</head><body>');
-            doc.write('<table>'); // Bắt đầu bảng
+        $(document).ready(function() {
+            $('#inVatTu').click(function(e) {
+                e.preventDefault(); // Ngăn chặn hành động mặc định của nút
 
-            // Duyệt qua mỗi hàng trong bảng
-            $('#tableVatTuDaChon tbody tr').each(function() {
-                var quantity = $(this).find('.print-quantity').val(); // Lấy giá trị số lượng từ input
-                var duAn = $(this).children('td:nth-child(2)').text(); // Lấy thông tin Dự án
-                var donHang = $(this).children('td:nth-child(3)').text(); // Lấy thông tin Đơn hàng
-                var tenVatTu = $(this).children('td:nth-child(4)').text(); // Lấy thông tin Tên Vật Tư
-                var barcode = $(this).children('td:nth-child(5)').html(); // Lấy thông tin Mã Barcode
+                var iframe = $('#printFrame').get(0);
+                var doc = iframe.contentDocument || iframe.contentWindow.document;
 
-                // Tạo HTML cho hàng muốn in
-                for (var i = 0; i < quantity; i++) {
-                    var printRow = `<tr>
-                                        <td style="text-align:center">${stt++}</td>
-                                        <td style="text-align:center">${duAn}</td>
-                                        <td style="text-align:center">${donHang}</td>
-                                        <td style="text-align:center" class="ten-vat-tu">${tenVatTu}</td>
-                                        <td>${barcode}</td>
-                                    </tr>`;
-                    doc.write(printRow);
-                }
+                // Khởi tạo nội dung HTML cần in
+                doc.open();
+                doc.write('<html><head><title>In Barcode</title>');
+                doc.write('<style>');
+                doc.write('body { font-family: Arial, sans-serif; font-size: 8pt; }'); // Giảm kích thước font xuống
+                doc.write('.print-table { width: 100%; border-collapse: collapse; page-break-after: always; }');
+                doc.write('td, th { border: 1px solid #ddd; text-align: left; padding: 8px; font-size: 8pt; }'); // Áp dụng font-size nhỏ hơn cho table
+                doc.write('.ten-vat-tu { max-width: 200px; word-wrap: break-word; font-size: 8pt; }'); // Đặt kích thước font cụ thể cho tên vật tư
+                doc.write('</style></head><body>');
+
+                $('.stt-checkbox:checked').each(function() {
+                    var $row = $(this).closest('tr');
+                    var quantity = $row.find('.soluongnhapkho-input').val(); // Số lượng từ input
+                    var donHang =  $('#orderTitle').text().replace('Đơn hàng: ', '');
+                    var tenVatTu = $row.find('.tenvattu').text();
+                    var barcode = $row.find('.barcode').html();
+
+                    for (var i = 0; i < quantity; i++) {
+                        // Bắt đầu một bảng mới cho mỗi hàng dữ liệu
+                        doc.write('<table class="print-table"><tbody>');
+                        doc.write(`<tr>
+                                    <td>${donHang}<br>${tenVatTu}</td>
+                                    <td>${barcode}</td>
+                                </tr>`);
+                        doc.write('</tbody></table>');
+                    }
+                });
+
+                doc.write('</body></html>');
+                doc.close();
+
+                // Focus vào iframe và in nội dung
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
             });
-
-            doc.write('</table>'); // Kết thúc bảng
-            doc.write('</body></html>');
-            doc.close();
-
-            // In nội dung và không reload trang
-            printFrame.contentWindow.focus();
-            printFrame.contentWindow.print();
         });
     </script>
   {{-- TÌM KIẾM VẬT TƯ CHI TIẾT --}}

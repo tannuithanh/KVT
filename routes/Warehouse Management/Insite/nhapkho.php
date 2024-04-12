@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Route;
 
     Route::get('/laySoLuongKho', [Insite::class, 'laySoLuongKho'])->name('laySoLuongKho')->middleware('auth');
 
-    Route::POST('/laythongtinvattu', [Insite::class, 'laythongtinvattu'])->name('laythongtinvattu')->middleware('auth');
-
     Route::get('/quetBarcodeNhapKho', [Insite::class, 'quetBarcodeNhapKho'])->name('quetBarcodeNhapKho')->middleware('auth');
 
     Route::POST('/KiemTraSoluongTruocKhiNhapKho', [Insite::class, 'KiemTraSoluongTruocKhiNhapKho'])->name('KiemTraSoluongTruocKhiNhapKho')->middleware('auth');

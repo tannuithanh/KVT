@@ -8,3 +8,4 @@ require __DIR__.'/Warehouse Management/Insite/nhapkho.php';
 require __DIR__.'/Warehouse Management/Insite/quanLyTonKho.php';
 require __DIR__.'/Warehouse Management/Insite/kiemTraChatLuong.php';
 require __DIR__.'/Warehouse Management/Insite/xuatKho.php';
+require __DIR__.'/Warehouse Management/Insite/inMaBarcode.php';

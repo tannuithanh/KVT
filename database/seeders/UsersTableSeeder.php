@@ -20,6 +20,7 @@ class UsersTableSeeder extends Seeder
             'password' => bcrypt('123456'),
             'is_admin' => 1,
             'position_id' => 11,
+            'function_id' => 4,
         ]);
     }
 

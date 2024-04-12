@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Insite;
 use Illuminate\Support\Facades\Route;
+
+//ĐƠN HÀNG
     Route::get('/ware-house/{project}', [Insite::class, 'listWarehouse'])->name('listWarehouse')->middleware('auth');
 
     Route::POST('/import-supplies', [Insite::class, 'importSupplies'])->name('importSupplies')->middleware('auth');
@@ -29,3 +31,15 @@ use Illuminate\Support\Facades\Route;
     Route::POST('/lichsuvattu', [Insite::class, 'lichsuvattu'])->name('lichsuvattu')->middleware('auth');
 
     Route::POST('/timkiemvattuchitiet', [Insite::class, 'timkiemvattuchitiet'])->name('timkiemvattuchitiet')->middleware('auth');
+//DANH MỤC VẬT TƯ
+    Route::POST('/vattutrongdanhmuc', [Insite::class, 'vattutrongdanhmuc'])->name('vattutrongdanhmuc')->middleware('auth');
+
+    Route::POST('/xoa_Danhmuc', [Insite::class, 'xoa_Danhmuc'])->name('xoa_Danhmuc')->middleware('auth');
+
+    Route::POST('/thayTheVatTu', [Insite::class, 'thayTheVatTu'])->name('thayTheVatTu')->middleware('auth');
+
+    Route::POST('/timKiem_VatTu', [Insite::class, 'timKiem_VatTu'])->name('timKiemVatTu')->middleware('auth');
+
+//QUẢN LÝ ĐƠN HANG (KẾ HOẠCH)
+
+    Route::get('/quanLyDonHang', [Insite::class, 'quanLyDonHang'])->name('quanLyDonHang')->middleware('auth');

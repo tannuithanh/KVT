@@ -497,58 +497,58 @@
 
         </script>
     {{-- TÌM KIẾM TÊN VẬT TƯ CHI TIẾT --}}
-    <script>
-        $(document).ready(function(){
-            $("#timkiemVatTuChiTiet").click(function() {
-                var tenvattu = $(".tenvattuchitiet").val() === "Tên vật tư" ? "" : $(".tenvattuchitiet").val();
-                var maso = $(".masochitiet").val() === "Mã số" ? "" : $(".masochitiet").val();
-                var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
-                var orderId = $(this).attr('data-id'); // Đảm bảo đã lưu orderId vào attribute 'data-id' của nút tìm kiếm
-                $.ajax({
-                    url: "{{ route('timkiemvattuchitiet') }}", // Sửa lại URL cho đúng với route của bạn
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        _token: '{{ csrf_token() }}', // CSRF token
-                        tenvattu: tenvattu,
-                        maso: maso,
-                        donvitinh: donvitinh,
-                        orderId: orderId,
-                    },
-                    success: function(data) {
-                        // Xử lý dữ liệu trả về và hiển thị trong bảng
-                        var tbody = $("#danhMucVatTuChiTiet .table-responsive tbody");
-                        tbody.empty(); // Xóa nội dung hiện tại của tbody
-                        if(data.supplies && data.supplies.length > 0){
-                            $.each(data.supplies, function(index, supply) {
+        <script>
+            $(document).ready(function(){
+                $("#timkiemVatTuChiTiet").click(function() {
+                    var tenvattu = $(".tenvattuchitiet").val() === "Tên vật tư" ? "" : $(".tenvattuchitiet").val();
+                    var maso = $(".masochitiet").val() === "Mã số" ? "" : $(".masochitiet").val();
+                    var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
+                    var orderId = $(this).attr('data-id'); // Đảm bảo đã lưu orderId vào attribute 'data-id' của nút tìm kiếm
+                    $.ajax({
+                        url: "{{ route('timkiemvattuchitiet') }}", // Sửa lại URL cho đúng với route của bạn
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            _token: '{{ csrf_token() }}', // CSRF token
+                            tenvattu: tenvattu,
+                            maso: maso,
+                            donvitinh: donvitinh,
+                            orderId: orderId,
+                        },
+                        success: function(data) {
+                            // Xử lý dữ liệu trả về và hiển thị trong bảng
+                            var tbody = $("#danhMucVatTuChiTiet .table-responsive tbody");
+                            tbody.empty(); // Xóa nội dung hiện tại của tbody
+                            if(data.supplies && data.supplies.length > 0){
+                                $.each(data.supplies, function(index, supply) {
+                                    tbody.append(
+                                        `<tr>
+                                            <td style="text-align:center;vertical-align: middle">${index + 1}</td>
+                                            <td style="text-align:center;vertical-align: middle">${supply.tenvattu}</td>
+                                            <td style="text-align:center;vertical-align: middle">${supply.maso}</td>
+                                            <td style="text-align:center;vertical-align: middle">${supply.donvitinh}</td>
+                                            <td style="text-align:center;vertical-align: middle">${supply.soluong}</td>
+                                            <td style="text-align:center;vertical-align: middle">${supply.danhan}</td>
+                                            <td style="text-align:center;vertical-align: middle">-</td>
+                                            <td style="text-align:center;vertical-align: middle">-</td>
+                                            <td style="text-align:center;vertical-align: middle">-</td>
+                                        </tr>`
+                                    );
+                                });
+                            } else {
                                 tbody.append(
                                     `<tr>
-                                        <td style="text-align:center;vertical-align: middle">${index + 1}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.tenvattu}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.maso}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.donvitinh}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.soluong}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.danhan}</td>
-                                        <td style="text-align:center;vertical-align: middle">-</td>
-                                        <td style="text-align:center;vertical-align: middle">-</td>
-                                        <td style="text-align:center;vertical-align: middle">-</td>
+                                        <td colspan="9" style="text-align:center;vertical-align: middle">Không có dữ liệu</td>
                                     </tr>`
                                 );
-                            });
-                        } else {
-                            tbody.append(
-                                `<tr>
-                                    <td colspan="9" style="text-align:center;vertical-align: middle">Không có dữ liệu</td>
-                                </tr>`
-                            );
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert("Có lỗi xảy ra: " + error);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        alert("Có lỗi xảy ra: " + error);
-                    }
+                    });
                 });
             });
-        });
-    </script>
+        </script>
 
 @endsection

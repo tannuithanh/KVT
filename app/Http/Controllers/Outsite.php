@@ -13,20 +13,22 @@ use Illuminate\Support\Facades\Auth;
 class Outsite extends Controller
 {
     public function listBrand(Request $request) {
-        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        // Lấy thông tin người dùng hiện tại
+        $user = User::with(['department', 'position', 'appFunction'])->find(Auth::id());
 
-        // Truy vấn tất cả brands
-        $brands = Brand::with(['segments.projects.orders.supplies'])->get();
+        // Truy vấn tất cả brands và tổng số lượng vật tư liên quan mà không phải load tất cả các model liên quan
+        $brands = Brand::with('segments.projects.catalogs.orders.supplies')->get();
 
         foreach ($brands as $brand) {
             $brandTotalSupplies = 0;
-
             foreach ($brand->segments as $segment) {
                 foreach ($segment->projects as $project) {
-                    foreach ($project->orders as $order) {
-                        // Tính tổng số lượng vật tư của mỗi đơn hàng
-                        $orderTotalSupplies = $order->supplies->sum('soluong');
-                        $brandTotalSupplies += $orderTotalSupplies;
+                    foreach ($project->catalogs as $catalog) {
+                        foreach ($catalog->orders as $order) {
+                            // Tính tổng số lượng vật tư của mỗi đơn hàng
+                            $orderTotalSupplies = $order->supplies->sum('soluong');
+                            $brandTotalSupplies += $orderTotalSupplies;
+                        }
                     }
                 }
             }
@@ -36,8 +38,11 @@ class Outsite extends Controller
         }
 
         $module = $request->query('module', 'defaultModule');
+        // dd($brands->toarray());
+        // Truyền data đến view
         return view('Warehouse Management.Outside.brand', compact('user', 'brands', 'module'));
     }
+
 
 
     public function Project($segmentId, Request $request)

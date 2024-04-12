@@ -9,19 +9,21 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'segment_id']; // Cập nhật fillable để bao gồm 'segment_id' thay vì 'brand_id'
+        protected $fillable = ['name', 'description', 'segment_id'];
 
-    public function segment()
-    {
-        return $this->belongsTo(Segment::class); // Cập nhật mối quan hệ để liên kết với Segment thay vì Brand
-    }
+        public function segment()
+        {
+            return $this->belongsTo(Segment::class);
+        }
 
-    public function supplies()
-    {
-        return $this->hasMany(Supply::class, 'project_id');
-    }
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
+        public function supplies()
+        {
+            return $this->hasMany(Supply::class, 'project_id');
+        }
+
+        // Định nghĩa mối quan hệ mới với Catalog
+        public function catalogs()
+        {
+            return $this->hasMany(Catalog::class);
+        }
 }

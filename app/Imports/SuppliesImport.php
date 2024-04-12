@@ -3,73 +3,75 @@
 namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Models\ProviderDetail;
-use App\Models\Order;
-use Illuminate\Support\Facades\DB;
+use App\Models\Catalog;
 use App\Models\Supply;
+use Illuminate\Support\Facades\DB;
 
 class SuppliesImport implements ToModel
 {
-    private $rowNumber = 0;
-    private $sodonhang;
-    private $nhacungcap;
-    private $chiphi;
     private $project_id;
+    private $catalog_id;
+    private $rowNumber = 0;
     private $errors = [];
 
-    public function __construct($sodonhang, $nhacungcap, $chiphi, $project_id)
+    public function __construct($project_id)
     {
         $this->project_id = $project_id;
-        $this->sodonhang = $sodonhang;
-        $this->nhacungcap = $nhacungcap;
-        $this->chiphi = $chiphi;
-        $providerExists = ProviderDetail::where('name', $this->nhacungcap)->exists();
-            if (!$providerExists) {
-                throw new \Exception("Nhà cung cấp không tồn tại.");
-            }
     }
 
-    public function model(array $row){
-
+    public function model(array $row)
+    {
         $this->rowNumber++;
-        if ($this->rowNumber < 4) {
+        if ($this->rowNumber == 1) {
+            $lines = explode("\n", $row[10]);
+            $catalogName = trim($lines[1]);
+
+            // Kiểm tra xem Catalog với tên này đã tồn tại chưa
+            $existingCatalog = Catalog::where('name', $catalogName)->where('project_id', $this->project_id)->first();
+            if ($existingCatalog) {
+                // Nếu đã tồn tại, lưu id để sử dụng cho các Supplies
+                $this->catalog_id = $existingCatalog->id;
+                $this->errors[] = "Catalog '{$catalogName}' đã tồn tại.";
+                return null; // Bỏ qua tạo mới nếu không muốn tạo trùng
+            }
+
+            // Nếu không tồn tại, tạo mới
+            $catalog = Catalog::create([
+                'project_id' => $this->project_id,
+                'name' => $catalogName,
+            ]);
+            $this->catalog_id = $catalog->id;
             return null;
         }
-        // dd($row);
-        if (empty($row[1])) {
+
+        if (stripos($row[1], "Tên Vật tư") !== false) {
             return null;
         }
 
-        // Kiểm tra xem mã số vật tư đã tồn tại chưa
-        $maSoExists = Supply::join('orders', 'supplies.order_id', '=', 'orders.id')
-                            ->where('orders.project_id', $this->project_id)
-                            ->where('supplies.maso', $row[2])
-                            ->exists();
-
-        if ($maSoExists) {
-            $this->errors[] = "Trùng mã số vật tư";
+        if (empty($row[1])) { // Giả sử cột B là cần thiết
             return null;
         }
 
-        // Kiểm tra và thêm mới đơn hàng vào bảng `orders`
-        $order = Order::firstOrCreate(
-            ['project_id' => $this->project_id, 'sodonhang' => $this->sodonhang, 'nhacungcap' => $this->nhacungcap, 'chiphi' => $this->chiphi],
-        );
+        // Kiểm tra xem mã sản phẩm đã tồn tại chưa
+        $existingSupply = Supply::where('maso', $row[2])->where('catalog_id', $this->catalog_id)->first();
+        if ($existingSupply) {
+            $this->errors[] = "Mã sản phẩm {$row[2]} đã tồn tại ở dòng {$this->rowNumber}.";
+            return null; // Có thể bỏ qua hoặc xử lý tùy theo nhu cầu
+        }
 
-        // Thêm thông tin vào bảng `supplies` với `order_id`
+        // Tạo mới đối tượng Supply nếu không có lỗi
         return new Supply([
-            'order_id' => $order->id,
+            'catalog_id' => $this->catalog_id,
             'tenvattu' => $row[1], // Cột B
             'maso' => $row[2], // Cột C
             'donvitinh' => $row[7], // Cột H
             'soluong' => $row[8], // Cột I
-            'note' => $row[10], // Cột K
         ]);
     }
 
 
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 }

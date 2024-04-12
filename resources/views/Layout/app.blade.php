@@ -28,6 +28,7 @@
   <link href="{{asset('assets/css/TH.css')}}" rel="stylesheet">
   <link href="{{asset('assets/css/loadingPage.css')}}" rel="stylesheet">
   <link href="{{ asset('assets/css/sweetalert2.min.css') }}" rel="stylesheet">
+
   @yield('style')
   <style>
 
@@ -70,7 +71,7 @@
         </div>
     </div>
 <body>
-    <iframe id="printFrame" style="display: none;"></iframe>
+    <iframe name="printFrame" id="printFrame" style="display:none;"></iframe>
   <!-- ======= Header ======= -->
   <header id="header" class="header fixed-top d-flex align-items-center" style="background-color: #05438a;color: white !important; font-family:Arial, Helvetica, sans-serif " >
 
@@ -215,6 +216,9 @@
     $currentRoute = Route::currentRouteName();
     $isActiveWarehouse = Illuminate\Support\Str::startsWith($currentRoute, 'Warehouse-Management') || in_array($currentRoute, ['listExportWarehouse','listBrand', 'listProject','listWarehouse','listNhapKho','trangTonKho']);
     $isActiveDashboard = $currentRoute == 'dashboard';
+    $kiemTraChatLuong = $currentRoute == 'checkQuality';
+    $inMaBarCode = $currentRoute == 'inMaBarcode';
+    $quanLyDonHang = $currentRoute == 'quanLyDonHang';
     // Định nghĩa isActivePlanManagement dựa trên điều kiện của bạn
     $module = $module ?? 'default-value';
     $quanLyDonHang = $module == 'Quản lý đơn hàng';
@@ -230,11 +234,10 @@
 
       <li class="nav-item">
         <a class="nav-link {{ $isActiveDashboard ? '' : 'collapsed' }}" href="{{route('dashboard')}}">
-            <i class="bi bi-grid"></i>
+            <i class="bi bi-house-door"></i>
             <span>Trang chủ</span>
         </a>
       </li>
-
       <li class="nav-item">
           <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
               <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -280,6 +283,37 @@
 
 
       </li>
+      @if ($user->department_id == 3 || $user->is_admin==1)
+        <li class="nav-item">
+            <a class="nav-link {{ $kiemTraChatLuong ? '' : 'collapsed' }} " href="{{route('checkQuality')}}">
+            <i class="bi bi-ui-checks-grid"></i>
+                <span>Kiểm tra chất lượng</span>
+            </a>
+        </li>
+      @endif
+        @if ($user->department_id == 4 || $user->is_admin==1 )
+            <li class="nav-item">
+                <a class="nav-link {{ $inMaBarCode ? '' : 'collapsed' }} " href="{{route('inMaBarcode')}}">
+                <i class="bi bi-upc-scan"></i>
+                <span>In barcode</span>
+                </a>
+            </li>
+        @endif
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="">
+          <i class="bi bi-journal-richtext"></i>
+          <span>Yêu cầu vật tư</span>
+        </a>
+      </li>
+      @if ($user->department_id == 2 || $user->is_admin==1 )
+        <li class="nav-item">
+            <a class="nav-link {{ $quanLyDonHang ? '' : 'collapsed' }}" href="{{route('quanLyDonHang')}}">
+                <i class="bi bi-cart-plus"></i>
+            <span>Quản lý đơn hàng</span>
+            </a>
+        </li>
+      @endif
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -296,8 +330,8 @@
         <span>Ứng dụng quản lý vật tư linh kiện tại kho Trung Tâm R&D ÔTô</span>
     </div>
     <div class="right-content">
-        <div>Bản quyền © 2023 tại Trung Tâm R&D</div>
-        <div><i class="fa fa-phone"></i>✆ hotline: 0886418363</div>
+        <div>Bản quyền © 2023 tại Trung Tâm R&D</div></br>
+        <div>✆ hotline: 0886418363</div>
     </div>
 </footer><!-- End Footer -->
 
