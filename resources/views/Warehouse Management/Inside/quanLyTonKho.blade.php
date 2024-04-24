@@ -303,42 +303,36 @@
     {{-- LẤY ĐƠN HÀNG --}}
         <script>
             $(document).ready(function(){
-                // Khởi tạo Select2 cho select box đơn hàng ban đầu
                 $('.donHangChiTiet').select2({
                     placeholder: "Chọn...",
                     allowClear: true,
-                    width: '100%' // Tùy chỉnh chiều rộng
+                    width: '100%'
                 });
 
                 $('.duAnDonHang').change(function(){
-                    var projectId = $(this).val(); // Lấy ID của dự án được chọn
-                    var orderSelect = $('.donHangChiTiet'); // Chọn select box đơn hàng
-                    orderSelect.empty().append('<option></option>'); // Thêm một option trống
+                    var projectId = $(this).val();
+                    var orderSelect = $('.donHangChiTiet');
+                    orderSelect.empty().append('<option></option>');
 
                     if(projectId != ''){
                         $.ajax({
-                            url: "{{ route('selectedDonHang') }}", // Sửa lại route cho đúng nếu cần
+                            url: "{{ route('selectedDonHang') }}",
                             method: 'GET',
-                            data: {projectId: projectId}, // Gửi ID dự án như một tham số
+                            data: {projectId: projectId},
                             success: function(data){
-                                var suppliesSet = new Set();
-                                if(data.length > 0){
-                                    // Thêm các option đơn hàng mới vào select box
-                                    $.each(data, function(index, order){
+                                if(data.orders && data.orders.length > 0){
+                                    $.each(data.orders, function(index, order){
                                         var newOption = new Option(order.sodonhang, order.id, false, false);
                                         orderSelect.append(newOption);
                                     });
 
-                                    // Cập nhật Select2 cho đơn hàng và vật tư
                                     orderSelect.prop('disabled', false).select2({
                                         placeholder: "Chọn đơn hàng",
                                         allowClear: true,
                                         width: '100%'
                                     });
-
                                 } else {
-                                    // Xử lý trường hợp không có dữ liệu đơn hàng
-                                    orderSelect.prop('disabled', true).select2({
+                                    orderSelect.empty().prop('disabled', true).select2({
                                         placeholder: "Không có dữ liệu",
                                         allowClear: true,
                                         width: '100%'
@@ -347,7 +341,6 @@
                             }
                         });
                     } else {
-                        // Khởi tạo lại Select2 với placeholder mặc định nếu không chọn dự án
                         orderSelect.select2({
                             placeholder: "Chọn đơn hàng",
                             allowClear: true,
@@ -357,63 +350,65 @@
                 });
             });
         </script>
+
     {{-- TÌM KIẾM THÔNG TIN TỒN KHO --}}
         <script>
-            $(document).ready(function(){
-                $('#timkiemTonKhoDonHang').click(function(event){
-                    event.preventDefault(); // Ngăn chặn hành vi mặc định của form submit
+                $(document).ready(function() {
+                    $('#timkiemTonKhoDonHang').click(function(event) {
+                        event.preventDefault(); // Prevent the form from submitting via the browser.
 
-                    // Lấy giá trị từ các select box, nếu disabled thì gửi giá trị rỗng
-                    var thuongHieuIdDonHang = $('.thuongHieuDonHang').prop('disabled') ? '' : $('.thuongHieuDonHang').val();
-                    var phanKhucIdDonHang = $('.phanKhucDonHang').prop('disabled') ? '' : $('.phanKhucDonHang').val();
-                    var duAnIdDonHang = $('.duAnDonHang').prop('disabled') ? '' : $('.duAnDonHang').val();
-                    var donHangIdChiTiet = $('.donHangChiTiet').prop('disabled') ? '' : $('.donHangChiTiet').val();
+                        var thuongHieuIdDonHang = $('.thuongHieuDonHang').prop('disabled') ? '' : $('.thuongHieuDonHang').val();
+                        var phanKhucIdDonHang = $('.phanKhucDonHang').prop('disabled') ? '' : $('.phanKhucDonHang').val();
+                        var duAnIdDonHang = $('.duAnDonHang').prop('disabled') ? '' : $('.duAnDonHang').val();
+                        var donHangIdChiTiet = $('.donHangChiTiet').prop('disabled') ? '' : $('.donHangChiTiet').val();
 
-                    $.ajax({
-                        url: "{{ route('listTonKhoDonHang') }}",
-                        type: "POST",
-                        data: {
-                            _token: "{{ csrf_token() }}",
-                            thuongHieuIdDonHang: thuongHieuIdDonHang,
-                            phanKhucIdDonHang: phanKhucIdDonHang,
-                            duAnIdDonHang: duAnIdDonHang,
-                            donHangIdChiTiet: donHangIdChiTiet,
-                        },
-                        success: function(response) {
-                            console.log(response);
-                            // Cập nhật thông tin thương hiệu, phân khúc, dự án nếu có dữ liệu
-                            $('#labelThuongHieuDonHang').text(response.brand ? 'Thương Hiệu: ' + response.brand.name : 'Thương Hiệu: N/A');
-                            $('#labelPhanKhucDonHang').text(response.segment ? 'Phân khúc: ' + response.segment.name : 'Phân khúc: N/A');
-                            $('#labelDuAnDonHang').text(response.project ? 'Dự án: ' + response.project.name : 'Dự án: N/A');
+                        $.ajax({
+                            url: "{{ route('listTonKhoDonHang') }}",
+                            type: "POST",
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                thuongHieuIdDonHang: thuongHieuIdDonHang,
+                                phanKhucIdDonHang: phanKhucIdDonHang,
+                                duAnIdDonHang: duAnIdDonHang,
+                                donHangIdChiTiet: donHangIdChiTiet,
+                            },
+                            success: function(response) {
+                                var tableBody = $("#bangTonKhoTheoDonHang tbody");
+                                tableBody.empty();
 
-                            var tableBody = $("#bangTonKhoTheoDonHang tbody");
-                            tableBody.empty();
+                                if (response && response.length > 0) {
+                                    $('#labelThuongHieuDonHang').text('Thương Hiệu: ' + (response[0].brand || 'N/A'));
+                                    $('#labelPhanKhucDonHang').text('Phân khúc: ' + (response[0].segment || 'N/A'));
+                                    $('#labelDuAnDonHang').text('Dự án: ' + (response[0].project || 'N/A'));
+                                    $.each(response, function(index, order) {
+                                        console.log(order);
+                                        var stt = index + 1;
+                                        var row = `<tr data-id="${order.id}">
+                                            <td style="text-align: center">${stt}</td>
+                                            <td style="text-align: center">${order.sodonhang}</td>
+                                            <td style="text-align: center">${order.tongSoLuongVatTu}</td> <!-- Display the total quantity of supplies -->
+                                            <td style="text-align: center">${order.tongSoLuongNhan}</td>
+                                            <td style="text-align: center">${order.tongSoLuongXuat}</td>
+                                            <td style="text-align: center">${order.soluongTon}</td>
 
-                            // Cập nhật bảng đơn hàng
-                            if (response.orders && response.orders.length > 0) {
-                                $.each(response.orders, function(index, order) {
-                                    var stt = index + 1; // Số thứ tự, bắt đầu từ 1
-                                    var row = `<tr data-id="${order.id}">
-                                        <td style="text-align: center">${stt}</td>
-                                        <td style="text-align: center">${order.sodonhang}</td>
-                                        <td style="text-align: center">${order.tongSoLuongNhan + order.tongSoLuongXuat}</td>
-                                        <td style="text-align: center">${order.tongSoLuongNhan}</td>
-                                        <td style="text-align: center">${order.tongSoLuongXuat}</td>
-                                        <td style="text-align: center">${order.soluongTon}</td>
-                                    </tr>`;
-                                    tableBody.append(row);
-                                });
-                            } else {
-                                tableBody.append('<tr><td colspan="6" style="text-align: center">Không có dữ liệu</td></tr>');
+                                        </tr>`;
+                                        tableBody.append(row);
+                                    });
+                                } else {
+                                    tableBody.append('<tr><td colspan="7" style="text-align: center">Không có dữ liệu</td></tr>');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error);
+                                alert('Lỗi khi tải dữ liệu: ' + error);
                             }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error(error);
-                        }
+                        });
                     });
                 });
-            });
         </script>
+
+
+
     {{-- LẤY THÔNG TIN VẬT TƯ CHI TIẾT --}}
         <script>
             $(document).ready(function() {

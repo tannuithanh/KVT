@@ -211,13 +211,13 @@
   </div>
 {{-- MODAL DANH MỤC VẬT TƯ--}}
     <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Vật tư chi tiết</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                    <form class="modal-body" action="{{ route('quetBarcodeNhapKho') }}" method="get">
+                    <form class="modal-body quetBarcodeNhapKho" action="{{ route('quetBarcodeNhapKho') }}" method="get">
                         @csrf
                         <div class="filter-box mt-3">
                             <div class="row">
@@ -237,7 +237,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-2">
-                                    <button id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</button>
+                                    <a id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</a>
                                 </div>
                             </div>
                         </div>
@@ -278,11 +278,11 @@
                                 </table>
                             </div>
                             @if ($user->department_id!=3)
-                            <a  class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
+                                <a  class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
                             @endif
-                            <a id="inVatTu" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-printer"></i> In mã barcode</a>
+                            <button id="inVatTu" type="button" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-printer"></i>In mã barcode</button>
                             <button id="nhapKho" type="submit" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</button>
-                        </form>
+                    </form>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
@@ -735,26 +735,25 @@
                     $('#inVatTu, #nhapKho').hide();
                 }
             }
-            $('#inVatTu, #nhapKho').click(function(e) {
-                e.preventDefault(); // Ngăn chặn hành động mặc định
-                var isValid = true;
-                $('.stt-checkbox:checked').each(function() {
-                    var inputValue = $(this).closest('tr').find('.soluongnhapkho-input').val();
-                    if (parseInt(inputValue, 10) === 0) {
-                        isValid = false;
-                        return false; // Dừng vòng lặp nếu tìm thấy một trường hợp không thoả mãn
-                    }
-                });
+            $('#nhapKho').click(function(e) {
+                e.preventDefault(); // Ngăn chặn hành động mặc định của form submit
 
-                if (!isValid) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Có vật tư bạn chưa nhập giá trị hoặc giá trị bằng 0!',
-                    });
-                } else {
-                    document.querySelector('form.modal-body').submit();
+                var selectedItems = $('.stt-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+
+                // Kiểm tra nếu không có mục nào được chọn
+                if (selectedItems.length === 0) {
+                    alert("Vui lòng chọn ít nhất một vật tư để nhập kho.");
+                    return false;
                 }
+
+                // Tạo URL cho chuyển hướng
+                var baseUrl = "{{ route('quetBarcodeNhapKho') }}"; // Đảm bảo đường dẫn này được in đúng trong mã HTML của bạn
+                var query = $.param({ 'selectedItems': selectedItems });
+                var redirectUrl = baseUrl + '?' + query;
+
+                window.location.href = redirectUrl;
             });
         });
 
@@ -804,7 +803,10 @@
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
             });
+
+
         });
+
     </script>
   {{-- TÌM KIẾM VẬT TƯ CHI TIẾT --}}
     <script>

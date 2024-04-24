@@ -43,7 +43,7 @@
                             </div>
                             <div class="col-6 col-md-2">
                                 <button type="button" class="btn btn-outline-primary" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</button>
-                                <button id="scan-button" class="btn btn-outline-primary bi bi-upc-scan"> Quét Mã</button>
+                                <a href="{{ route('xuatKhoBarcode') }}" class="btn btn-outline-primary bi bi-upc-scan"> Quét Mã </a>
                             </div>
                         </div>
                     </div>
@@ -62,11 +62,9 @@
                                     </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $stt = 1;
-                                @endphp
-                                @forelse ($project->orders as $orderIndex => $order)
-                                    @forelse ($order->supplies as $supplyIndex => $supply)
+                                @php $stt = 1; @endphp
+                                @forelse ($orders as $order)
+                                    @forelse ($order->supplies as $supply)
                                         <tr>
                                             <td style="text-align: center;display:none;">
                                                 <input type="checkbox" value="{{$supply->id}}" class="form-check-input select-checkbox" data-soluongcon="{{$supply->soluong_conlai}}">
@@ -141,7 +139,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Đóng</button>
               <button type="button" class="btn btn-primary" id="printButton">In</button>
 
             </div>

@@ -1,12 +1,23 @@
 @extends('Layout.app')
 @section('style')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
     <style>
         .table-hover tbody tr:hover {
             cursor: pointer;
         }
+        @media (max-width: 768px) {
+            .filter-box {
+                flex-direction: column; /* Stack the items vertically on small screens */
+                gap: 10px; /* Reduce the gap */
+            }
+            .filter-box > div,
+            .filter-box > button {
+                max-width: 100%; /* Full width on small screens */
+                flex-grow: 1; /* Allow the children to fill the space */
+            }
+        }
     </style>
+
     <style>
 
         .blink-warning {
@@ -81,18 +92,63 @@
                   <!-- Default Tabs -->
                   <ul class="nav nav-tabs d-flex" id="myTabjustified" role="tablist">
                     <li class="nav-item flex-fill" role="presentation">
-                      <button class="nav-link w-100 active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-justified" type="button" role="tab" aria-controls="home" aria-selected="false" tabindex="-1">Danh sách đơn hàng</button>
+                      <button class="nav-link w-100 " id="home-tab" data-bs-toggle="tab" data-bs-target="#home-justified" type="button" role="tab" aria-controls="home" aria-selected="false" tabindex="-1">Danh sách đơn hàng</button>
                     </li>
                     <li class="nav-item flex-fill" role="presentation">
-                      <button class="nav-link w-100 " id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-justified" type="button" role="tab" aria-controls="profile" aria-selected="true">Danh sách vật tư</button>
+                      <button class="nav-link w-100 active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-justified" type="button" role="tab" aria-controls="profile" aria-selected="true">Danh sách vật tư</button>
                     </li>
                   </ul>
                   <div class="tab-content pt-2" id="myTabjustifiedContent">
-                    <div class="tab-pane fade active show" id="home-justified" role="tabpanel" aria-labelledby="home-tab">
-                      Sunt est soluta temporibus accusantium neque nam maiores cumque temporibus. Tempora libero non est unde veniam est qui dolor. Ut sunt iure rerum quae quisquam autem eveniet perspiciatis odit. Fuga sequi sed ea saepe at unde.
+                    <div class="tab-pane fade" id="home-justified" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="table-responsive mt-3">
+
+                            <table class="table table-borderless table-bordered table-hover mt-2 vatTuDonHang">
+                                <thead>
+                                        <tr>
+                                            <th style="text-align: center" rowspan="2" scope="col">Stt</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">NCC</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
+                                            <th style="text-align: center" colspan="4" scope="col">Tình trạng</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">Chi phí</th>
+                                            <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
+                                        </tr>
+                                      <tr>
+
+                                            <th style="text-align: center" scope="col">Tổng</th>
+                                            <th style="text-align: center" scope="col">Đã nhận</th>
+                                            <th style="text-align: center" scope="col">Chưa nhận</th>
+                                            <th style="text-align: center" scope="col">Đã xuất</th>
+                                      </tr>
+                                </thead>
+                                <tbody>
+                                  @php
+                                    $stt = 1;
+                                  @endphp
+                                    @forelse ($orders as $index => $order)
+                                        <tr data-id="{{ $order->id }}">
+                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{ $stt++ }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->sodonhang }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_chuanhan ?? '0' }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_daxuat ?? '0' }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->chiphi }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->ghichu }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
+                                        </tr>
+                                    @endforelse
+                              </tbody>
+                            </table>
+                        </div>
                     </div>
                     {{-- DANH SÁCH VẬT TƯ --}}
-                        <div class="tab-pane fade " id="profile-justified" role="tabpanel" aria-labelledby="profile-tab">
+                        <div class="tab-pane fade active show " id="profile-justified" role="tabpanel" aria-labelledby="profile-tab">
                             <div class="table-responsive">
                                     @if (session('errors'))
                                         <div class="alert alert-danger">
@@ -115,6 +171,7 @@
                                         <tr>
                                             <th style="text-align: center" scope="col">Stt</th>
                                             <th style="text-align: center" scope="col">Tên danh mục vật tư</th>
+                                            <th style="text-align: center" scope="col">Nhà cung cấp</th>
                                             <th style="text-align: center" scope="col">Mô tả</th>
                                             <th style="text-align: center" scope="col">Thao tác</th>
                                         </tr>
@@ -124,9 +181,10 @@
                                             <tr data-catalog-id="{{$catalog->id}}" data-catalog-name="{{ $catalog['name'] }}">
                                                 <td style="text-align: center;vertical-align: middle">{{ $index + 1 }}</td>
                                                 <td style="text-align: center;vertical-align: middle">{{ $catalog['name'] }}</td>
+                                                <td style="text-align: center;vertical-align: middle">{{ $catalog['nhacungcap'] }}</td>
                                                 <td style="text-align: center;vertical-align: middle">{{ $catalog['description'] ?? 'Không có mô tả' }}</td>
                                                 <td style="text-align: center;vertical-align: middle" class="action-column">
-                                                    <button href="#" class="btn btn-danger xoadanhmucvattu" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                                                    <button href="#" class="btn btn-danger xoadanhmucvattu" title="Xóa"><i class="ri ri-delete-bin-5-line"></i></button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -137,62 +195,14 @@
                   </div><!-- End Default Tabs -->
                 </div>
               </div>
-            {{-- <div class="card">
-                <div class="card-body">
-                        <button class="btn btn-outline-primary" type="button" data-bs-target="#danh" data-bs-toggle="modal">Danh mục vật tư</button>
-                        <button class="btn btn-outline-primary" type="button" data-bs-target="#themdonhangthucong" data-bs-toggle="modal">+ Đơn hàng</button>
 
-                        <!-- Nội dung thông báo thành công -->
-                          @if(session('success'))
-                              <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
-                                  {{ session('success') }}
-                                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                              </div>
-                          @elseif(session('error'))
-                              <div class="alert alert-danger bg-danger text-light border-0 alert-dismissible fade show mt-3" role="alert">
-                                {{ session('error') }}
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                              </div>
-                          @endif
-                            danhmucvattuchitiet
-                                <tbody>
-                                  @php
-                                    $stt = 1;
-                                  @endphp
-                                    @forelse ($orders as $index => $order)
-                                        <tr data-id="{{ $order->id }}">
-                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{ $stt++ }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->sodonhang }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_chuanhan ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_daxuat ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->chiphi }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->ghichu }}</td>
-                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">
-                                              <button class="btn btn-sm btn-danger delete-supplies" data-id="{{$order->id}}">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
-                                        </tr>
-                                    @endforelse
-                              </tbody>
-
-                            </table>
-                    </div>
-                </div>
-            </div> --}}
         </div>
     </div>
 </section>
 {{-- DANH MỤC VẬT TƯ --}}
     {{-- MODAL HIỂN THỊ DANH MỤC VẬT TƯ--}}
         <div class="modal fade" id="vautucuadanhmuc" tabindex="-1">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Vật tư chi tiết</h5>
@@ -211,16 +221,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="table-responsive" style="max-height: 400px;">
+                        <div class="table-responsive" style="max-height: 650px;">
                             <table class="table table-bordered vattucuadanhmuc">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: center; vertical-align: middle;">STT</th>
-                                        <th style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                                        <th style="text-align: center; vertical-align: middle;">Mã số</th>
-                                        <th style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
-                                        <th style="text-align: center;">Số lượng</th>
-                                        <th style="text-align: center; vertical-align: middle;">Thao tác</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">STT</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Tên vật tư</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Mã số</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Đơn vị tính</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Số lượng</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -291,36 +301,9 @@
                 </div>
             </div>
         </div>
-    {{-- THÊM SỐ LƯỢNG VẬT TƯ --}}
-        <div class="modal fade" id="themsoluongvattu" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h5 class="modal-title">Thêm số lượng vật tư</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="post" action="{{ route('addQuantity') }}">
-                @csrf
-                <div class="modal-body">
-                    <div class="row mb-3">
-                    <label for="inputText" class="col-sm-4 col-form-label">Số lượng</label>
-                    <div class="col-sm-8">
-                        <input type="hidden" id="supplyId" name="supplyId" value="">
-                        <input type="number" name="soluong" class="form-control">
-                    </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary">Thêm</button>
-                </div>
-                </form>
-            </div>
-            </div>
-        </div>
     {{-- MODAL DANH MỤC VẬT TƯ CỦA ĐƠN HÀNG--}}
         <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Vật tư chi tiết</h5>
@@ -360,7 +343,7 @@
                             <span style="margin-left: 8px;">|</span>
                             <h6 style="margin-left: 8px;" class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                         </div>
-                        <div class="table-responsive" style="max-height: 400px;">
+                        <div class="table-responsive" style="max-height: 650px;">
                             <table class="table table-bordered table-hover danhmucvattuchitiet">
                                 <thead>
                                     <tr>
@@ -385,9 +368,6 @@
 
                                 </tbody>
                             </table>
-                            <button class="btn btn-outline-primary" type="button" id="showExcelImportModal">
-                                Thêm vật tư
-                            </button>
                         </div>
 
                         {{-- <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button> --}}
@@ -399,89 +379,7 @@
                 </div>
             </div>
         </div>
-    {{-- SỬA VẬT TƯ THỦ CÔNG --}}
-        <div class="modal fade" style="background-color: #000000bb" id="suavattuthucong" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title">Sửa vật tư</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body ">
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">Tên vật tư</label>
-                            <input type="text" class="form-control" name="tenvattu-edit">
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">Mã số vật tư</label>
-                            <input type="text" class="form-control" name="maso-edit">
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputState" class="form-label">Đơn vị tính</label>
-                            <select id="inputState" class="form-select" name="donvitinh-edit">
-                                <option value="CÁI">CÁI</option>
-                                <option value="BỘ">BỘ</option>
-                                <option value="CT">CT</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">số lượng</label>
-                            <input type="number" class="form-control" name="soluongvattuthemvao-edit" readonly>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">ghi chú</label>
-                            <textarea type="number" class="form-control" name="ghichuvattuchitiet-edit"></textarea>
-                        </div>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button class="btn btn-primary" id="suavattu-edit">Sửa vật tư</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    {{-- THÊM VẬT TƯ THỦ CÔNG --}}
-        {{-- <div class="modal fade" style="background-color: #000000bb" id="themvattuthucong" tabindex="-1" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title">Thêm vật tư vật tư</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body ">
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">Tên vật tư</label>
-                            <input type="text" class="form-control" name="tenvattu">
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">Mã số vật tư</label>
-                            <input type="text" class="form-control" name="maso">
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputState" class="form-label">Đơn vị tính</label>
-                            <select id="inputState" class="form-select" name="donvitinh">
-                                <option value="CÁI">CÁI</option>
-                                <option value="BỘ">BỘ</option>
-                                <option value="CT">CT</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">số lượng</label>
-                            <input type="number" class="form-control" name="soluongvattuthemvao">
-                        </div>
-                        <div class="col-md-12">
-                            <label for="inputName5" class="form-label">ghi chú</label>
-                            <textarea type="number" class="form-control" name="ghichuvattuchitiet"></textarea>
-                        </div>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button class="btn btn-primary" id="themvattu">Thêm vật tư</button>
-                        </div>
-                </div>
-            </div>
-        </div> --}}
+
     {{-- LỊCH SỬ GIAO DỊCH VẬT TƯ --}}
         <div class="modal fade" style="background-color: #000000bb" id="lichsugiaodich" tabindex="-1" style="display: none;" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -605,7 +503,7 @@
     <script>
             $(document).ready(function() {
                 //HIỂN THỊ VẬT TƯ CHI TIẾT
-                    $('table.danhmucvattuchitiet tbody tr').click(function() {
+                    $('.vatTuDonHang tbody tr').click(function() {
                         if ($(event.target).closest('.no-modal-trigger').length) {
                             // Nếu có, không làm gì cả để ngăn chặn hiển thị modal
                             return;
@@ -1043,16 +941,7 @@
                         if(data.supplies && data.supplies.length > 0){
                             $.each(data.supplies, function(index, supply) {
                                 var barcodeHtml = supply.barcodeHtml;
-                                var buttonsHtml = `<td style="text-align:center;vertical-align: middle" class="action-btn">
-                                                    <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
-                                                        data-id="${supply.id}"
-                                                        data-tenvattu="${supply.tenvattu}"
-                                                        data-maso="${supply.maso}"
-                                                        data-donvitinh="${supply.donvitinh}"
-                                                        data-soluong="${supply.soluong}">Sửa</button>
-                                                    <button class="btn btn-sm btn-danger xoavattuchitiet"
-                                                        data-id="${supply.id}">Xóa</button>
-                                                    </td>`;
+
                                 tbody.append(
                                     `<tr id="supply-row-${supply.id}" data-id="${supply.id}">
                                         <td style="text-align:center;vertical-align: middle">${index + 1}</td>
@@ -1063,8 +952,6 @@
                                         <td style="text-align:center;vertical-align: middle">${supply.danhan}</td>
                                         <td style="text-align:center;vertical-align: middle">${supply.chuanhan}</td>
                                         <td style="text-align:center;vertical-align: middle">${supply.daxuat}</td>
-                                        <td class="barcode">${barcodeHtml}<div>${supply.maso}</div></td>
-                                        ${buttonsHtml}
                                     </tr>`
                                 );
                             });
@@ -1080,25 +967,6 @@
                         alert("Có lỗi xảy ra: " + error);
                     }
                 });
-            });
-        });
-    </script>
-  {{-- HIỂN THỊ MODAL THÊM VẬT TƯ BẰNG EXCEL --}}
-    <script>
-        $(document).ready(function() {
-            $('#showExcelImportModal').click(function() {
-                // Mở modal mới
-                $('#themdanhmucvattubangfileexcel').modal('show');
-
-                // Tăng z-index cho modal mới để nó hiển thị phía trên
-                // Bạn có thể cần điều chỉnh giá trị z-index tuỳ thuộc vào cấu trúc CSS của bạn
-                $('.modal-backdrop').last().css('z-index', parseInt($('.modal-backdrop').first().css('z-index')) + 10);
-                $('#themdanhmucvattubangfileexcel').css('z-index', parseInt($('#themdanhmucvattubangfileexcel').css('z-index')) + 10);
-            });
-
-            // Đảm bảo rằng modal đóng đúng cách và không làm ảnh hưởng tới modal khác
-            $('#themdanhmucvattubangfileexcel').on('hidden.bs.modal', function () {
-                $('body').addClass('modal-open'); // giữ trạng thái scroll cho modal còn lại
             });
         });
     </script>
@@ -1145,7 +1013,7 @@
                                         <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
                                         <td class='action-column' style="text-align: center; vertical-align: middle;">
                                             <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                                <i class="fas fa-exchange-alt"></i>
+                                                <i class="bx bx-transfer"></i>
                                             </button>
                                         </td>
                                     </tr>`
@@ -1236,7 +1104,7 @@
                         });
 
                         // Thay đổi nút thành "Lưu"
-                        $(this).html('<i class="fas fa-save"></i>').attr('title', 'Lưu').removeClass('btn-secondary').addClass('btn-primary save-btn');
+                        $(this).html('<i class="ri-save-3-line"></i>').attr('title', 'Lưu').removeClass('btn-secondary').addClass('btn-primary save-btn');
                         $row.data('original', originalData);
                     });
 
@@ -1255,7 +1123,7 @@
                             $row.children('td').not(':first, :last').each(function(index) {
                                 $(this).html(originalData[index]);
                             });
-                            $(this).html('<i class="fas fa-exchange-alt"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
+                            $(this).html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
                         }
                     });
 
@@ -1304,7 +1172,7 @@
                                             $(this).html(htmlContent); // Cập nhật HTML của td
                                         });
                                         // Đặt lại nút sau khi lưu
-                                        $(this).find('.save-btn').html('<i class="fas fa-exchange-alt"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
+                                        $(this).find('.save-btn').html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
                                     }
                                 });
                                 $('#editReasonModal').modal('hide');
@@ -1372,7 +1240,25 @@
                 });
             });
         </script>
+    {{-- HIỂN THỊ MODAL THÊM VẬT TƯ BẰNG EXCEL --}}
+        <script>
+            $(document).ready(function() {
+                $('#showExcelImportModal').click(function() {
+                    // Mở modal mới
+                    $('#themdanhmucvattubangfileexcel').modal('show');
 
+                    // Tăng z-index cho modal mới để nó hiển thị phía trên
+                    // Bạn có thể cần điều chỉnh giá trị z-index tuỳ thuộc vào cấu trúc CSS của bạn
+                    $('.modal-backdrop').last().css('z-index', parseInt($('.modal-backdrop').first().css('z-index')) + 10);
+                    $('#themdanhmucvattubangfileexcel').css('z-index', parseInt($('#themdanhmucvattubangfileexcel').css('z-index')) + 10);
+                });
+
+                // Đảm bảo rằng modal đóng đúng cách và không làm ảnh hưởng tới modal khác
+                $('#themdanhmucvattubangfileexcel').on('hidden.bs.modal', function () {
+                    $('body').addClass('modal-open'); // giữ trạng thái scroll cho modal còn lại
+                });
+            });
+        </script>
 
 
 @endsection

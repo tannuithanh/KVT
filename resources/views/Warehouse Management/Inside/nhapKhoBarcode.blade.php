@@ -55,18 +55,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $stt = 1;
-                            @endphp
-                                @foreach ($supplies as $index => $suppli)
-                                    <tr data-maso="{{ $suppli->maso }}" data-projectId="{{ $supplies[0]->order->project->id }}" data-id="{{$suppli->id}}" data-tenvattu="{{$suppli->tenvattu}}">
-                                        <td style="text-align: center" scope="col">{{ $stt++ }}</td>
-                                        <td style="text-align: center" scope="col">{{ $suppli->tenvattu }}</td>
-                                        <td style="text-align: center" scope="col">{{ $suppli->maso  }}</td>
-                                        <td style="text-align: center" scope="col">-</td>
-
-                                    </tr>
-                                @endforeach
+                            @foreach ($supplies as $index => $supply)
+                                <tr data-maso="{{ $supply['maso'] }}"
+                                    data-projectId="{{ optional(optional(optional($supply['order'])['catalog'])['project'])['id'] }}"
+                                    data-id="{{ $supply['id'] }}"
+                                    data-tenvattu="{{ $supply['tenvattu'] }}">
+                                    <td style="text-align: center">{{ $index + 1 }}</td>
+                                    <td style="text-align: center">{{ $supply['tenvattu'] }}</td>
+                                    <td style="text-align: center">{{ $supply['maso'] }}</td>
+                                    <td style="text-align: center">-</td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                     <button id="scan-button" class="btn btn-outline-primary bi bi-upc-scan"> Quét Mã</button>

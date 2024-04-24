@@ -218,7 +218,7 @@
     $isActiveDashboard = $currentRoute == 'dashboard';
     $kiemTraChatLuong = $currentRoute == 'checkQuality';
     $inMaBarCode = $currentRoute == 'inMaBarcode';
-    $quanLyDonHang = $currentRoute == 'quanLyDonHang';
+    $QuanLyDonHangKeHoach = $currentRoute == 'quanLyDonHang';
     // Định nghĩa isActivePlanManagement dựa trên điều kiện của bạn
     $module = $module ?? 'default-value';
     $quanLyDonHang = $module == 'Quản lý đơn hàng';
@@ -238,51 +238,43 @@
             <span>Trang chủ</span>
         </a>
       </li>
-      <li class="nav-item">
-          <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
-          </a>
-        @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1)
-          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-              <li>
-                  <a href="{{route('listBrand', ['module' => 'Quản lý đơn hàng'])}}" class="{{ $quanLyDonHang ? 'active' : '' }}">
-                      <i class="bi bi-circle"></i><span>Quản lý đơn hàng</span>
-                  </a>
-              </li>
-          </ul>
-        @endif
-        @if ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin==1) && $user->department_id==4)
-          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-              <li>
-                <a href="{{route('trangTonKho', ['module' => 'Quản lý tồn kho'])}}" class="{{ $quanLyTonKho ? 'active' : '' }}">
-                      <i class="bi bi-circle"></i><span>Quản lý tồn kho</span>
-                  </a>
-              </li>
-          </ul>
-        @endif
-        @if (in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1)
-          <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-              <li>
-                  <a href="{{route('listBrand', ['module' => 'Nhập kho'])}}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
-                        <i class="bi bi-circle"></i><span>Nhập kho</span>
-                  </a>
-              </li>
-          </ul>
-        @endif
-        @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1)
+        @if (in_array($user->appFunction->id, [1, 3, 5]) || $user->is_admin == 1)
+            <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
+                <i class="bi bi-layout-text-window-reverse"></i><span>Quản lý kho</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
             <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-                <li>
-                    <a href="{{route('listBrand', ['module' => 'Xuất kho'])}}" class="{{ $xuatkho ? 'active' : '' }}">
-                        <i class="bi bi-circle"></i><span>Xuất kho</span>
-                    </a>
-                </li>
+                        <!-- Mục Quản lý đơn hàng cho những người có appFunction->id là 3, 5 -->
+                @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin == 1)
+                    <li>
+                        <a href="{{ route('listBrand', ['module' => 'Quản lý đơn hàng']) }}" class="{{ $quanLyDonHang ? 'active' : '' }}">
+                            <i class="bi bi-circle"></i><span>Quản lý đơn hàng</span>
+                        </a>
+                    </li>
+                @endif
+                            <!-- Các mục khác dựa trên appFunction->id hoặc trạng thái admin -->
+                @if ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin == 1) && $user->department_id == 4)
+                    <li>
+                        <a href="{{ route('trangTonKho', ['module' => 'Quản lý tồn kho']) }}" class="{{ $quanLyTonKho ? 'active' : '' }}">
+                            <i class="bi bi-circle"></i><span>Quản lý tồn kho</span>
+                        </a>
+                    </li>
+                @endif
+                @if (in_array($user->appFunction->id, [1, 5]) || $user->is_admin == 1)
+                    <li>
+                        <a href="{{ route('listBrand', ['module' => 'Nhập kho']) }}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
+                            <i class="bi bi-circle"></i><span>Nhập kho</span>
+                        </a>
+                    </li>
+                @endif
+                @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin == 1)
+                    <li>
+                        <a href="{{ route('listBrand', ['module' => 'Xuất kho']) }}" class="{{ $xuatkho ? 'active' : '' }}">
+                            <i class="bi bi-circle"></i><span>Xuất kho</span>
+                        </a>
+                    </li>
+                @endif
             </ul>
         @endif
-
-
-
-
-      </li>
       @if ($user->department_id == 3 || $user->is_admin==1)
         <li class="nav-item">
             <a class="nav-link {{ $kiemTraChatLuong ? '' : 'collapsed' }} " href="{{route('checkQuality')}}">
@@ -299,16 +291,17 @@
                 </a>
             </li>
         @endif
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="">
-          <i class="bi bi-journal-richtext"></i>
-          <span>Yêu cầu vật tư</span>
-        </a>
-      </li>
+        @if ($user->is_admin==1 )
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="">
+                <i class="bi bi-journal-richtext"></i>
+                <span>Yêu cầu vật tư</span>
+                </a>
+            </li>
+      @endif
       @if ($user->department_id == 2 || $user->is_admin==1 )
         <li class="nav-item">
-            <a class="nav-link {{ $quanLyDonHang ? '' : 'collapsed' }}" href="{{route('quanLyDonHang')}}">
+            <a class="nav-link {{ $QuanLyDonHangKeHoach ? '' : 'collapsed' }}" href="{{route('quanLyDonHang')}}">
                 <i class="bi bi-cart-plus"></i>
             <span>Quản lý đơn hàng</span>
             </a>

@@ -12,11 +12,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('catalog_id');
             $table->foreign('catalog_id')->references('id')->on('catalogs')->onDelete('cascade');
+            $table->unsignedBigInteger('expense_id');  // Sử dụng expense_id thay vì chiphi
+            $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
             $table->string('sodonhang');
-            $table->string('nhacungcap');
-            $table->string('chiphi');
             $table->string('noidung')->nullable();
+            $table->date('ngayhoanthanh');
             $table->string('ghichu')->nullable();
+            $table->string('excel_file')->nullable();  // Cột mới để lưu tên file Excel
             $table->timestamps();
         });
     }

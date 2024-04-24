@@ -10,7 +10,7 @@ class Catalog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'project_id', 'name', 'description'
+        'project_id', 'name', 'description', 'nhacungcap','ngayhoanthanh'
     ];
 
     public function project()
@@ -26,5 +26,12 @@ class Catalog extends Model
     public function supplies()
     {
         return $this->hasMany(Supply::class);
+    }
+
+    public function getProviderInfo()
+    {
+        return ProviderDetail::where('name', $this->nhacungcap)
+            ->with('provider')
+            ->first();
     }
 }

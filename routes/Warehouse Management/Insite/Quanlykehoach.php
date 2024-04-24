@@ -43,3 +43,19 @@ use Illuminate\Support\Facades\Route;
 //QUẢN LÝ ĐƠN HANG (KẾ HOẠCH)
 
     Route::get('/quanLyDonHang', [Insite::class, 'quanLyDonHang'])->name('quanLyDonHang')->middleware('auth');
+
+    Route::post('/layDanhMucChuaCoDonHang', [Insite::class, 'layDanhMucChuaCoDonHang'])->name('layDanhMucChuaCoDonHang')->middleware('auth');
+
+    Route::post('/duLieuVatTuCuaDanhMuc', [Insite::class, 'duLieuVatTuCuaDanhMuc'])->name('duLieuVatTuCuaDanhMuc')->middleware('auth');
+
+    Route::post('/taoDonHangMoi', [Insite::class, 'taoDonHangMoi'])->name('taoDonHangMoi')->middleware('auth');
+
+    Route::post('/huyDonHang', [Insite::class, 'huyDonHang'])->name('huyDonHang')->middleware('auth');
+
+    Route::post('/suaDonHang', [Insite::class, 'suaDonHang'])->name('suaDonHang')->middleware('auth');
+
+    Route::post('/capNhatDonHang', [Insite::class, 'capNhatDonHang'])->name('capNhatDonHang')->middleware('auth');
+
+    Route::post('/timKiemDanhMucVatTu', [Insite::class, 'timKiemDanhMucVatTu'])->name('timKiemDanhMucVatTu')->middleware('auth');
+
+    Route::post('/timKiemVatTuOfDM', [Insite::class, 'timKiemVatTuOfDM'])->name('timKiemVatTuOfDM')->middleware('auth');

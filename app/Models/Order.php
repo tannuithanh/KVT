@@ -10,7 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'catalog_id', 'sodonhang', 'nhacungcap', 'chiphi', 'noidung', 'ghichu'
+        'catalog_id', 'sodonhang', 'chiphi', 'noidung', 'ghichu'
     ];
 
     public function catalog()

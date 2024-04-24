@@ -13,7 +13,7 @@ class AppFunctionsTableSeeder extends Seeder
      */
      public function run()
     {
-        $functions = ['Nhập kho', 'Xuất kho', 'Quản lý kế hoạch', 'Quản trị', 'Quản lý kho'];
+        $functions = ['Nhập kho', 'Xuất kho', 'Quản lý kế hoạch', 'Quản trị', 'Quản lý kho','Quản lý đơn hàng'];
 
         foreach ($functions as $function) {
             AppFunction::create(['name' => $function]);
