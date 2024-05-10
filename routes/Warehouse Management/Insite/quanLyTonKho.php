@@ -15,3 +15,9 @@ Route::Post('/listTonKhoDonHang', [Insite::class, 'listTonKhoDonHang'])->name('l
 
 
 
+
+
+
+
+Route::get('/layVatTutheoDuAn', [Insite::class, 'layVatTutheoDuAn'])->name('layVatTutheoDuAn')->middleware('auth');
+Route::Post('/layVatTuHienThi', [Insite::class, 'layVatTuHienThi'])->name('layVatTuHienThi')->middleware('auth');

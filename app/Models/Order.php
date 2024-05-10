@@ -10,7 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'catalog_id', 'sodonhang', 'chiphi', 'noidung', 'ghichu'
+        'catalog_id', 'sodonhang', 'expense_id', 'noidung', 'ghichu', 'ngayhoanthanh', 'excel_file', 'ngaytaophieu','status'
     ];
 
     public function catalog()
@@ -24,4 +24,8 @@ class Order extends Model
         return $this->hasMany(Supply::class, 'order_id');
     }
 
+    public function expense()
+    {
+        return $this->belongsTo(Expense::class);
+    }
 }

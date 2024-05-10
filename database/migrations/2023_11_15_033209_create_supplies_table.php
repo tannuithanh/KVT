@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('maso');
             $table->string('donvitinh');
             $table->integer('soluong');
-            $table->decimal('don_gia', 8, 2)->nullable();  // Đơn giá có thể null, với 8 chữ số, 2 chữ số sau dấu phẩy
-            $table->decimal('thanh_tien', 10, 2)->nullable();  // Thành tiền, có thể null, với 10 chữ số, 2 chữ số sau dấu phẩy
+            $table->decimal('don_gia', 12, 2)->nullable();  // Đơn giá có thể null, với 8 chữ số, 2 chữ số sau dấu phẩy
+            $table->decimal('thanh_tien', 16, 2)->nullable();  // Thành tiền, có thể null, với 10 chữ số, 2 chữ số sau dấu phẩy
             $table->string('exportdrawings')->nullable();
             $table->string('note')->nullable();
             $table->integer('status')->default(0);

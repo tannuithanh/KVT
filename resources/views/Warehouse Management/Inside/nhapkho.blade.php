@@ -253,7 +253,7 @@
                             <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                         </div>
 
-                            <div class="table-responsive" style="max-height: 400px;">
+                            <div class="table-responsive" style="max-height: 600px;">
                                 <table class="table table-bordered table-hover danhmucvattuchitiet">
                                     <thead>
                                         <tr>
@@ -738,10 +738,17 @@
             $('#nhapKho').click(function(e) {
                 e.preventDefault(); // Ngăn chặn hành động mặc định của form submit
 
-                var selectedItems = $('.stt-checkbox:checked').map(function() {
-                    return $(this).val();
-                }).get();
+                var selectedItems = [];
+                    $('.stt-checkbox:checked').each(function() {
+                        var row = $(this).closest('tr'); // Lấy hàng chứa checkbox đang được chọn
+                        var soLuongNhapKho = row.find('td').eq(5).find('input').val(); // Lấy giá trị từ input ở cột thứ 6
 
+                        // Lưu thông tin id và giá trị số lượng nhập kho vào một mảng
+                        selectedItems.push({
+                            id: $(this).val(),
+                            soLuongNhapKho: soLuongNhapKho
+                        });
+                    });
                 // Kiểm tra nếu không có mục nào được chọn
                 if (selectedItems.length === 0) {
                     alert("Vui lòng chọn ít nhất một vật tư để nhập kho.");

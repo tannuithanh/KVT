@@ -91,7 +91,6 @@
                         </table>
                     </div>
                     <button type="button" style="display: none" class="btn btn-outline-primary mt-2" id="inpdf" ><i class="bi bi-file-earmark-pdf"></i> In </button>
-                    <button id="thucong" class="btn btn-outline-primary bi bi-mouse2 mt-2"> Xuất thủ công</button>
                 </div>
             </div>
         </div>
@@ -229,9 +228,9 @@
             function updatePdfButtonState() {
                 var checkedCount = $('.select-checkbox:checked').length;
                 if (checkedCount > 0) {
-                    $('#inpdf, #thucong').show();
+                    $('#inpdf').show();
                 } else {
-                        $('#inpdf, #thucong').hide();
+                        $('#inpdf').hide();
                 }
             }
                 updatePdfButtonState();

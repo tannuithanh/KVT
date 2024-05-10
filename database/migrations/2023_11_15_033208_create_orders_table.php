@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('ngayhoanthanh');
             $table->string('ghichu')->nullable();
             $table->string('excel_file')->nullable();  // Cột mới để lưu tên file Excel
+            $table->unsignedBigInteger('status')->default(0);
             $table->timestamps();
         });
     }

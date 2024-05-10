@@ -58,4 +58,6 @@ use Illuminate\Support\Facades\Route;
 
     Route::post('/timKiemDanhMucVatTu', [Insite::class, 'timKiemDanhMucVatTu'])->name('timKiemDanhMucVatTu')->middleware('auth');
 
-    Route::post('/timKiemVatTuOfDM', [Insite::class, 'timKiemVatTuOfDM'])->name('timKiemVatTuOfDM')->middleware('auth');
+    Route::post('/duLieuDaKy', [Insite::class, 'duLieuDaKy'])->name('duLieuDaKy')->middleware('auth');
+
+    Route::post('/luuGiaTriIn', [Insite::class, 'luuGiaTriIn'])->name('luuGiaTriIn')->middleware('auth');

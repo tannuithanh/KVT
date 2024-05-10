@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\imports\SuppliesImport;
 use App\Models\QualityCheck;
+use App\Models\Expense;
 use App\Models\ViewVatTuChiTiet;
 use Carbon\Carbon;
 use Milon\Barcode\DNS1D as BarcodeDNS1D;
@@ -27,7 +28,10 @@ class Insite extends Controller
 // QUẢN LÝ KẾ HOẠCH
     public function listWarehouse($idProject, Request $request) {
         // Tải dự án cùng với Catalog và các Orders liên quan thông qua Catalog
-        $project = Project::with(['catalogs.orders.supplies.transactions'])->find($idProject);
+        $project = Project::with([
+            'catalogs.orders.supplies.transactions',
+            'catalogs.orders.catalog'
+        ])->find($idProject);
         if (!$project) {
             abort(404, 'Dự án không tìm thấy.');
         }
@@ -63,7 +67,7 @@ class Insite extends Controller
 
         $providers = Provider::with('details')->get();
         $totalSuppliesForProject = $orders->sum('total_supplies');
-        // dd($project->toarray());
+        // dd($orders->toarray());
         return view('Warehouse Management.Inside.quanlykehoach', compact('totalOrdersDanhan', 'totalOrdersChuanhan', 'totalOrdersDaxuat','orders', 'user', 'providers', 'module', 'segmentId', 'brandName', 'segmentName', 'project', 'totalSuppliesForProject'));
     }
 
@@ -111,34 +115,35 @@ class Insite extends Controller
     }
 
     public function deleteDonHang(Request $request) {
-        $orderId = $request->input('orderId'); // Đảm bảo tên biến phù hợp với thực tế
+        $orderId = $request->input('orderId');
         $order = Order::with(['supplies.transactions', 'supplies.qualityChecks', 'supplies.viewVatTuChiTiets'])->find($orderId);
 
         if ($order) {
+            if($order->excel_file != null){
+                $filePath = public_path($order->excel_file);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
             foreach ($order->supplies as $supply) {
-                // Xóa các transactions liên quan đến supplies của đơn hàng
                 foreach ($supply->transactions as $transaction) {
                     $transaction->delete();
                 }
 
-                // Xóa các bản ghi QualityCheck liên quan đến supply
                 foreach ($supply->qualityChecks as $qualityCheck) {
                     $qualityCheck->delete();
                 }
 
-                // Cập nhật trạng thái cho các bản ghi ViewVatTuChiTiet liên quan đến supply
                 foreach ($supply->viewVatTuChiTiets as $viewDetail) {
                     $viewDetail->delete();
                 }
 
-                // Cập nhật trạng thái của vật tư
                 $supply->update(['status' => 0]);
             }
 
-            // Xóa đơn hàng
             $order->delete();
 
-            return response()->json(['success' => 'Đơn hàng và tất cả bản ghi liên quan đã được xử lý thành công. Trạng thái vật tư đã được cập nhật.']);
+            return response()->json(['success' => 'Đơn hàng và tất cả bản ghi liên quan cùng file đính kèm đã được xử lý thành công. Trạng thái vật tư đã được cập nhật.']);
         } else {
             return response()->json(['error' => 'Không tìm thấy đơn hàng.'], 404);
         }
@@ -380,7 +385,6 @@ class Insite extends Controller
         $transactions = Transaction::with('supply.order')->where('supply_id', $supplyId)->get();
         return response()->json($transactions);
     }
-
 
     public function themdonhangthucong(Request $request){
         $projectId = $request->input('project_id');
@@ -652,69 +656,29 @@ class Insite extends Controller
         ]);
     }
 
-    public function KiemTraSoluongTruocKhiNhapKho(Request $request){
-        // dd($request->toarray());
-        $supplyId = $request->input('supplyId');
-        $quantity = $request->input('quantity');
-
-        // Tính số lượng "Đã nhận" từ bảng transactions
-        $receivedQuantity = Transaction::where('supply_id', $supplyId)
-                                        ->where('loaigiaodich', 'Đã nhận')
-                                        ->sum('soluong');
-
-        // Tính số lượng đang kiểm tra chất lượng (status = 0)
-        $checkingQuantity = QualityCheck::where('supply_id', $supplyId)
-                                         ->where('status', 0)
-                                         ->sum('soluongnhapkho');
-                                        //  dd($checkingQuantity);
-        $totalQuantity = $receivedQuantity + $checkingQuantity;
-
-        // Lấy số lượng tổng khai báo ban đầu từ bảng supplies
-        $initialQuantity = Supply::find($supplyId)->soluong;
-
-        $remainingQuantity = $initialQuantity - $totalQuantity;
-
-        // So sánh số lượng nhập với số lượng còn lại
-        if ($quantity <= $remainingQuantity) {
-            return response()->json(['message' => 'Số lượng nhập hợp lệ.']);
-        } else {
-            return response()->json(['message' => 'Số lượng nhập vượt quá số lượng còn lại.'], 400);
-        }
-    }
-
-    public function KiemTraSoluongTruocKhiNhapKhoV2(Request $request){
-        $supplyIds = $request->input('supplyIds');
-        // dd($supplyIds);
-        $results = [];
-
-        foreach ($supplyIds as $supplyId) {
-            $receivedQuantity = Transaction::where('supply_id', $supplyId)
-                                            ->where('loaigiaodich', 'Đã nhận')
-                                            ->sum('soluong');
-
-            $checkingQuantity = QualityCheck::where('supply_id', $supplyId)
-                                             ->where('status', 0)
-                                             ->sum('soluongnhapkho');
-
-            $totalQuantity = $receivedQuantity + $checkingQuantity;
-            $supply = Supply::find($supplyId);
-            $initialQuantity = $supply->soluong;
-            $remainingQuantity = $initialQuantity - $totalQuantity;
-
-            $results[$supplyId] = $remainingQuantity;
-        }
-
-        return response()->json($results);
-    }
-
 
     public function updateQuanlity(Request $request){
         $suppliesData = $request->input('supplies');
         foreach ($suppliesData as $supplyData) {
+            // Tính tổng số lượng đã nhập từ các bản ghi QualityCheck hiện có cho supply_id này
+            $totalEntered = QualityCheck::where('supply_id', $supplyData['id'])
+                                        ->sum('soluongnhapkho');
+
+            $supply = Supply::find($supplyData['id']);
+            if (!$supply) {
+                return response()->json(['error' => 'Không tìm thấy nhà vật tư.'], 404);
+            }
+
+            $newQuantity = $totalEntered + $supplyData['quantity'];
+            if ($newQuantity > $supply->soluong) {
+                return response()->json(['error' => 'Thất bại: Tổng số lượng đã nhập vượt quá tổng số lượng cung cấp.'], 400);
+            }
+
             QualityCheck::create([
                 'supply_id' => $supplyData['id'],
                 'soluongnhapkho' => $supplyData['quantity'],
             ]);
+
             $viewVatTuChiTiet = ViewVatTuChiTiet::where('supply_id', $supplyData['id'])->first();
             if ($viewVatTuChiTiet) {
                 $viewVatTuChiTiet->increment('soluongnhapkho', $supplyData['quantity']);
@@ -726,106 +690,34 @@ class Insite extends Controller
             }
         }
 
-        return response()->json(['success' => 'Dữ liệu đã được cập nhật thành công.']);
+        return response()->json(['success' => 'Data updated successfully.']);
     }
 
 
     public function quetBarcodeNhapKho(Request $request){
         $selectedItems = $request->input('selectedItems', []);
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        $supplyIds = array_column($selectedItems, 'id');
+
+        // Tạo mảng kết hợp từ selectedItems
+        $selectedItemsIndexed = array_column($selectedItems, null, 'id');
+
         $supplies = Supply::with(['order', 'order.catalog.project'])
-                          ->whereIn('id', $selectedItems)
+                          ->whereIn('id', $supplyIds)
                           ->get();
-                        //   dd($supplies->toarray());
-        return view('Warehouse Management.Inside.nhapKhoBarcode', compact('supplies', 'user'));
+        // Thêm thông tin daNhan vào mỗi supply
+        foreach ($supplies as $supply) {
+            $supplyId = $supply->id;
+            if (isset($selectedItemsIndexed[$supplyId])) {
+                $supply->daNhan = $selectedItemsIndexed[$supplyId]['soLuongNhapKho'];
+            } else {
+                $supply->daNhan = 'N/A'; // Hoặc một giá trị mặc định nào đó
+            }
+        }
+        return view('Warehouse Management.Inside.nhapKhoBarcode', compact('supplies', 'user', 'selectedItems'));
     }
 
 
-
-    public function checkQuality(Request $request){
-        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
-        // if ($user->department_id != 3) {
-        //     return back()->with('error', 'Bạn không có quyền truy cập vào chức năng này.');
-        // }
-        $qualityChecks = QualityCheck::where('status', 0)
-            ->with('supply.order.catalog.project') // Sửa đây để truy cập thông qua Catalog
-            ->get();
-
-        return view('Warehouse Management.Inside.kiemTraChatLuong', compact('user', 'qualityChecks'));
-    }
-
-
-    public function luuKiemTraChatLuong(Request $request){
-        $qualityCheck = QualityCheck::find($request->idQualityCheck);
-
-        // Kiểm tra xem QualityCheck đã có status là 1 chưa
-        if ($qualityCheck->status == 1) {
-            // Nếu đã có status là 1, trả về thông báo đã cập nhật
-            return response()->json(['success' => false, 'message' => 'Vật tư đã được kiểm tra chất lượng rồi.']);
-        }
-
-        // Kiểm tra số lượng đạt chất lượng so với số lượng nhập kho
-        if ($request->quantityDat > $qualityCheck->soluongnhapkho) {
-            // Nếu số lượng kiểm tra lớn hơn số lượng nhập kho, thông báo cho người dùng và dừng thực thi
-            return response()->json(['success' => false, 'message' => 'Số lượng kiểm tra chất lượng không thể lớn hơn số lượng nhập kho.']);
-        }
-
-        // Cập nhật thông tin QualityCheck nếu số lượng kiểm tra hợp lệ
-        $qualityCheck->soluongdatchatluong = $request->quantityDat;
-        $qualityCheck->status = 1;
-        $qualityCheck->ngaykiemtra = Carbon::now()->format('Y-m-d');
-        if (!empty($request->ghiChu)) {
-            $qualityCheck->note = $request->ghiChu; // Lưu ghi chú nếu có
-        }
-        $qualityCheck->save();
-
-        $viewVatTuChiTiet = ViewVatTuChiTiet::where('supply_id', $qualityCheck->supply_id)->first();
-        if (is_null($viewVatTuChiTiet->soluongdatchatluong)) {
-            $viewVatTuChiTiet->soluongdatchatluong = $request->quantityDat;
-        } else {
-            $viewVatTuChiTiet->increment('soluongdatchatluong', $request->quantityDat);
-        }
-        $viewVatTuChiTiet->soluongnhapkho = $viewVatTuChiTiet->soluongdatchatluong;
-        $viewVatTuChiTiet->save();
-
-        // Tạo một Transaction mới với thông tin tương ứng
-        $transaction = new Transaction([
-            'supply_id' => $qualityCheck->supply_id,
-            'soluong' => $request->quantityDat,
-            'loaigiaodich' => 'Đã nhận',
-            'ngaygiaodich' => now(),
-            'ghichu' => $request->ghiChu // Lưu ghi chú vào Transaction nếu có
-        ]);
-        $transaction->save();
-
-        // Bao gồm status mới trong phản hồi
-        return response()->json([
-            'success' => true,
-            'message' => 'Dữ liệu đã được cập nhật thành công.',
-            'status' => $qualityCheck->status,
-            'ngaykiemtra' => $qualityCheck->ngaykiemtra // Thêm dòng này
-        ]);
-    }
-
-    public function timKiemVatTuCheck(Request $request){
-        $status = $request->status;
-        $ngayKiemTra = $request->ngayKiemTra; // Thêm biến này
-        $query = QualityCheck::query();
-        if ($status !== null) {
-            $query->where('status', $status);
-        }
-
-        if (!empty($ngayKiemTra)) {
-            $query->whereDate('ngaykiemtra', '=', $ngayKiemTra);
-        }
-
-        $results = $query->with(['supply.order'])->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $results
-        ]);
-    }
 // TỒN KHO
     public function trangTonKho(Request $request){
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
@@ -835,7 +727,7 @@ class Insite extends Controller
     }
 
     public function slectedPhanKhuc(Request $request){
-        $thuongHieuId = $request->thuongHieuId;
+        $thuongHieuId = $request->brand_id;
         $brand = Brand::find($thuongHieuId);
         if (!$brand) {
             return response()->json(['message' => 'Thương hiệu không tồn tại'], 404);
@@ -880,6 +772,29 @@ class Insite extends Controller
         }
 
         return response()->json(['success' => true, 'orders' => $allOrders]);
+    }
+
+    public function layVatTutheoDuAn(Request $request){
+        $projectId = $request->input('projectId');  // Lấy ID dự án từ request
+
+        // Tìm kiếm tất cả Catalogs liên kết với project này
+        $catalogs = Catalog::where('project_id', $projectId)->with('supplies')->get();
+
+        $data = [];
+        foreach ($catalogs as $catalog) {
+            foreach ($catalog->supplies as $supply) {
+                // Lưu thông tin vật tư vào mảng data
+                $data[] = [
+                    'id' => $supply->id,
+                    'maso' => $supply->maso,
+                    'name' => $supply->tenvattu,
+                    'quantity' => $supply->soluong,
+                    'unit' => $supply->donvitinh
+                ];
+            }
+        }
+
+        return response()->json($data);  // Trả về dữ liệu dưới dạng JSON
     }
 
     public function selectedTenVatTu(Request $request){
@@ -964,6 +879,43 @@ class Insite extends Controller
         return response()->json($data);
     }
 
+    public function layVatTuHienThi(Request $request){
+        $projectId = $request->input('duAn');
+        $supplyId = $request->input('idVatTu');
+
+        // Eager loading để tải các quan hệ
+        $relations = ['transactions', 'order'];
+
+        if (!is_null($supplyId)) {
+            $supplies = Supply::with($relations)->where('id', $supplyId)->get()->filter(function($supply) {
+                $soluong_conlai = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong') -
+                                $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                $supply->soluong_conlai = $soluong_conlai;
+                return $soluong_conlai > 0;
+            });
+        } else if (!is_null($projectId)) {
+            $supplies = Supply::with($relations)->whereHas('catalog', function ($query) use ($projectId) {
+                $query->where('project_id', $projectId);
+            })->get()->map(function($supply) {
+                $soluong_conlai = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong') -
+                                $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                $supply->soluong_conlai = $soluong_conlai;
+                return $supply;
+            })->filter(function($supply) {
+                return $supply->soluong_conlai > 0;
+            });
+        } else {
+            return response()->json([
+                'error' => 'Thiếu thông tin dự án hoặc ID vật tư cần thiết cho truy vấn'
+            ], 400);
+        }
+
+        // Trả về dữ liệu như response JSON
+        return response()->json([
+            'data' => $supplies
+        ]);
+    }
+
 // XUẤT KHO
     public function listExportWarehouse($id, Request $request){
         $project = Project::with(['catalogs.orders.supplies.transactions'])->find($id);
@@ -989,20 +941,28 @@ class Insite extends Controller
                         return $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
                     });
 
-                    $order->supplies->each(function($supply) {
-                        $supply->soluong_conlai = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong') - $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                    // Filter supplies where soluong_conlai > 0
+                    $filteredSupplies = $order->supplies->map(function($supply) {
+                        $soluong_conlai = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong') - $supply->transactions->where('loaigiaodich', 'Đã xuất')->sum('soluong');
+                        $supply->soluong_conlai = $soluong_conlai;
+                        return $supply;
+                    })->filter(function($supply) {
+                        return $supply->soluong_conlai > 0;
                     });
 
-                    // Aggregate totals
+                    $order->supplies = $filteredSupplies;
+
+                    // Aggregate totals from filtered supplies
                     $totalOrdersDanhan += $order->total_danhan;
                     $totalOrdersDaxuat += $order->total_daxuat;
 
-                    // Add this order to the orders collection
-                    $orders->push($order);
+                    // Add this order to the orders collection if it has any supplies with soluong_conlai > 0
+                    if ($filteredSupplies->isNotEmpty()) {
+                        $orders->push($order);
+                    }
                 }
             }
         }
-
         $brandName = optional(optional($project->segment)->brand)->name;
         $segmentId = $project->segment->id ?? null;
         $segmentName = $project->segment->name ?? null;
@@ -1166,17 +1126,28 @@ class Insite extends Controller
 
         return response()->json(['success' => true, 'remaining' => $remaining, 'message' => 'Xuất kho thành công.']);
     }
+
+    public function xuongYeuCau(){
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        $brands = Brand::all(); // Lấy tất cả dữ liệu thương hiệu
+
+        return view('Warehouse Management.Inside.xuongYeuCau', compact('user', 'brands'));
+    }
+
 // QUẢN LÝ ĐƠN HÀNG PHÒNG KẾ HOẠCH
     public function quanLyDonHang(){
         $catalogsCanCreateOrders = Catalog::whereHas('supplies', function ($query) {
             $query->where('status', 0);
         })->with(['project.segment.brand'])->get();
+
         $providers = Provider::with('details')->get();
-        // dd($providers->toarray());
-        $orders = Order::with(['catalog', 'supplies'])->get();
+        $chiPhi = Expense::all();
+        // dd($chiPhi->toarray());
+        $orders = Order::with(['catalog', 'supplies','expense'])->get();
+        // dd($orders->toarray());
         $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
         $countCatalogsWithoutOrders = $catalogsCanCreateOrders->count();
-        return view('Warehouse Management.Inside.quanLyDonHang', compact('countCatalogsWithoutOrders', 'user', 'providers', 'orders'));
+        return view('Warehouse Management.Inside.quanLyDonHang', compact('countCatalogsWithoutOrders', 'user', 'providers', 'orders','chiPhi'));
     }
 
     public function layDanhMucChuaCoDonHang() {
@@ -1214,8 +1185,14 @@ class Insite extends Controller
         ]);
     }
 
-    public function taoDonHangMoi(Request $request){
-        $firstSupply = Supply::with('catalog.project')->find($request->ids[0]);
+    public function taoDonHangMoi(Request $request) {
+        // dd($request->toarray());
+        $expense = Expense::find($request->companyId);
+        if (!$expense) {
+            return response()->json(['error' => 'Chi phí không tồn tại.'], 404);
+        }
+
+        $firstSupply = Supply::with('catalog.project')->find($request->supplyIds[0]);
         if (!$firstSupply) {
             return response()->json(['error' => 'Vật tư không tồn tại.'], 404);
         }
@@ -1225,7 +1202,6 @@ class Insite extends Controller
         $year = Carbon::now()->format('y');
         $month = Carbon::now()->format('m');
 
-        // Lấy đơn hàng mới nhất trong tháng và tăng số thứ tự lên 1
         $lastOrder = Order::whereHas('catalog', function ($query) use ($projectId) {
             $query->where('project_id', $projectId);
         })->whereYear('created_at', Carbon::now()->year)
@@ -1233,21 +1209,56 @@ class Insite extends Controller
           ->orderBy('created_at', 'desc')
           ->first();
 
-        $nextNumber = $lastOrder ? ((int) substr($lastOrder->sodonhang, 3, 2)) + 1 : 1; // Xử lý chuỗi để lấy số đơn hàng hiện tại và tăng lên 1
-
-        $supplierCode = strtoupper(substr($request->nhacungcap, 0, 4));  // Lấy 4 ký tự đầu làm mã nhà cung cấp
-        $formattedNumber = sprintf("RD_%02d%s%s_%s_%s", $nextNumber, $month, $year, $supplierCode, $request->chiphi);
+        $nextNumber = $lastOrder ? ((int) substr($lastOrder->sodonhang, 3, 2)) + 1 : 1;
+        $supplierCode = strtoupper(substr($request->nhacungcap, 0, 4));
+        $formattedNumber = sprintf("RD_%02d%s%s_%s_%s", $nextNumber, $month, $year, $supplierCode, $expense->name);
 
         $order = new Order();
         $order->sodonhang = $formattedNumber;
-        $order->chiphi = $request->chiphi;
-        $order->noidung = $request->noidung;
-        $order->ghichu = $request->ghichu;
+        $order->expense_id = $request->companyId;
+        $order->noidung = $request->noidung ?? ''; // Gán giá trị cho noidung, dùng ?? để xử lý trường hợp null
+        $order->ghichu = $request->ghiChu;
+        $order->ngayhoanthanh = $request->ngayHoanThanh;
+        $order->ngaytaophieu = $request->ngayYeuCau;
         $order->catalog_id = $firstSupply->catalog_id;
-        $order->ngayhoanthanh = now();
         $order->save();
-        Supply::whereIn('id', $request->ids)
-              ->update(['order_id' => $order->id, 'status' => 1]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            // Tạo tên file mới dựa vào số đơn hàng
+            $extension = $file->getClientOriginalExtension(); // Lấy phần mở rộng của file gốc
+            $filename = $formattedNumber . '.' . $extension; // Tạo tên file mới
+
+            // Đảm bảo thư mục tồn tại
+            $destinationPath = public_path('File_DonHang'); // Đường dẫn thư mục lưu file
+            $file->move($destinationPath, $filename); // Di chuyển file vào thư mục đích
+
+            $order->excel_file = 'File_DonHang/' . $filename; // Lưu đường dẫn vào cơ sở dữ liệu
+            $order->save();
+        }
+
+        if ($request->has('quantities') && $request->has('prices')) {
+            // Update quantities and prices
+            foreach ($request->supplyIds as $index => $id) {
+                $cleanQuantity = preg_replace('/[^\d]/', '', $request->quantities[$index]);
+                $cleanPrice = preg_replace('/[^\d]/', '', $request->prices[$index]);
+
+                $quantity = intval($cleanQuantity);
+                $price = intval($cleanPrice);
+
+
+                Supply::where('id', $id)->update([
+                    'order_id' => $order->id,
+                    'don_gia' => $quantity,
+                    'thanh_tien' => $price,
+                    'status' => 1
+                ]);
+            }
+        }else {
+            // Just link supplies to order
+            Supply::whereIn('id', $request->supplyIds)
+                  ->update(['order_id' => $order->id, 'status' => 1]);
+        }
 
         return response()->json(['message' => 'Đơn hàng đã được tạo thành công. Số đơn hàng là ' . $formattedNumber]);
     }
@@ -1311,20 +1322,169 @@ class Insite extends Controller
         return response()->json($results);
     }
 
-    public function timKiemVatTuOfDM(Request $request){
-        // Lấy dữ liệu từ request
-        $catalogId = $request->catalogId;
-        $banVeRequest = $request->banVeRequest; // 'X' hoặc giá trị khác
+    public function duLieuDaKy(Request $request){
+        $orderId = $request->id;
 
-        // Tìm kiếm vật tư theo catalog_id và exportDrawings
-        $supplies = Supply::where('catalog_id', $catalogId)
-                          ->where('exportDrawings', $banVeRequest)
-                          ->get();
-                        //   dd($supplies->toarray());
-        // Trả về dữ liệu JSON
-        return response()->json([
-            'data' => $supplies
+        // Lấy đơn hàng và tải dữ liệu liên quan
+        $order = Order::with(['supplies', 'catalog.project', 'expense'])
+                    ->where('id', $orderId)
+                    ->first();
+
+        if (!$order) {
+            return response()->json(['error' => 'Đơn hàng không tồn tại'], 404);
+        }
+
+        // Lấy thông tin nhà cung cấp từ phương thức đã định nghĩa trong Catalog model
+        $providerInfo = $order->catalog ? $order->catalog->getProviderInfo() : null;
+
+        // Chuẩn bị dữ liệu để gửi về client
+        $data = [
+            'order' => $order,
+            'supplies' => $order->supplies,
+            'catalog' => $order->catalog,
+            'project' => $order->catalog->project ?? null,
+            'expense' => $order->expense,
+            'providerInfo' => $providerInfo // Thêm thông tin nhà cung cấp vào dữ liệu trả về
+        ];
+
+        return response()->json($data);
+    }
+
+    public function luuGiaTriIn(Request $request){
+        $orderId = $request->id; // Lấy ID từ request
+        $order = Order::find($orderId); // Tìm Order dựa trên ID
+
+        if ($order) {
+            $order->status = 1; // Cập nhật trạng thái của Order
+            $order->save(); // Lưu thay đổi vào database
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đơn hàng đã được cập nhật thành công.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Đơn hàng không tìm thấy.'
+            ], 404);
+        }
+    }
+
+// KIỂM TRA CHẤT LƯỢNG
+    public function kiemTraCLBarcode(Request $request){
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        return view('Warehouse Management.Inside.kiemTraChatLuongBarcode',compact('user'));
+    }
+
+    public function checkQuality(Request $request){
+        $user = User::with('department', 'position', 'appFunction')->find(Auth::id());
+        // if ($user->department_id != 3) {
+        //     return back()->with('error', 'Bạn không có quyền truy cập vào chức năng này.');
+        // }
+        $qualityChecks = QualityCheck::where('status', 0)
+            ->with('supply.order.catalog.project') // Sửa đây để truy cập thông qua Catalog
+            ->get();
+
+        return view('Warehouse Management.Inside.kiemTraChatLuong', compact('user', 'qualityChecks'));
+    }
+
+    public function luuKiemTraChatLuong(Request $request){
+        $qualityCheck = QualityCheck::where('supply_id', $request->idQualityCheck)
+        ->where('status', 0)
+        ->whereNull('soluongdatchatluong')
+        ->first();
+
+        // Kiểm tra số lượng đạt chất lượng so với số lượng nhập kho
+        if ($request->quantityDat > $qualityCheck->soluongnhapkho) {
+            // Nếu số lượng kiểm tra lớn hơn số lượng nhập kho, thông báo cho người dùng và dừng thực thi
+            return response()->json(['success' => false, 'message' => 'Số lượng kiểm tra chất lượng không thể lớn hơn số lượng nhập kho.']);
+        }
+
+        // Cập nhật thông tin QualityCheck nếu số lượng kiểm tra hợp lệ
+        $qualityCheck->soluongdatchatluong = $request->quantityDat;
+        $qualityCheck->status = 1;
+        $qualityCheck->ngaykiemtra = Carbon::now()->format('Y-m-d');
+        if (!empty($request->ghiChu)) {
+            $qualityCheck->note = $request->ghiChu; // Lưu ghi chú nếu có
+        }
+        $qualityCheck->save();
+
+        $viewVatTuChiTiet = ViewVatTuChiTiet::where('supply_id', $qualityCheck->supply_id)->first();
+        if (is_null($viewVatTuChiTiet->soluongdatchatluong)) {
+            $viewVatTuChiTiet->soluongdatchatluong = $request->quantityDat;
+        } else {
+            $viewVatTuChiTiet->increment('soluongdatchatluong', $request->quantityDat);
+        }
+        $viewVatTuChiTiet->soluongnhapkho = $viewVatTuChiTiet->soluongdatchatluong;
+        $viewVatTuChiTiet->save();
+
+        // Tạo một Transaction mới với thông tin tương ứng
+        $transaction = new Transaction([
+            'supply_id' => $qualityCheck->supply_id,
+            'soluong' => $request->quantityDat,
+            'loaigiaodich' => 'Đã nhận',
+            'ngaygiaodich' => now(),
+            'ghichu' => $request->ghiChu // Lưu ghi chú vào Transaction nếu có
         ]);
+        $transaction->save();
+
+        // Bao gồm status mới trong phản hồi
+        return response()->json([
+            'success' => true,
+            'message' => 'Dữ liệu đã được cập nhật thành công.',
+            'status' => $qualityCheck->status,
+            'ngaykiemtra' => $qualityCheck->ngaykiemtra // Thêm dòng này
+        ]);
+    }
+
+    public function timKiemVatTuCheck(Request $request){
+        $status = $request->status;
+        $ngayKiemTra = $request->ngayKiemTra; // Thêm biến này
+        $query = QualityCheck::query();
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        if (!empty($ngayKiemTra)) {
+            $query->whereDate('ngaykiemtra', '=', $ngayKiemTra);
+        }
+
+        $results = $query->with(['supply.order'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $results
+        ]);
+    }
+
+    public function takeIdByBarcode(Request $request){
+        $maVatTu = $request->mavattu;
+        // Bao gồm các mối quan hệ khi truy vấn
+        $supply = Supply::with(['order', 'transactions', 'qualityChecks', 'viewVatTuChiTiets', 'catalog'])
+                        ->where('maso', $maVatTu)
+                        ->first();
+
+        if ($supply) {
+            // Kiểm tra trong bảng QualityCheck
+            $qualityCheck = $supply->qualityChecks()->where('status', 0)->whereNull('soluongdatchatluong')->first();
+
+            if ($qualityCheck) {
+                return response()->json([
+                    'status' => 'Thành công',
+                    'data' => $supply
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'Lỗi',
+                    'message' => 'Supply không đáp ứng điều kiện kiểm tra chất lượng.'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'Lỗi',
+                'message' => 'Không tìm thấy nguồn cung cấp nào cho mã vật liệu được cung cấp.'
+            ]);
+        }
     }
 
 }

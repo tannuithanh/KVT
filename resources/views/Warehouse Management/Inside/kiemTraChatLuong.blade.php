@@ -55,7 +55,7 @@
                             </div>
                         </div>
                     </div>
-                          <div class="table-responsive">
+                          <div class="table-responsive" style="max-height: 600px;">
                             <table class="table table-borderless table-bordered sticky-header nhapkhokiemtra">
                                 <thead>
                                     <tr>
@@ -74,7 +74,7 @@
                                         $stt = 1;
                                     @endphp
                                     @forelse ($qualityChecks as $item)
-                                    <tr data-id="{{ $item->id }}" data-maso="{{ $item->supply->maso }}" data-tenvattu="{{ $item->supply->tenvattu }}" data-status="{{$item->status}}">
+                                        <tr data-id="{{ $item->id }}" data-maso="{{ $item->supply->maso }}" data-tenvattu="{{ $item->supply->tenvattu }}" data-status="{{$item->status}}">
                                             <td style="text-align: center">{{ $stt++ }}</td>
                                             <td style="text-align: center">{{ $item->supply->order->sodonhang ?? 'N/A' }}</td>
                                             <td style="text-align: center">{{ $item->supply->tenvattu }}</td>
@@ -91,182 +91,19 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                            <button id="scan-button" class="btn btn-outline-primary bi bi-upc-scan mt-2"> Quét Mã</button>
-                            <div id="barcode-scanner" class="fullscreen-scanner" style="display:none;">
-                                <video id="camera-stream" autoplay></video>
-                            </div>
+                        <a href="{{ route('kiemTraCLBarcode') }}" class="btn btn-outline-primary bi bi-upc-scan mt-2"> Quét Mã</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-{{-- NHẬP SỐ LƯỢNG ĐÃ KIỂM TRA --}}
-<div class="modal fade" id="modalkiemtra" tabindex="-1" style="display: none;background-color: #000000bb" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title">...</h5>
-            <input type="number" class="form-control" id="idQualityCheck" style="display: none">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="quantityInput">Nhập số lượng đã đạt chất lượng:</label>
-                    <input type="number" class="form-control" id="quantityDat" min="1" value="1">
-                </div>
-                <div class="form-group">
-                    <label for="quantityInput">Ghi chú:</label>
-                    <textarea class="form-control" id="ghichuText" ></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
-            <button type="button" class="btn btn-primary" id="luuKiemTraChatLuong">Lưu</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 @endsection
 
 @section('script')
-    {{-- NHẬP SỐ LƯỢNG ĐÃ KIỂM TRA --}}
-        <div class="modal fade" id="modalkiemtra" tabindex="-1" style="display: none;background-color: #000000bb" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title">...</h5>
-                    <input type="number" class="form-control" id="idQualityCheck" style="display: none">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="quantityInput">Nhập số lượng đã đạt chất lượng:</label>
-                            <input type="number" class="form-control" id="quantityDat" min="1" value="1">
-                        </div>
-                        <div class="form-group">
-                            <label for="quantityInput">Ghi chú:</label>
-                            <textarea class="form-control" id="ghichuText" ></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
-                    <button type="button" class="btn btn-primary" id="luuKiemTraChatLuong">Lưu</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </main><!-- End #main -->
         <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-        <script src="{{ asset('assets/js/quagga.min.js') }}"></script>
         <script src="{{asset('assets/js/select2.min.js')}}"></script>
-    {{-- QUÉT CAMERA --}}
-        <script>
-            $(document).ready(function() {
-                $('#scan-button').click(function() {
-                    $('#barcode-scanner').show();
-
-                    Quagga.init({
-                        inputStream: {
-                            name: "Live",
-                            type: "LiveStream",
-                            target: document.querySelector('#barcode-scanner'),
-                            constraints: {
-                                facingMode: "environment"
-                            }
-                        },
-                        decoder: {
-                            readers: ["code_128_reader", "upc_reader", "upc_e_reader", "code_39_reader"]
-                        }
-                    }, function(err) {
-                        if (err) {
-                            console.log(err);
-                            alert("Không khởi tạo được QuaggaJS: " + err);
-                            return;
-                        }
-                        Quagga.start();
-                    });
-
-                    Quagga.onDetected(function(data) {
-                        var code = data.codeResult.code;
-                        var matchedRow = $('.nhapkhokiemtra tbody tr').filter(function() {
-                            return $(this).data('maso') === code && $(this).data('status') == 0;
-                        }).first();
-
-                        if (matchedRow.length > 0) {
-                            var id = matchedRow.data('id');
-                            var tenvattu = matchedRow.data('tenvattu');
-                            var maso = matchedRow.data('maso');
-                            $('#modalkiemtra .modal-title').text(tenvattu);
-                            $('#idQualityCheck').val(id);
-
-                            // Hiển thị modal
-                            $('#modalkiemtra').addClass('show').css({'display': 'block', 'background-color': '#000000bb'});
-                            $('.modal-backdrop').remove();
-                            $(document.body).append('<div class="modal-backdrop fade show"></div>');
-                            $(document.body).addClass('modal-open');
-                        } else {
-                            if (!window.alertShown) {
-                                alert('Không có vật tư nào có mã số "' + maso + '" trong danh sách cần kiểm tra chất lượng.');
-                                window.alertShown = true; // Đánh dấu alert đã được hiển thị
-                            }
-
-                        }
-                    });
-                });
-
-                // Khi đóng modal, dừng Quagga và ẩn modal
-                $('#modalkiemtra .btn-close, #modalkiemtra .btn-secondary').click(function() {
-                    Quagga.stop(); // Dừng Quagga
-                    $('#modalkiemtra').removeClass('show').css('display', 'none');
-                    $('.modal-backdrop').remove();
-                    $(document.body).removeClass('modal-open');
-                });
-            });
-        </script>
-    {{-- LƯU KIỂM TRA CHẤT LƯỢNG --}}
-        <script>
-        $(document).ready(function() {
-                $('#luuKiemTraChatLuong').click(function() {
-                    var idQualityCheck = $('#idQualityCheck').val();
-                    var quantityDat = $('#quantityDat').val();
-                    var ghiChu = $('#ghichuText').val(); // Lấy giá trị từ textarea
-
-                    $.ajax({
-                        url: "{{ route('luuKiemTraChatLuong') }}",
-                        type: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content'),
-                            idQualityCheck: idQualityCheck,
-                            quantityDat: quantityDat,
-                            ghiChu: ghiChu // Thêm dữ liệu ghi chú vào request
-                        },
-                        success: function(response) {
-                            if(response.success) {
-                                alert('Dữ liệu đã được lưu thành công.');
-                                var row = $('tr[data-id="' + idQualityCheck + '"]');
-                                row.find('td').eq(5).text(quantityDat); // Cập nhật số lượng đạt
-
-                                // Cập nhật màu sắc dựa vào status trong phản hồi
-                                if(response.status == 1) {
-                                    row.find('td').eq(6).css('background-color', '#00FF00'); // Đổi màu nền của cột thứ 7 (index bắt đầu từ 0)
-                                    row.find('td').eq(6).text('Đã kiểm tra'); // Cập nhật văn bản cho cột thứ 7 là "Đã kiểm tra"
-                                    row.find('td').eq(7).text(response.ngaykiemtra);
-                                } else {
-                                    row.css('background-color', '#FFFF00'); // Đổi màu nền của cả hàng nếu chưa kiểm tra
-                                    row.find('td').eq(6).text('Chưa kiểm tra');
-                                }
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            alert('Có lỗi xảy ra khi lưu dữ liệu: ' + error);
-                        }
-                    });
-                });
-            });
-
-        </script>
     {{--TÌM KIẾM VẬT TƯ--}}
         <script>
             $(document).ready(function() {

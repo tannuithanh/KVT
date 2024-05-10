@@ -16,7 +16,6 @@ class SuppliesImport implements ToModel{
     private $validProviderFound = false;
     private $requiresBlueprint = false;  // Biến để kiểm tra yêu cầu xuất bản vẽ
 
-
     public function __construct($project_id){
         $this->project_id = $project_id;
     }
@@ -37,7 +36,6 @@ class SuppliesImport implements ToModel{
             $this->checkAndSetProvider($row[14]);
         }
 
-        // Xử lý tạo Catalog và Supply sau khi đã kiểm tra tất cả các hàng
         if ($this->rowNumber > 1 && $this->validProviderFound && !$this->catalog_id && $this->catalogName) {
             $this->setupCatalog();
         }
@@ -63,8 +61,6 @@ class SuppliesImport implements ToModel{
         }
     }
 
-
-
     private function maybeCreateSupply($row){
         if ($this->catalog_id && !empty($row[1]) && stripos($row[1], "Tên Vật tư") === false) {
             $existingSupply = Supply::where('maso', $row[2])->where('catalog_id', $this->catalog_id)->first();
@@ -74,7 +70,6 @@ class SuppliesImport implements ToModel{
             } else {
                 // Kiểm tra xem hàng này có yêu cầu xuất bản vẽ không
                 $exportDrawings = ($row[5] == 'X' || $row[11] == 'X' || $row[12] == 'X' || $row[13] == 'X') ? 'X' : null;
-
                 return new Supply([
                     'catalog_id' => $this->catalog_id,
                     'tenvattu' => $row[1],
@@ -87,9 +82,6 @@ class SuppliesImport implements ToModel{
         }
         return null;
     }
-
-
-
 
     private function checkAndSetProvider($providerName){
         $providerName = trim($providerName);

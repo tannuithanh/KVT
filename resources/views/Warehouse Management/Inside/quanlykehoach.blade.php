@@ -129,7 +129,7 @@
                                         <tr data-id="{{ $order->id }}">
                                             <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{ $stt++ }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->sodonhang }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
+                                            <td style="text-align: center;vertical-align: middle;">{{ $order->catalog->nhacungcap }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
                                             <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
@@ -242,7 +242,7 @@
                         {{-- <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button> --}}
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
                         </div>
                     </div>
                 </div>
@@ -373,7 +373,7 @@
                         {{-- <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button> --}}
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">trở lại</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
                         </div>
                     </div>
                 </div>
@@ -989,36 +989,37 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            $('.masovattu').empty().append('<option selected="">Mã số</option>');
-
-                            // Thêm các option mới từ dữ liệu server
+                            var masovattuHtml = '<option selected="">Mã số</option>';
                             $.each(response.supplies, function(index, supply) {
-                                $('.masovattu').append(`<option value="${supply.id}">${supply.maso}</option>`);
+                                masovattuHtml += `<option value="${supply.id}">${supply.maso}</option>`;
                             });
 
-                            // Khởi tạo Select2 cho dropdown
-                            $('.masovattu').select2({
+                            var masovattuSelect = $('.masovattu');
+                            masovattuSelect.empty().append(masovattuHtml);
+                            masovattuSelect.select2({
                                 placeholder: "Chọn mã số",
                                 allowClear: true
-                            });
-                            $('.vattucuadanhmuc tbody').empty();
+                            }).data('select2').destroy(); // Hủy khởi tạo cũ trước khi khởi tạo mới
+
+                            var tbodyHtml = '';
                             $.each(response.supplies, function(index, supply) {
                                 var noteIcon = supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${supply.note}"></span>` : '';
-                                $('.vattucuadanhmuc tbody').append(
-                                    `<tr data-supply-id="${supply.id}">
-                                        <td style="text-align: center;vertical-align: middle">${index + 1}</td>
-                                        <td style="text-align: center;vertical-align: middle">${supply.tenvattu} ${noteIcon}</td>
-                                        <td style="text-align: center;vertical-align: middle">${supply.maso}</td>
-                                        <td style="text-align: center;vertical-align: middle">${supply.donvitinh}</td>
-                                        <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
-                                        <td class='action-column' style="text-align: center; vertical-align: middle;">
-                                            <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                                <i class="bx bx-transfer"></i>
-                                            </button>
-                                        </td>
-                                    </tr>`
-                                );
+                                var actionColumnHtml = supply.order_id ? `<td class='action-column' style="text-align: center; vertical-align: middle;"></td>` : `<td class='action-column' style="text-align: center; vertical-align: middle;">
+                                    <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
+                                        <i class="bx bx-transfer"></i>
+                                    </button>
+                                </td>`;
+
+                                tbodyHtml += `<tr data-supply-id="${supply.id}">
+                                    <td style="text-align: center;vertical-align: middle">${index + 1}</td>
+                                    <td style="text-align: center;vertical-align: middle">${supply.tenvattu} ${noteIcon}</td>
+                                    <td style="text-align: center;vertical-align: middle">${supply.maso}</td>
+                                    <td style="text-align: center;vertical-align: middle">${supply.donvitinh}</td>
+                                    <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
+                                    ${actionColumnHtml}
+                                </tr>`;
                             });
+                            $('.vattucuadanhmuc tbody').empty().append(tbodyHtml);
                             $('[data-bs-toggle="popover"]').popover();  // Kích hoạt tất cả các popover
                             $('#tongsovattu').text('Tổng vật tư: ' + response.totalSupplies);
                             $('#vautucuadanhmuc .modal-title').html(`Danh mục vật tư: ${catalogName}`);
@@ -1206,25 +1207,25 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            console.log(response.supply); // Log để debug
                             if (response.status === 'success') {
                                 // Xóa bảng hiện tại và thêm các hàng mới từ kết quả tìm kiếm
                                 $('.vattucuadanhmuc tbody').empty();
-                                    var noteIcon = response.supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${response.supply.note}"></span>` : '';
-                                    $('.vattucuadanhmuc tbody').append(
-                                        `<tr data-supply-id="${response.supply.id}">
-                                            <td style="text-align: center;vertical-align: middle">1</td>
-                                            <td style="text-align: center;vertical-align: middle">${response.supply.tenvattu} ${noteIcon}</td>
-                                            <td style="text-align: center;vertical-align: middle">${response.supply.maso}</td>
-                                            <td style="text-align: center;vertical-align: middle">${response.supply.donvitinh}</td>
-                                            <td style="text-align: center;vertical-align: middle">${response.supply.soluong}</td>
-                                            <td class='action-column' style="text-align: center; vertical-align: middle;">
-                                                <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                                    <i class="fas fa-exchange-alt"></i>
-                                                </button>
-                                            </td>
-                                        </tr>`
-                                    );
+                                var actionColumnHtml = response.supply.order_id ? `<td class='action-column' style="text-align: center; vertical-align: middle;"></td>` : `<td class='action-column' style="text-align: center; vertical-align: middle;">
+                                        <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                    </td>`;
+                                var noteIcon = response.supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${response.supply.note}"></span>` : '';
+                                $('.vattucuadanhmuc tbody').append(
+                                    `<tr data-supply-id="${response.supply.id}">
+                                        <td style="text-align: center;vertical-align: middle">1</td>
+                                        <td style="text-align: center;vertical-align: middle">${response.supply.tenvattu} ${noteIcon}</td>
+                                        <td style="text-align: center;vertical-align: middle">${response.supply.maso}</td>
+                                        <td style="text-align: center;vertical-align: middle">${response.supply.donvitinh}</td>
+                                        <td style="text-align: center;vertical-align: middle">${response.supply.soluong}</td>
+                                        ${actionColumnHtml}
+                                    </tr>`
+                                );
 
                                 $('[data-bs-toggle="popover"]').popover(); // Kích hoạt tất cả các popover
 
@@ -1232,9 +1233,9 @@
                                 alert('Không tìm thấy vật tư với mã số này.');
                             }
                         },
-                        error: function(error) {
-                            console.error('Lỗi khi tìm kiếm:', error);
-                            alert('Có lỗi xảy ra, vui lòng thử lại.');
+                        error: function(xhr, status, error) {
+                            console.error("Error occurred: " + error);
+                            alert('Đã xảy ra lỗi khi tìm kiếm.');
                         }
                     });
                 });

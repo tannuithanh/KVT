@@ -219,12 +219,13 @@
     $kiemTraChatLuong = $currentRoute == 'checkQuality';
     $inMaBarCode = $currentRoute == 'inMaBarcode';
     $QuanLyDonHangKeHoach = $currentRoute == 'quanLyDonHang';
+    $xuongYeuCau = $currentRoute == 'xuongYeuCau';
     // Định nghĩa isActivePlanManagement dựa trên điều kiện của bạn
-    $module = $module ?? 'default-value';
-    $quanLyDonHang = $module == 'Quản lý đơn hàng';
-    $quanLyTonKho = $module == 'Quản lý tồn kho';
-    $xuatkho = $module == 'Xuất kho';
-    $isActiveWarehouseEntry = $module == 'Nhập kho'
+        $module = $module ?? 'default-value';
+        $quanLyDonHang = $module == 'Quản lý đơn hàng';
+        $quanLyTonKho = $module == 'Quản lý tồn kho';
+        $xuatkho = $module == 'Xuất kho';
+        $isActiveWarehouseEntry = $module == 'Nhập kho'
   @endphp
 
 
@@ -275,14 +276,14 @@
                 @endif
             </ul>
         @endif
-      @if ($user->department_id == 3 || $user->is_admin==1)
-        <li class="nav-item">
-            <a class="nav-link {{ $kiemTraChatLuong ? '' : 'collapsed' }} " href="{{route('checkQuality')}}">
-            <i class="bi bi-ui-checks-grid"></i>
-                <span>Kiểm tra chất lượng</span>
-            </a>
-        </li>
-      @endif
+        @if ($user->department_id == 3 || $user->is_admin==1)
+            <li class="nav-item">
+                <a class="nav-link {{ $kiemTraChatLuong ? '' : 'collapsed' }} " href="{{route('checkQuality')}}">
+                <i class="bi bi-ui-checks-grid"></i>
+                    <span>Kiểm tra chất lượng</span>
+                </a>
+            </li>
+        @endif
         @if ($user->department_id == 4 || $user->is_admin==1 )
             <li class="nav-item">
                 <a class="nav-link {{ $inMaBarCode ? '' : 'collapsed' }} " href="{{route('inMaBarcode')}}">
@@ -293,20 +294,20 @@
         @endif
         @if ($user->is_admin==1 )
             <li class="nav-item">
-                <a class="nav-link collapsed" href="">
-                <i class="bi bi-journal-richtext"></i>
-                <span>Yêu cầu vật tư</span>
+                <a class="nav-link {{ $xuongYeuCau ? '' : 'collapsed' }}" href="{{ route('xuongYeuCau') }}">
+                    <i class="bi bi-journal-richtext"></i>
+                    <span>Yêu cầu vật tư</span>
                 </a>
             </li>
-      @endif
-      @if ($user->department_id == 2 || $user->is_admin==1 )
-        <li class="nav-item">
-            <a class="nav-link {{ $QuanLyDonHangKeHoach ? '' : 'collapsed' }}" href="{{route('quanLyDonHang')}}">
-                <i class="bi bi-cart-plus"></i>
-            <span>Quản lý đơn hàng</span>
-            </a>
-        </li>
-      @endif
+        @endif
+        @if ($user->department_id == 2 || $user->is_admin==1 )
+            <li class="nav-item">
+                <a class="nav-link {{ $QuanLyDonHangKeHoach ? '' : 'collapsed' }}" href="{{route('quanLyDonHang')}}">
+                    <i class="bi bi-cart-plus"></i>
+                <span>Quản lý đơn hàng</span>
+                </a>
+            </li>
+        @endif
     </ul>
 
   </aside><!-- End Sidebar-->

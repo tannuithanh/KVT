@@ -19,6 +19,9 @@
 @endsection
 
 @section('content')
+<div class="pagetitle">
+    <h1>Quét barcode xuất kho</h1>
+</div>
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
