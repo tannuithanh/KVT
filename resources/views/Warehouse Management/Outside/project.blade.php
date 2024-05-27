@@ -36,6 +36,8 @@
                         <th style="vertical-align: middle; text-align: center;" scope="col" >STT</th>
                         <th style="vertical-align: middle; text-align: center;" scope="col">Tên dự án</th>
                         <th style="vertical-align: middle; text-align: center;" scope="col">Mô tả dự án</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Ngày bắt đầu</th>
+                        <th style="vertical-align: middle; text-align: center;" scope="col">Ngày kết thúc</th>
                         <th style="vertical-align: middle; text-align: center;" scope="col">Ngày tạo</th>
                         <th style="vertical-align: middle; text-align: center;" scope="col">Thao tác</th>
                     </tr>
@@ -47,14 +49,12 @@
                             <td style="vertical-align: middle; text-align: center" scope="col" >{{$stt++}}</td>
                             @if ((in_array($user->appFunction->id, [3, 5]) || $user->is_admin==1) && $module=="Quản lý đơn hàng")
                                 <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                            @elseif ((in_array($user->appFunction->id, [1, 5]) || $user->is_admin==1) && $module=="Nhập kho")
-                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listNhapKho', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
-                            @elseif ((in_array($user->appFunction->id, [2, 5]) || $user->is_admin==1) && $module=="Xuất kho")
-                                <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listExportWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                             @elseif ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin==1) && $module=="Quản lý tồn kho")
                                 <td style="vertical-align: middle; text-align: center" scope="col"><a href="{{ route('listWarehouse', [$value->id,'module' => $module]) }}">{{$value->name}}</a></td>
                             @endif
                             <td style="vertical-align: middle; text-align: center" scope="col">{{$value->description}}</td>
+                            <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->start_date)->format('d/m/Y') }}</td>
+                            <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->end_date)->format('d/m/Y') }}</td>
                             <td style="vertical-align: middle; text-align: center" scope="col">{{ \Carbon\Carbon::parse($value->created_at)->format('d/m/Y H:i:s') }}</td>
                             <td style="vertical-align: middle; text-align: center" scope="col">
                                 @if (in_array($user->appFunction->id, [3, 5]))
@@ -76,37 +76,41 @@
 <!-- MODAL THÊM DỰ ÁN-->
     <div class="modal fade" id="smallModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title">Thêm dự án</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    {{-- Thêm trường input ẩn cho segmentId --}}
-                    <input type="text" id="Segment_id" value="{{ $segment->id ?? '' }}" hidden class="form-control">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm dự án</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <input type="text" id="Segment_id" value="{{ $segment->id ?? '' }}" hidden class="form-control">
+                        <input type="text" id="Brand_id" value="{{ $brand->id ?? '' }}" hidden class="form-control">
 
-                    {{-- Giữ nguyên trường input ẩn cho brandId nếu bạn vẫn muốn truyền nó --}}
-                    <input type="text" id="Brand_id" value="{{ $brand->id ?? '' }}" hidden class="form-control">
-
-                    <label for="inputText" class="col-sm-2 col-form-label">Tên:</label>
-                    <div class="col-sm-10">
-                    <input type="text" id="name" class="form-control">
-                    </div>
-                    <label for="inputText" class="col-sm-2 col-form-label mt-2">Mô tả:</label>
-                    <div class="col-sm-10">
-                    <textarea type="text" id="description" class="form-control mt-2"></textarea>
+                        <label for="name" class="col-sm-2 col-form-label">Tên:</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="name" class="form-control">
+                        </div>
+                        <label for="description" class="col-sm-2 col-form-label mt-2">Mô tả:</label>
+                        <div class="col-sm-10">
+                            <textarea id="description" class="form-control mt-2"></textarea>
+                        </div>
+                        <label for="startDate" class="col-sm-2 col-form-label mt-2">Bắt đầu:</label>
+                        <div class="col-sm-10">
+                            <input type="date" id="startDate" class="form-control mt-2">
+                        </div>
+                        <label for="endDate" class="col-sm-2 col-form-label mt-2">Kết thúc:</label>
+                        <div class="col-sm-10">
+                            <input type="date" id="endDate" class="form-control mt-2">
+                        </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary add-project">Thêm</button>
+                </div>
             </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            <button type="button" class="btn btn-primary add-project">Thêm</button>
-            </div>
-        </div>
         </div>
     </div>
-
 <!-- MODAL SỬA DỰ ÁN--->
     <div class="modal fade" id="Edit-project" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -141,42 +145,62 @@
     <script>
         $(document).ready(function() {
             $('.add-project').on('click', function() {
-                let segmentId = $('#Segment_id').val(); // Lấy segment ID từ input ẩn
+                let segmentId = $('#Segment_id').val();
+                let brandId = $('#Brand_id').val();
                 let name = $('#name').val();
                 let description = $('#description').val();
+                let startDate = $('#startDate').val();
+                let endDate = $('#endDate').val();
+
+                // Kiểm tra ngày bắt đầu không được lớn hơn ngày kết thúc
+                if (new Date(startDate) > new Date(endDate)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Ngày bắt đầu không được lớn hơn ngày kết thúc.',
+                        confirmButtonText: 'Thử lại'
+                    });
+                    return; // Dừng thực thi thêm
+                }
 
                 $.ajax({
                     type: "POST",
                     url: "{{ route('addProject') }}",
                     data: {
-                        segment_id: segmentId, // Gửi segment ID thay vì brand ID
+                        segment_id: segmentId,
+                        brand_id: brandId,
                         name: name,
                         description: description,
+                        start_date: startDate,
+                        end_date: endDate,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire(
-                                'Thành công!',
-                                'Dự án đã được thêm thành công!',
-                                'success'
-                            ).then((result) => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: 'Dự án đã được thêm thành công!',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
                                 if (result.isConfirmed) {
                                     location.reload();
                                 }
                             });
                         } else {
-                            Swal.fire(
-                                'Lỗi!',
-                                'Có lỗi xảy ra khi thêm dự án.',
-                                'error'
-                            );
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: 'Có lỗi xảy ra khi thêm dự án.',
+                                confirmButtonText: 'Thử lại'
+                            });
                         }
                     }
                 });
             });
         });
     </script>
+
 
 
     <script>

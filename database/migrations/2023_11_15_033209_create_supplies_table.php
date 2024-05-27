@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('thanh_tien', 16, 2)->nullable();  // Thành tiền, có thể null, với 10 chữ số, 2 chữ số sau dấu phẩy
             $table->string('exportdrawings')->nullable();
             $table->string('note')->nullable();
+            $table->integer('soluongnhap')->nullable();
             $table->integer('status')->default(0);
             $table->timestamps();
         });

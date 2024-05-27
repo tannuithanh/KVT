@@ -1,64 +1,63 @@
 @extends('Layout.app')
 @section('style')
-<link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
-  <style>
+<link rel="stylesheet" type="text/css" href="{{asset('assets/css/choices.min.css')}}">
+<style>
     .blink-warning {
             background-color: rgba(255, 255, 0, 0.329) !important
         }
     .table-hover tbody tr:hover {
         cursor: pointer;
     }
-  </style>
-  <style>
-    .filter-box {
-        border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
-        padding: 11px;
-        margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
-        border-radius: 5px; /* Bo góc cho khung */
+    .fixed-barcode-scanner {
+            position: sticky;
+            top: 10px;
+            z-index: 9999;
+            height: 400px;
+            width: 100%;
+            border: 3px solid #ddd;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .modal-content {
+            border-radius: 10px;
+        }
+        .btn-close {
+            background: none;
+            border: none;
+        }
+    #barcode-scanner {
+            display: none;
+            position: relative;
+            z-index: 1050;
+        }
+</style>
+<style>
+    #selectedItemsTable th, #selectedItemsTable td {
+        text-align: center;
+        vertical-align: middle;
     }
-    .select2-container--default .select2-selection--single,
-    .select2-selection .select2-selection--single {
-        border: 1px solid #ced4da;
-        border-radius: 0.30rem;
-        height: calc(2.25rem + 2px);
-        line-height: 1.5;
+    #selectedItemsTable th:nth-child(4), #selectedItemsTable td:nth-child(4) {
+        width: 100px;
     }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: calc(2.25rem + 2px);
+    .soluongin {
+        width: 80px; /* Điều chỉnh độ rộng của input */
+        text-align: center;
     }
+</style>
 
-    .select2-container .select2-selection--single .select2-selection__rendered {
-        padding-left: 0.75rem;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 2.25rem;
-    }
-
-    .select2-container--open .select2-dropdown {
-        border-color: #ced4da;
-        z-index: 9999;
-    }
-
-
-  </style>
 
 @endsection
 @section('title')
     Nhập kho
 @endsection
-
 @section('content')
 <div class="pagetitle">
-    <h1>Danh sách đơn hàng</h1>
+    <h1>Nhập kho</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
-            <li class="breadcrumb-item">{{ $module }}</li>
-            <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('listProject', [$segmentId,'module' => $module]) }}">Dự án</a></li>
-            <li class="breadcrumb-item active">Đơn hàng</li>
+            <li class="breadcrumb-item">Nhập kho</li>
         </ol>
     </nav>
 </div>
@@ -67,231 +66,80 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Thương hiệu: <span style="color: black">{{ $brandName }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Phân khúc: <span style="color: black">{{ $segmentName }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Dự án: <span  style="color: black">{{ $project->name }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng số vật tư: <span  style="color: black">{{ $totalSuppliesForProject ?? 0 }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng Đã nhận: <span  style="color: black">{{ $totalOrdersDanhan ?? 0 }}</span>  |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng vật tư chưa nhận: <span  style="color: black">{{ $totalOrdersChuanhan ?? 0 }}</span> |
-                      <span style="font-size: 18px;font-weight: 600;color: #012970;">Tổng vật tư đã xuất: <span  style="color: black">{{ $totalOrdersDaxuat ?? 0 }}</span>
-                    </h5>
-                      <button type="button" class="btn btn-outline-primary ri-search-line timkiemdonhang" data-projectId="{{$project->id}}" data-bs-toggle="modal" data-bs-target="#Timkiemvattu"> Tìm kiếm</button>
-                        @if ($user->department_id==3)
-                            <a href="{{ route('checkQuality', ['id' => $project->id]) }}" class="btn btn-outline-primary bi bi-journal-check"> Kiểm tra chất lượng</a>
-                        @endif
-                      <!-- Nội dung thông báo thành công -->
-                          @if(session('success'))
-                              <div class="alert alert-success bg-success text-light border-0 alert-dismissible fade show mt-3" role="alert">
-                                  {{ session('success') }}
-                                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                              </div>
-                          @elseif(session('error'))
-                              <div class="alert alert-danger bg-danger text-light border-0 alert-dismissible fade show mt-3" role="alert">
-                                {{ session('error') }}
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                              </div>
-                          @endif
-                          <div class="table-responsive">
-                            <table class="table table-borderless table-bordered table-hover mt-2">
-                                <thead>
-                                        <tr>
-                                            <th style="text-align: center" rowspan="2" scope="col">Stt</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">Số đơn hàng</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">NCC</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">Nội dung</th>
-                                            <th style="text-align: center" colspan="4" scope="col">Tình trạng</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">Chi phí</th>
-                                            <th style="text-align: center" rowspan="2" scope="col">Ghi chú</th>
-                                        </tr>
-                                      <tr>
+                    <div class="d-flex flex-wrap align-items-center mt-2">
+                        <h6 class="modal-title" id="orderTitle">Đơn hàng:</h6>
+                        <span>|</span>
+                        <h6 class="modal-title" id="tongsovattu">Tổng vật tư:</h6>
+                        <span>|</span>
+                        <h6 class="modal-title" id="tongdanhan">Tổng đã nhận:</h6>
+                        <span>|</span>
+                        <h6 class="modal-title" id="tongchuanhan">Tổng chưa nhận:</h6>
+                        <span>|</span>
+                        <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
+                    </div>
+                    <div class="table-responsive mt-3">
+                        <button id="chonVatTu" type="button" class="btn btn-outline-success mt-2"></i>Chọn vật tư in</button>
+                        <button id="nhapKho" type="button" class="btn btn-outline-primary mt-2"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</button>
 
-                                            <th style="text-align: center" scope="col">Tổng</th>
-                                            <th style="text-align: center" scope="col">Đã nhận</th>
-                                            <th style="text-align: center" scope="col">Chưa nhận</th>
-                                            <th style="text-align: center" scope="col">Đã xuất</th>
-                                      </tr>
-                                </thead>
-                                <tbody>
-                                  @php
-                                    $stt = 1;
-                                  @endphp
-                                    @forelse ($orders as $index => $order)
-                                        <tr data-id="{{ $order->id }}">
-                                            <td class="no-modal-trigger" style="text-align: center;vertical-align: middle;">{{ $stt++ }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->sodonhang }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->nhacungcap }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->noidung }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_supplies ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_danhan ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_chuanhan ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->total_daxuat ?? '0' }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->chiphi }}</td>
-                                            <td style="text-align: center;vertical-align: middle;">{{ $order->ghichu }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="16" style="text-align: center;vertical-align: middle;">Không có dữ liệu</td>
-                                        </tr>
-                                    @endforelse
-                              </tbody>
-                            </table>
+                        <table class="table table-borderless table-bordered table-hover mt-2 vatTuDonHang">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
+                                    <th colspan="5" style="text-align: center;">Tình trạng</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã QrCode</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Số lượng in</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align: center; vertical-align: middle;">Tổng</th>
+                                    <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
+                                    <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
+                                    <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
+                                    <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <button id="inVatTu" type="button" style="display: none" class="btn btn-outline-success mt-2"><i class="bi bi-printer"></i>In mã barcode</button>
+                        <button id="nhanVatTu" type="button" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhận vật tư</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-{{-- MODEL TÌM KIẾM --}}
-  <div class="modal fade" id="Timkiemvattu" tabindex="-1" style="display: none;" aria-modal="false" role="dialog">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Tìm kiếm vật tư</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <form action="{{ route('listNhapKho', ['project' => $project->id]) }}" method="GET">
-              <div class="modal-body">
-                <input type="text" value="{{$module}}" name="module" hidden>
-                  <input type="text" value="{{$project->id}}" name="project_id" hidden>
-                    <div class="col-sm-12">
-                        <div class="form-check d-flex align-items-center mt-2">
-                            <!-- Checkbox -->
-                            <div class="form-check col-sm-3">
-                                <input class="form-check-input" type="checkbox" id="sodonhangCheckbox" >
-                                <label class="form-check-label" for="sodonhang">
-                                    Số đơn hàng:
-                                </label>
-                            </div>
-                            @csrf
-                            <!-- Select menu -->
-                            <select class="form-select ml-auto" id="sodonhang" name="sodonhangSelect" aria-label="Default select example" required disabled>
-                                <option value="">Chọn đơn hàng</option>
-                            </select>
-                        </div>
-
-                        <div class="form-check d-flex align-items-center mt-2">
-                            <!-- Checkbox -->
-                            <div class="form-check col-sm-3">
-                            <input class="form-check-input" type="checkbox" id="nhacungcapCheckbox" >
-                            <label class="form-check-label" for="nhacungcap">
-                                Nhà cung cấp:
-                            </label>
-                            </div>
-                            <select class="form-select ml-auto" id="nhacungcap" name="nhacungcapSelect" aria-label="Default select example" required disabled>
-                                <option value="">Chọn nhà cung cấp</option>
-                            </select>
-                        </div>
-                        <div class="form-check d-flex align-items-center mt-2">
-                            <!-- Checkbox -->
-                            <div class="form-check col-sm-3">
-                                <input class="form-check-input" type="checkbox" id="tinhtrangCheckbox" >
-                                <label class="form-check-label" for="tinhtrang">
-                                    Tình trạng:
-                                </label>
-                            </div>
-
-                            <select class="form-select ml-auto" id="nhacungcapSuppelies" name="nhacungcapSuppeliesSelect" aria-label="Default select example" required disabled>
-                                <option value="">Chọn tình trạng</option>
-                                <option value="Đã nhận">Đã nhận</option>
-                                <option value="Chưa nhận">Chưa nhận</option>
-                                <option value="Đã xuất">Đã xuất</option>
-                            </select>
-                        </div>
-                    </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="submit" class="btn btn-primary searchSuppelies">Tìm kiếm</button>
-              </div>
-            </form>
-        </div>
-    </div>
-  </div>
-{{-- MODAL DANH MỤC VẬT TƯ--}}
-    <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
+{{-- HIỂN THỊ POPUP --}}
+    <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Vật tư chi tiết</h5>
+                    <h5 class="modal-title" id="actionModalLabel">Chọn Hành Động</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                    <form class="modal-body quetBarcodeNhapKho" action="{{ route('quetBarcodeNhapKho') }}" method="get">
-                        @csrf
-                        <div class="filter-box mt-3">
-                            <div class="row">
-                                <div class="col-6 col-md-2">
-                                    <select class="form-select tenvattuchitiet" aria-label="Default select example">
-                                        <option selected="">Tên vật tư</option>
-                                    </select>
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <select class="form-select masochitiet" aria-label="Default select example">
-                                        <option selected="">Mã số</option>
-                                    </select>
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <select class="form-select donvitinhchitiet" aria-label="Default select example">
-                                        <option selected="">Chọn đơn vị tính</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-2">
-                                    <a id="timkiemVatTuChiTiet" class="btn btn-primary btn-block">Tìm kiếm</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-wrap align-items-center mt-2">
-                            <h6 class="modal-title" id="orderTitle">Đơn hàng:</h6>
-                            <span>|</span>
-                            <h6 class="modal-title" id="tongsovattu">Tổng vật tư:</h6>
-                            <span>|</span>
-                            <h6 class="modal-title" id="tongdanhan">Tổng đã nhận:</h6>
-                            <span>|</span>
-                            <h6 class="modal-title" id="tongchuanhan">Tổng chưa nhận:</h6>
-                            <span>|</span>
-                            <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
-                        </div>
-
-                            <div class="table-responsive" style="max-height: 600px;">
-                                <table class="table table-bordered table-hover danhmucvattuchitiet">
-                                    <thead>
-                                        <tr>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
-                                            <th colspan="5" style="text-align: center;">Tình trạng</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
-                                            <th rowspan="2" style="text-align: center; vertical-align: middle;">Ghi chú</th>
-                                        </tr>
-                                        <tr>
-                                            <th style="text-align: center; vertical-align: middle;">Tổng</th>
-                                            <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
-                                            <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
-                                            <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
-                                            <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
-                            </div>
-                            @if ($user->department_id!=3)
-                                <a  class="btn btn-outline-primary mt-2" id="chonvattu"><i class="bi bi-folder-plus"></i> Chọn vật tư</a>
-                            @endif
-                            <button id="inVatTu" type="button" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-printer"></i>In mã barcode</button>
-                            <button id="nhapKho" type="submit" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</button>
-                    </form>
-
+                <div class="modal-body POPUPCHON">
+                    <div id="barcode-scanner" class="fixed-barcode-scanner">
+                        <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100 mb-3" id="NTDH" onclick="showOrderNameModal()">
+                        <i class="bi bi-pencil-square"></i> Nhập tên đơn hàng
+                    </button>
+                    <button type="button" class="btn btn-secondary w-100" id="scan-button">
+                        <i class="ri-qr-code-line"></i> Quét QR
+                    </button>
+                </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
     </div>
-{{-- LỊCH SỬ GIAO DỊCH VẬT TƯ --}}
-    <div class="modal fade" style="background-color: #000000bb" id="lichsugiaodich" tabindex="-1" style="display: none;" aria-hidden="true">
+
+{{-- LỊCH SỬ --}}
+    <div class="modal fade" id="historyTransaction" style="background-color: #000000bb" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -299,8 +147,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body ">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
+                    <div class="table-responsive" style="max-height: 450px;">
+                        <table class="table table-bordered vatTuDonHang">
                             <thead>
                             <tr>
                                 <th style="text-align: center; vertical-align: middle;">STT</th>
@@ -321,188 +169,238 @@
             </div>
         </div>
     </div>
-
-{{-- IN DANH SÁCH VẬT TƯ --}}
+{{-- XÁC NHẬN VẬT TƯ INBARCODE --}}
+    <div class="modal fade" id="basicModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thông tin in</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered" id="selectedItemsTable">
+                        <thead>
+                            <tr>
+                                <th>Stt</th>
+                                <th>Tên Vật Tư</th>
+                                <th>Mã Số</th>
+                                <th style="width: 100px;">Số Lượng In</th>
+                                <th>Mã Barcode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở về</button>
+                    <button type="button" class="btn btn-primary" id="printerBarcode">In mã</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
-
 @section('script')
-<script src="{{asset('assets/js/select2.min.js')}}"></script>
-  <script>
-    $('.btn-secondary').click(function() {
-        var supplyId = $(this).data('id'); // Lấy ID từ data-id của nút
-        $('#supplyId').val(supplyId); // Đặt ID vào trường ẩn
-    });
-  </script>
-  {{-- HIỂN THỊ MODAL VẬT TƯ CHI TIẾT --}}
-    <script>
-            $(document).ready(function() {
-                $('.table-hover tbody tr').click(function() {
-                        if ($(event.target).closest('.no-modal-trigger').length) {
-                            // Nếu có, không làm gì cả để ngăn chặn hiển thị modal
-                            return;
+<script src="{{asset('assets/js/choices.min.js')}}"></script>
+<script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
+{{-- CHUYỂN ĐỔI THÀNH ĐƠN HÀNG SELECT2 --}}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var orders = @json($orders);
+            $('#actionModal').modal('show');
+
+            // Hàm để hiển thị modal và cập nhật nội dung của nó
+            window.showOrderNameModal = function() {
+                $('#actionModalLabel').text('Nhập Tên Đơn Hàng');
+                var selectHTML = '<label for="orderSelect">Chọn đơn hàng:</label>' +
+                    '<select id="orderSelect" class="form-control">' +
+                    '<option value="">Chọn một đơn hàng...</option>';
+
+                // Thêm các đơn hàng vào thẻ select
+                orders.forEach(function(order) {
+                    selectHTML += `<option value="${order.id}">${order.sodonhang}</option>`;
+                });
+                selectHTML += '</select>' +
+                    '<button onclick="searchOrder()" class="btn btn-primary w-100 mt-3">Tìm kiếm</button>';
+
+                $('#actionModal .modal-body').html(selectHTML);
+
+                // Khởi tạo Choices
+                var element = document.getElementById('orderSelect');
+                var choices = new Choices(element, {
+                    searchEnabled: true,
+                    itemSelectText: '',
+                    removeItemButton: true,
+                });
+            };
+
+            // Hàm để xử lý sự kiện tìm kiếm đơn hàng
+            window.searchOrder = function() {
+                var orderId = $('#orderSelect').val();
+                console.log('Đơn hàng được chọn:', orderId);
+
+                if (orderId) {
+                    const $actionModal = $('#actionModal');
+                    const $vatTuDonHangTableBody = $('.vatTuDonHang tbody');
+                    const $orderTitle = $('#orderTitle');
+                    const $tongSoVatTu = $('#tongsovattu');
+                    const $tongDaNhan = $('#tongdanhan');
+                    const $tongChuaNhan = $('#tongchuanhan');
+                    const $tongDaXuat = $('#tongdaxuat');
+                    $actionModal.modal('hide');
+                    $actionModal.remove();
+                    $.ajax({
+                        url: "{{ route('layThongTinDonHang') }}",
+                        type: 'POST',
+                        data: {
+                            id: orderId,
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            console.log(response)
+                            $vatTuDonHangTableBody.empty();
+                            response.suppliesDetail.forEach((supplyDetail, index) => {
+                                var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
+                                var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+
+                                // Kiểm tra điều kiện để thêm class blink-warning
+                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+
+                                const row = `
+                                    <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="barcode ${rowClass}">${supplyDetail.qrCode || ''}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
+                                    </tr>
+                                `;
+                                $vatTuDonHangTableBody.append(row);
+                            });
+                            $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
+                            $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
+                            $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
+                            $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
+                            $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Lỗi khi gửi yêu cầu AJAX:', error);
+                            // Hiển thị thông báo lỗi cho người dùng
                         }
-                        var orderId = $(this).data('id');
-                        $.ajax({
-                            url: "{{ route('DuLieuVatTuChiTiet') }}",
-                            type: 'POST',
-                            data: {
-                                id: orderId,
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function(data) {
-
-                                var tbody = $('#danhMucVatTuChiTiet').find('tbody');
-                                tbody.empty();
-                                $('#themvattuchitiet').attr('data-id', orderId);
-                                $('#timkiemVatTuChiTiet').attr('data-id', orderId);
-                                var orderName = data.orderName;
-                                var totalSupplies = data.totalSupplies;
-                                var totalDanhan = data.totalDanhan;
-                                var totalChuanhan = data.totalChuanhan;
-                                var totalDaxuat = data.totalDaxuat;
-                                $('#orderTitle').text('Đơn hàng: ' + orderName);
-                                $('#tongsovattu').text('Tổng vật tư: ' + totalSupplies);
-                                $('#tongdanhan').text('Tổng đã nhận: ' + totalDanhan);
-                                $('#tongchuanhan').text('Tổng chưa nhận: ' + totalChuanhan);
-                                $('#tongdaxuat').text('Tổng đã xuất: ' + totalDaxuat);
-                                $.each(data.supplies, function(index, item) {
-                                    var selectTenVatTu = $('.tenvattuchitiet').empty().append('<option selected="">Tên vật tư</option>');
-                                    var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
-                                    var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
-                                    var totalNhapKho = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
-                                    var totalDatChatLuong = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
-
-                                    // Kiểm tra điều kiện để thêm class blink-warning
-                                    var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
-
-                                    var donvitinhSet = new Set();
-                                    $.each(data.supplies, function(index, item) {
-                                        selectTenVatTu.append(new Option(item.tenvattu, item.tenvattu));
-                                        selectMaSo.append(new Option(item.maso, item.maso));
-                                        if (!donvitinhSet.has(item.donvitinh)) {
-                                            selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
-                                            donvitinhSet.add(item.donvitinh);
-                                        }
-                                    });
-
-                                    if (item) {
-
-                                            var row = '<tr id="supply-row-' + item.id + '"  data-id="' + item.id + '">' +
-                                            '<td  style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' tenvattu">' + (item.tenvattu) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' maso">' + (item.maso) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' donvitinh">' + (item.donvitinh) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluong">' + (item.soluong) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongnhapkho">' + totalNhapKho + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongdatchatluong">' + totalDatChatLuong + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' chuanhan">' + (item.chuanhan) + '</td>' +
-                                            '<td  style="text-align:center;vertical-align: middle" class="' + rowClass + ' daxuat">' + (item.daxuat) + '</td>' +
-                                            '<td class="barcode ' + rowClass + '">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
-                                            '</tr>';
-                                        tbody.append(row);
-                                    }
-                                });
-                                // Hiển thị modal
-                                $('#danhMucVatTuChiTiet').modal('show');
-                            },
-                            error: function(error) {
-                                console.log(error);
-                                alert('Có lỗi xảy ra');
-                            }
-                        });
                     });
-                    $('#danhMucVatTuChiTiet').on('shown.bs.modal', function () {
-                        $('.tenvattuchitiet, .masochitiet').select2({
-                            placeholder: "Chọn...",
-                            allowClear: true,
-                            width: '100%',
-                            dropdownParent: $('#danhMucVatTuChiTiet')
-                        });
-                    });
-            });
+                } else {
+                    console.warn('Vui lòng chọn một đơn hàng.');
+                }
+            };
+        });
     </script>
-  {{-- THÊM VẬT TƯ CHI TIẾT --}}
+{{-- CAMERA --}}
     <script>
         $(document).ready(function() {
-            var order_id
-            $('#themvattuchitiet').click(function() {
-                order_id = $(this).data('id');
-                $('#themvattuthucong').modal('show');
-            });
+            const $scanButton = $('#scan-button');
+            const $barcodeScanner = $('#barcode-scanner');
+            const $barcodeInfoContainer = $('#barcode-info-container');
+            const $NTDH = $('#NTDH');
+            const $actionModal = $('#actionModal');
+            const $vatTuDonHangTableBody = $('.vatTuDonHang tbody');
 
-            $('#themvattu').click(function() {
-                // Thu thập dữ liệu từ modal
-                var tenvattu = $('input[name="tenvattu"]').val();
-                var maso = $('input[name="maso"]').val();
-                var donvitinh = $('select[name="donvitinh"]').val();
-                var soluong = $('input[name="soluongvattuthemvao"]').val();
-                $.ajax({
-                    url: "{{ route('themvattuchitiet') }}",
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'), // CSRF token
-                        tenvattu: tenvattu,
-                        maso: maso,
-                        donvitinh: donvitinh,
-                        soluong: soluong,
-                        order_id: order_id,
-                    },
-                    success: function(data) {
-                        if (!data.success) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Không thể thêm vật tư',
-                                    text: data.message, // Hiển thị thông báo lỗi từ server
-                                });
-                            } else {
-                            var tbody = $('#danhMucVatTuChiTiet').find('tbody');
-                            tbody.empty(); // Xóa nội dung hiện tại của tbody
-                            $.each(data.supplies, function(index, item) {
-                                var buttonsHtml = `<td style="text-align:center;vertical-align: middle">
-                                    <button class="btn btn-sm btn-primary chinhsuavattuchitiet"
-                                        data-bs-toggle="modal"
-                                        data-orderId="${order_id}"
-                                        data-tenvattu="${item.tenvattu}"
-                                        data-maso="${item.maso}"
-                                        data-donvitinh="${item.donvitinh}"
-                                        data-soluong="${item.soluong}">Sửa</button>
-                                    <button class="btn btn-sm btn-danger xoavattuchitiet"
-                                        data-id="${item.id}">Xóa</button>
-                                    </td>`;
+            const $orderTitle = $('#orderTitle');
+            const $tongSoVatTu = $('#tongsovattu');
+            const $tongDaNhan = $('#tongdanhan');
+            const $tongChuaNhan = $('#tongchuanhan');
+            const $tongDaXuat = $('#tongdaxuat');
 
-                                var row = '<tr>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.tenvattu) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.maso) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.donvitinh) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.soluong) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.danhan) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.chuanhan) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle">' + (item.daxuat) + '</td>' +
-                                    '<td>' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
-                                    buttonsHtml +
-                                    '</tr>';
-                                tbody.append(row);
+            $scanButton.on('click', function() {
+                $barcodeScanner.show();
+                $scanButton.hide();
+                $NTDH.hide();
+
+                function onScanSuccess(qrCodeMessage) {
+                    html5QrCodeScanner.stop().then(ignore => {
+                        $actionModal.modal('hide');
+                        $actionModal.remove();
+                    }).catch(err => {
+                        console.error("Failed to stop scanning.", err);
+                    });
+                    $.ajax({
+                        url: "{{ route('layThongTinDonHang') }}",
+                        type: 'POST',
+                        data: {
+                            sodonhang: qrCodeMessage,
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            $vatTuDonHangTableBody.empty();
+
+                            // Duyệt qua các phần tử trong suppliesDetail và tạo các hàng mới
+                            response.suppliesDetail.forEach((supplyDetail, index) => {
+                                var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
+                                var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+
+                                // Kiểm tra điều kiện để thêm class blink-warning
+                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+
+                                const row = `
+                                    <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
+                                        <td class="barcode ${rowClass}">${supplyDetail.barcodeHtml || ''}<div>${supplyDetail.supply.maso || ''}</div></td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
+                                    </tr>
+                                `;
+                                $vatTuDonHangTableBody.append(row);
                             });
+                            $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
+                            $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
+                            $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
+                            $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
+                            $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
+                        },
+                        error: function(xhr, status, error) {
                             Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công',
-                                text: 'Vật tư đã được thêm thành công.',
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Đơn hàng không tồn tại',
                             });
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
                         }
-                    },
+                    });
+                }
 
-                    error: function(xhr) {
-                        alert('Có lỗi xảy ra, không thể thêm vật tư');
-                    }
-                });
+                const html5QrCodeScanner = new Html5Qrcode("barcode-scanner");
+                html5QrCodeScanner.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: 300 // Tăng kích thước vùng quét QR
+                    },
+                    onScanSuccess,
+                );
             });
         });
     </script>
-  {{-- HIỂN THỊ LỊCH SỬ --}}
+
+{{-- HIỂN THỊ LỊCH SỬ --}}
     <script>
-        $('.danhmucvattuchitiet tbody').on('click', 'tr', function(event) {
+        $('.vatTuDonHang tbody').on('click', 'tr', function(event) {
             if ($(event.target).closest('.stt-checkbox').length) {
                 return;
             }
@@ -544,173 +442,133 @@
                     }
 
                     // Đặt htmlContent vào tbody của bảng trong modal
-                    $('#lichsugiaodich .modal-body .table tbody').html(htmlContent);
+                    $('#historyTransaction .modal-body .table tbody').html(htmlContent);
 
                     // Hiển thị modal
-                    $('#lichsugiaodich').modal('show');
+                    $('#historyTransaction').modal('show');
                 },
                 error: function(error) {
                     console.log(error);
                     // Hiển thị thông báo lỗi
-                    $('#lichsugiaodich .modal-body').html('<p>Có lỗi xảy ra khi tải dữ liệu.</p>');
-                    $('#lichsugiaodich').modal('show');
+                    $('#historyTransaction .modal-body').html('<p>Có lỗi xảy ra khi tải dữ liệu.</p>');
+                    $('#historyTransaction').modal('show');
                 }
             });
         });
 
     </script>
-  {{-- TÌM KIẾM ĐƠN HÀNG --}}
-    <script>
-        $(document).ready(function(){
-            $('.timkiemdonhang').click(function(){
-                var projectId = $(this).data('projectid');
-
-                $.ajax({
-                    url: '{{ route("soDonHangvaNCC") }}',
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        project_id: projectId,
-                    },
-                    success: function(response) {
-                        $('#sodonhang').find('option:not(:first)').remove();
-                        $('#nhacungcap').find('option:not(:first)').remove();
-                        $.each(response.orders, function(index, order) {
-                            $('#sodonhang').append($('<option>', {
-                                value: order.sodonhang,
-                                text: order.sodonhang
-                            }));
-                            if ($('#nhacungcap option[value="' + order.nhacungcap + '"]').length == 0) {
-                                $('#nhacungcap').append($('<option>', {
-                                    value: order.nhacungcap,
-                                    text: order.nhacungcap
-                                }));
-                            }
-                        });
-                    },
-                    error: function(error){
-                        // Xử lý khi có lỗi
-                        console.log(error);
-                    }
-                });
-            });
-        });
-        $(document).ready(function(){
-            // Sự kiện khi checkbox số đơn hàng thay đổi
-            $('#sodonhangCheckbox').change(function(){
-                if(this.checked) {
-                    $('#sodonhang').removeAttr('disabled');
-                } else {
-                    $('#sodonhang').attr('disabled', 'disabled');
-                }
-            });
-
-            // Sự kiện khi checkbox nhà cung cấp thay đổi
-            $('#nhacungcapCheckbox').change(function(){
-                if(this.checked) {
-                    $('#nhacungcap').removeAttr('disabled');
-                } else {
-                    $('#nhacungcap').attr('disabled', 'disabled');
-                }
-            });
-
-            // Sự kiện khi checkbox tình trạng thay đổi
-            $('#tinhtrangCheckbox').change(function(){
-                if(this.checked) {
-                    $('#nhacungcapSuppelies').removeAttr('disabled');
-                } else {
-                    $('#nhacungcapSuppelies').attr('disabled', 'disabled');
-                }
-            });
-        });
-    </script>
-  {{-- HIỂN THỊ CHECKBOX ĐỂ CHỌN VẬT TƯ --}}
+{{-- HIỂN THỊ CHECKBOX IN MÃ BARCODE--}}
     <script>
         $(document).ready(function() {
             var isCheckboxAdded = false;
 
-            $('#chonvattu').click(function() {
+            $('#chonVatTu').click(function() {
                 if (!isCheckboxAdded) {
                     // Thêm checkbox vào bảng và thay đổi nút "Chọn Vật Tư" thành "Trở Về"
-                    $('.danhmucvattuchitiet tbody tr').each(function() {
-                        var vattuId = $(this).data('id');
-                        var checkboxHtml = '<input type="checkbox" class="form-check-input stt-checkbox" name="selectedItems[]" value="' + vattuId + '">';
-                        $(this).find('td:first').html(checkboxHtml);
+                    $('.vatTuDonHang tbody tr').each(function() {
+                        var soluongIn = $(this).find('.soluonginbarcode').text().trim(); // Lấy giá trị từ cột "Số lượng in"
+                        if ($(this).find('td.blink-warning').length === 0 && soluongIn === '') {
+                            var vattuId = $(this).data('id');
+                            var checkboxHtml = '<input type="checkbox" class="form-check-input stt-checkbox" name="selectedItems[]" value="' + vattuId + '">';
+                            $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html(checkboxHtml);
+                        }
                     });
 
                     // Tạo và thêm checkbox "Chọn Tất Cả" vào tiêu đề cột STT
                     var headerCheckboxHtml = '<input type="checkbox" class="form-check-input" id="selectAll">';
-                    $('.danhmucvattuchitiet thead th:first').html(headerCheckboxHtml);
+                    $('.vatTuDonHang thead th:first').data('original-content', $('.vatTuDonHang thead th:first').html()).html(headerCheckboxHtml);
 
                     isCheckboxAdded = true;
                     $(this).html('<i class="bi bi-arrow-left"></i> Trở Về');
+
+                    // Vô hiệu hóa các nút khác
+                    $('button').not(this).not('#printerBarcode').not('.btn-secondary').prop('disabled', true);
+                    $('#inVatTu').prop('disabled', false); // Đảm bảo nút "In mã barcode" không bị vô hiệu hóa
                 } else {
                     // Khôi phục bảng và nút "Chọn Vật Tư"
-                    // Loại bỏ các input bằng cách khôi phục nội dung gốc của các ô
-                    $('.danhmucvattuchitiet tbody tr').each(function(index) {
+                    $('.vatTuDonHang tbody tr').each(function(index) {
                         $(this).find('td').each(function() {
-                            // Lấy nội dung gốc từ data attribute và khôi phục nó
                             var originalContent = $(this).data('original-content');
                             if (originalContent !== undefined) {
                                 $(this).html(originalContent);
                             }
                         });
-                        // Khôi phục lại số thứ tự ban đầu cho mỗi hàng ở cột đầu tiên
                         $(this).find('td:first').html(index + 1);
                     });
 
                     // Khôi phục tiêu đề cột STT và loại bỏ checkbox "Chọn Tất Cả"
-                    $('.danhmucvattuchitiet thead th:first').html('STT');
-                    $('#selectAll').prop('checked', false).parent().html('STT'); // Giả định rằng checkbox "Chọn Tất Cả" nằm trong thẻ <th>
+                    $('.vatTuDonHang thead th:first').html('STT');
 
-                    $('#inVatTu, #nhapKho').hide();
                     isCheckboxAdded = false;
-                    $(this).html('<i class="bi bi-folder-plus"></i> Chọn Vật Tư');
+                    $(this).html('<i class="bi bi-printer"></i>Chọn Vật Tư');
+
+                    // Ẩn nút In mã barcode
+                    $('#inVatTu').hide();
+
+                    // Kích hoạt lại các nút khác
+                    $('button').prop('disabled', false);
                 }
             });
 
-            // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi, bao gồm "Chọn Tất Cả"
+            // Hiển thị modal khi bấm nút inVatTu
+            $('#inVatTu').click(function() {
+                updateModalTable();
+                $('#basicModal').modal('show');
+            });
+
+            // Hàm để thêm dữ liệu vào bảng trong modal
+            function updateModalTable() {
+                var $tableBody = $('#selectedItemsTable tbody');
+                $tableBody.empty(); // Xóa các hàng cũ
+
+                var addedItems = new Set(); // Tạo set để theo dõi các vật tư đã thêm
+                var stt = 1; // Biến đếm STT
+
+                $('.stt-checkbox:checked').each(function() {
+                    var $row = $(this).closest('tr');
+                    var tenVatTu = $row.find('.tenvattu').text().trim();
+                    var maSo = $row.find('.maso').text().trim();
+                    var maBarcode = $row.find('.barcode').html().trim(); // Lấy HTML của barcode
+                    var soluong = parseInt($row.find('.soluong').text().trim(), 10);
+                    var soluongdatchatluong = parseInt($row.find('.soluongdatchatluong').text().trim(), 10);
+
+                    // Kiểm tra xem vật tư đã được thêm chưa
+                    if (!addedItems.has(maSo)) {
+                        addedItems.add(maSo); // Thêm mã số vào set
+
+                        var soLuongInInput = `<input type="number" class="form-control soluongin" value="${soluongdatchatluong}" min="${soluongdatchatluong}" max="${soluong}">`;
+
+                        var newRow = `
+                            <tr>
+                                <td>${stt++}</td>
+                                <td>${tenVatTu}</td>
+                                <td>${maSo}</td>
+                                <td>${soLuongInInput}</td>
+                                <td>${maBarcode}</td>
+                            </tr>
+                        `;
+                        $tableBody.append(newRow);
+                    }
+                });
+
+                // Ràng buộc giá trị input
+                $('.soluongin').on('input', function() {
+                    var min = parseInt($(this).attr('min'), 10);
+                    var max = parseInt($(this).attr('max'), 10);
+                    var value = parseInt($(this).val(), 10);
+
+                    if (value < min) {
+                        $(this).val(min);
+                    } else if (value > max) {
+                        $(this).val(max);
+                    }
+                });
+            }
+
+            // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi
             $(document).on('change', '.stt-checkbox', function() {
-                var $row = $(this).closest('tr');
-                var soluong = parseInt($row.find('.soluong').text().trim(), 10); // Số lượng có sẵn
-                var totalNhapKho = parseInt($row.find('.soluongnhapkho').data('original-content') || 0, 10); // Số lượng đã nhập, từ dữ liệu lưu trữ
-
-                var $soluongnhapkhoCell = $row.find('.soluongnhapkho');
-
-                if ($(this).is(':checked')) {
-                    // Lưu giá trị hiện tại trước khi thay thế bằng input
-                    $soluongnhapkhoCell.data('original-content', totalNhapKho);
-
-                    // Giới hạn số lượng nhập không được vượt quá soluong - totalNhapKho
-                    var maxQty = soluong - totalNhapKho;
-
-                    // Thay đổi nội dung của cột 'soluongnhapkho' bằng input mới với giới hạn max
-                    var inputHtml = `<input type="number" class="form-control soluongnhapkho-input" value="0" min="0" max="${maxQty}" />`;
-                    $soluongnhapkhoCell.html(inputHtml);
-                } else {
-                    // Nếu checkbox bị bỏ chọn, khôi phục giá trị ban đầu
-                    var originalContent = $soluongnhapkhoCell.data('original-content');
-                    $soluongnhapkhoCell.html(originalContent);
-                }
                 checkInputsAndToggleButtons();
             });
-
-            // Thêm sự kiện kiểm tra giá trị nhập vào input
-            $(document).on('input', '.soluongnhapkho-input', function() {
-                var maxQty = parseInt($(this).attr('max'), 10);
-                var currentValue = parseInt($(this).val(), 10);
-
-                // Điều chỉnh giá trị nếu nó vượt quá giới hạn max
-                if (currentValue > maxQty) {
-                    $(this).val(maxQty);
-                } else if (currentValue < 0) {
-                    // Hoặc nếu người dùng nhập giá trị âm
-                    $(this).val(0);
-                }
-                checkInputsAndToggleButtons();
-            });
-
-
 
             // Sự kiện cho checkbox "Chọn Tất Cả"
             $(document).on('change', '#selectAll', function() {
@@ -718,158 +576,301 @@
                 $('.stt-checkbox').prop('checked', isChecked).trigger('change');
             });
 
+            // Hàm kiểm tra và hiển thị nút
             function checkInputsAndToggleButtons() {
-                var allCheckedBoxesHaveValue = true;
-                $('.stt-checkbox:checked').each(function() {
-                    var inputValue = $(this).closest('tr').find('.soluongnhapkho-input').val();
-                    if (!inputValue || parseInt(inputValue, 10) === 0) {
-                        allCheckedBoxesHaveValue = false;
-                        return false; // Dừng vòng lặp nếu tìm thấy một trường hợp không thoả mãn
-                    }
-                });
+                var anyChecked = $('.stt-checkbox:checked').length > 0;
 
                 // Hiển thị hoặc ẩn các nút dựa trên kết quả kiểm tra
-                if (allCheckedBoxesHaveValue) {
-                    $('#inVatTu, #nhapKho').show();
+                if (anyChecked) {
+                    $('#inVatTu').show();
                 } else {
-                    $('#inVatTu, #nhapKho').hide();
+                    $('#inVatTu').hide();
                 }
             }
-            $('#nhapKho').click(function(e) {
-                e.preventDefault(); // Ngăn chặn hành động mặc định của form submit
 
-                var selectedItems = [];
-                    $('.stt-checkbox:checked').each(function() {
-                        var row = $(this).closest('tr'); // Lấy hàng chứa checkbox đang được chọn
-                        var soLuongNhapKho = row.find('td').eq(5).find('input').val(); // Lấy giá trị từ input ở cột thứ 6
-
-                        // Lưu thông tin id và giá trị số lượng nhập kho vào một mảng
-                        selectedItems.push({
-                            id: $(this).val(),
-                            soLuongNhapKho: soLuongNhapKho
-                        });
+            // Vô hiệu hóa các nút khác khi ở trạng thái "In mã barcode"
+            $('button').not('#chonVatTu, #inVatTu, #printerBarcode, .btn-secondary').click(function(e) {
+                if (isCheckboxAdded) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Hãy thoát khỏi trạng thái in mã',
+                        text: 'Vui lòng trở về từ chế độ in mã trước khi sử dụng chức năng khác.',
                     });
-                // Kiểm tra nếu không có mục nào được chọn
-                if (selectedItems.length === 0) {
-                    alert("Vui lòng chọn ít nhất một vật tư để nhập kho.");
-                    return false;
                 }
+            });
 
-                // Tạo URL cho chuyển hướng
-                var baseUrl = "{{ route('quetBarcodeNhapKho') }}"; // Đảm bảo đường dẫn này được in đúng trong mã HTML của bạn
-                var query = $.param({ 'selectedItems': selectedItems });
-                var redirectUrl = baseUrl + '?' + query;
+            // Sự kiện cho nút "In mã" trong modal
+            $('#printerBarcode').click(function() {
+                // Logic cho nút "In mã"
+                console.log('In mã barcode');
+                // Thêm logic in mã ở đây
+            });
 
-                window.location.href = redirectUrl;
+            // Sự kiện cho nút "Trở về" trong modal
+            $('.btn-secondary').click(function() {
+                // Logic cho nút "Trở về"
+                console.log('Trở về');
+                // Thêm logic trở về ở đây
             });
         });
-
     </script>
 
-  {{-- THỰC HIỆN IN BARCODE --}}
+{{-- KIỂM TRA ĐÃ NHẬP MÃ VẬT TƯ CHƯA VÀ IN MÃ LƯU VÀO CSDL--}}
     <script>
         $(document).ready(function() {
-            $('#inVatTu').click(function(e) {
-                e.preventDefault(); // Ngăn chặn hành động mặc định của nút
+                // Sự kiện cho nút "In mã" trong modal
+                $('#printerBarcode').click(function() {
+                    var isValid = true;
+                    var dataToSend = [];
 
-                var iframe = $('#printFrame').get(0);
-                var doc = iframe.contentDocument || iframe.contentWindow.document;
+                    // Kiểm tra tất cả các input số lượng in và thu thập dữ liệu
+                    $('#selectedItemsTable tbody tr').each(function() {
+                        var $row = $(this);
+                        var maSo = $row.find('td:nth-child(3)').text().trim();
+                        var soLuongIn = parseInt($row.find('.soluongin').val(), 10);
 
-                // Khởi tạo nội dung HTML cần in
-                doc.open();
-                doc.write('<html><head><title>In Barcode</title>');
-                doc.write('<style>');
-                doc.write('body { font-family: Arial, sans-serif; font-size: 8pt; }'); // Giảm kích thước font xuống
-                doc.write('.print-table { width: 100%; border-collapse: collapse; page-break-after: always; }');
-                doc.write('td, th { border: 1px solid #ddd; text-align: left; padding: 8px; font-size: 8pt; }'); // Áp dụng font-size nhỏ hơn cho table
-                doc.write('.ten-vat-tu { max-width: 200px; word-wrap: break-word; font-size: 8pt; }'); // Đặt kích thước font cụ thể cho tên vật tư
-                doc.write('</style></head><body>');
-
-                $('.stt-checkbox:checked').each(function() {
-                    var $row = $(this).closest('tr');
-                    var quantity = $row.find('.soluongnhapkho-input').val(); // Số lượng từ input
-                    var donHang =  $('#orderTitle').text().replace('Đơn hàng: ', '');
-                    var tenVatTu = $row.find('.tenvattu').text();
-                    var barcode = $row.find('.barcode').html();
-
-                    for (var i = 0; i < quantity; i++) {
-                        // Bắt đầu một bảng mới cho mỗi hàng dữ liệu
-                        doc.write('<table class="print-table"><tbody>');
-                        doc.write(`<tr>
-                                    <td>${donHang}<br>${tenVatTu}</td>
-                                    <td>${barcode}</td>
-                                </tr>`);
-                        doc.write('</tbody></table>');
-                    }
-                });
-
-                doc.write('</body></html>');
-                doc.close();
-
-                // Focus vào iframe và in nội dung
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-            });
-
-
-        });
-
-    </script>
-  {{-- TÌM KIẾM VẬT TƯ CHI TIẾT --}}
-    <script>
-        $(document).ready(function(){
-            $("#timkiemVatTuChiTiet").click(function() {
-                var tenvattu = $(".tenvattuchitiet").val() === "Tên vật tư" ? "" : $(".tenvattuchitiet").val();
-                var maso = $(".masochitiet").val() === "Mã số" ? "" : $(".masochitiet").val();
-                var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
-                var orderId = $("#timkiemVatTuChiTiet").data('id');
-                $.ajax({
-                    url: "{{ route('timkiemvattuchitiet') }}", // Đường dẫn tới route xử lý tìm kiếm
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        _token: '{{ csrf_token() }}', // Đảm bảo thêm token CSRF cho request POST
-                        tenvattu: tenvattu,
-                        maso: maso,
-                        donvitinh: donvitinh,
-                        orderId: orderId,
-                    },
-                    success: function(data) {
-                        // Xử lý dữ liệu trả về và hiển thị trong bảng
-                        var tbody = $("#danhMucVatTuChiTiet tbody");
-                        tbody.empty(); // Xóa nội dung hiện tại của tbody
-                        if(data.supplies && data.supplies.length > 0){
-                            $.each(data.supplies, function(index, supply) {
-                                var barcodeHtml = supply.barcodeHtml;
-
-                                tbody.append(
-                                    `<tr id="supply-row-${supply.id}" data-id="${supply.id}">
-                                        <td style="text-align:center;vertical-align: middle">${index + 1}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.tenvattu}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.maso}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.donvitinh}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.soluong}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.danhan}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.chuanhan}</td>
-                                        <td style="text-align:center;vertical-align: middle">${supply.daxuat}</td>
-                                        <td class="barcode">${barcodeHtml}<div>${supply.maso}</div></td>
-                                    </tr>`
-                                );
-                            });
-                        } else {
-                            // Nếu không có supplies, chỉ hiển thị một hàng thông báo
-                            tbody.append(
-                                `<tr>
-                                    <td colspan="10" style="text-align:center;vertical-align: middle">Không có dữ liệu</td>
-                                </tr>`);
+                        // Nếu giá trị bằng 0 hoặc không hợp lệ, đặt isValid thành false
+                        if (isNaN(soLuongIn) || soLuongIn === 0) {
+                            isValid = false;
+                            return false; // Thoát khỏi vòng lặp each
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        alert("Có lỗi xảy ra: " + error);
-                    }
-                });
+
+                        // Thu thập dữ liệu để gửi đi
+                        dataToSend.push({
+                            maSo: maSo,
+                            soLuongIn: soLuongIn
+                        });
+                    });
+
+                    if (!isValid) {
+                        // Hiển thị thông báo nếu có giá trị không hợp lệ
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Chưa nhập số lượng in',
+                            text: 'Vui lòng nhập số lượng in hợp lệ cho tất cả các vật tư.'
+                        });
+                    } else {
+                        // Gửi dữ liệu qua AJAX
+                        $.ajax({
+                            url: "{{ route('updateVatTuNhap') }}",
+                            type: 'POST',
+                            data: {
+                                data: dataToSend,
+                                _token: '{{ csrf_token() }}' // Thêm token để xác thực
+                            },
+                            success: function(response) {
+                            // Khởi tạo in
+                            var iframe = $('<iframe id="printFrame" style="display:none"></iframe>').appendTo('body')[0];
+                            var doc = iframe.contentDocument || iframe.contentWindow.document;
+
+                            // Khởi tạo nội dung HTML cần in
+                            doc.open();
+                            doc.write('<html><head><title>In Barcode</title>');
+                            doc.write('<style>');
+                            doc.write('@page { size: auto; margin: 10mm; }');
+                            doc.write('body { font-family: Arial, sans-serif; font-size: 10pt; }');
+                            doc.write('.card { border: 2px solid #007bff; border-radius: 10px; padding: 10px; margin-bottom: 10mm; width: 100%; box-sizing: border-box; page-break-inside: avoid; }');
+                            doc.write('.card-body { padding: 0px 20px 0px 25px !important; }');
+                            doc.write('.table { width: 100%; border-collapse: collapse; }');
+                            doc.write('.table-bordered td { border: 1px solid #dee2e6; padding: 5px; vertical-align: middle; }');
+                            doc.write('.text-center { text-align: center; }');
+                            doc.write('.align-middle { vertical-align: middle; }');
+                            doc.write('</style></head><body>');
+
+                            // Lấy thông tin từ bảng selectedItemsTable
+                            $('#selectedItemsTable tbody tr').each(function() {
+                                var $row = $(this);
+                                var maSo = $row.find('td:nth-child(3)').text().trim();
+                                var tenVatTu = $row.find('td:nth-child(2)').text().trim();
+                                var donhang = $row.find('td:nth-child(1)').text().trim();
+                                var soLuongIn = parseInt($row.find('.soluongin').val(), 10);
+                                var barcode = $row.find('td:nth-child(5)').html().trim(); // Lấy HTML của barcode
+
+                                for (var i = 0; i < soLuongIn; i++) {
+                                    // Bắt đầu một bảng mới cho mỗi hàng dữ liệu
+                                    doc.write('<div class="card">');
+                                    doc.write('<div class="card-body">');
+                                    doc.write('<div class="row">');
+                                    doc.write('<table class="table table-bordered">');
+                                    doc.write('<tr>');
+                                    doc.write('<td><strong>Mã số:</strong></td>');
+                                    doc.write('<td>' + maSo + '</td>');
+                                    doc.write('<td rowspan="3" class="text-center align-middle" style="width: 120px;"><div class="qr-code">' + barcode + '</div></td>');
+                                    doc.write('</tr>');
+                                    doc.write('<tr>');
+                                    doc.write('<td><strong>Tên vật tư:</strong></td>');
+                                    doc.write('<td>' + tenVatTu + '</td>');
+                                    doc.write('</tr>');
+                                    doc.write('<tr>');
+                                    doc.write('<td><strong>Số đơn hàng:</strong></td>');
+                                    doc.write('<td>' + donhang + '</td>');
+                                    doc.write('</tr>');
+                                    doc.write('</table>');
+                                    doc.write('</div>');
+                                    doc.write('</div>');
+                                    doc.write('</div>');
+                                }
+                            });
+
+                            doc.write('</body></html>');
+                            doc.close();
+
+                            // Focus vào iframe và in nội dung
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+
+                            // Hiển thị thông báo và reload lại trang sau khi in
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: 'Đã in thành công.'
+                            }).then(function() {
+                                // Reload lại trang
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            // Xử lý lỗi nếu cần
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Có lỗi xảy ra khi gửi dữ liệu.'
+                            });
+                        }
+                    });
+                }
             });
         });
     </script>
+{{-- HIỂN THỊ CHECKBOX NHẬP KHO --}}
+    <script>
+        $(document).ready(function() {
+            var isNhapKhoCheckboxAdded = false;
 
+            $('#nhapKho').click(function() {
+                if (!isNhapKhoCheckboxAdded) {
+                    var anyRowHasValue = false;
+
+                    // Thêm checkbox vào các hàng có giá trị trong cột "Số lượng in"
+                    $('.vatTuDonHang tbody tr').each(function() {
+                        var soluongIn = $(this).find('.soluonginbarcode').text().trim(); // Lấy giá trị từ cột "Số lượng in"
+                        if (soluongIn !== '') {
+                            anyRowHasValue = true;
+                            var vattuId = $(this).data('id');
+                            var checkboxHtml = '<input type="checkbox" class="form-check-input nhapKho-checkbox" name="selectedItems[]" value="' + vattuId + '">';
+                            $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html(checkboxHtml);
+                        }
+                    });
+
+                    if (!anyRowHasValue) {
+                        // Hiển thị thông báo nếu không có hàng nào có giá trị
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Không có vật tư nào',
+                            text: 'Hiện tại không có vật tư nào đã được in mã.'
+                        });
+                    } else {
+                        // Tạo và thêm checkbox "Chọn Tất Cả" vào tiêu đề cột STT
+                        var headerCheckboxHtml = '<input type="checkbox" class="form-check-input" id="selectAllNhapKho">';
+                        $('.vatTuDonHang thead th:first').data('original-content', $('.vatTuDonHang thead th:first').html()).html(headerCheckboxHtml);
+
+                        isNhapKhoCheckboxAdded = true;
+                        $(this).html('<i class="bi bi-arrow-left"></i> Trở Về');
+
+                        // Vô hiệu hóa các nút khác ngoại trừ nút "Nhận vật tư"
+                        $('button').not(this).not('#nhanVatTu').prop('disabled', true);
+                    }
+                } else {
+                    // Khôi phục bảng và nút "Nhập Kho"
+                    $('.vatTuDonHang tbody tr').each(function(index) {
+                        $(this).find('td').each(function() {
+                            var originalContent = $(this).data('original-content');
+                            if (originalContent !== undefined) {
+                                $(this).html(originalContent);
+                            }
+                        });
+                        $(this).find('td:first').html(index + 1);
+                    });
+
+                    // Khôi phục tiêu đề cột STT và loại bỏ checkbox "Chọn Tất Cả"
+                    $('.vatTuDonHang thead th:first').html('STT');
+
+                    isNhapKhoCheckboxAdded = false;
+                    $(this).html('<i class="bi bi-box-arrow-in-down"></i> Nhập kho');
+
+                    // Ẩn nút Nhận vật tư
+                    $('#nhanVatTu').hide();
+
+                    // Kích hoạt lại các nút khác
+                    $('button').prop('disabled', false);
+                }
+            });
+
+            // Sự kiện cho checkbox "Chọn Tất Cả" cho nhập kho
+            $(document).on('change', '#selectAllNhapKho', function() {
+                var isChecked = $(this).is(':checked');
+                $('.nhapKho-checkbox').prop('checked', isChecked).trigger('change');
+            });
+
+            // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi
+            $(document).on('change', '.nhapKho-checkbox', function() {
+                checkCheckboxesAndToggleNhanVatTuButton();
+            });
+
+            function checkCheckboxesAndToggleNhanVatTuButton() {
+                var anyChecked = $('.nhapKho-checkbox:checked').length > 0;
+
+                // Hiển thị hoặc ẩn nút Nhận vật tư dựa trên kết quả kiểm tra
+                if (anyChecked) {
+                    $('#nhanVatTu').show();
+                    $('#nhanVatTu').prop('disabled', false); // Đảm bảo nút không bị vô hiệu hóa
+                } else {
+                    $('#nhanVatTu').hide();
+                }
+            }
+        });
+    </script>
+{{-- CHUYỂN HƯỚNG SANG TRANG NHẬP KHO --}}
+    <script>
+        $(document).ready(function() {
+            // Sự kiện cho nút "Nhận vật tư"
+            $('#nhanVatTu').click(function(e) {
+                e.preventDefault(); // Ngăn chặn hành động mặc định
+
+                var selectedItems = [];
+                var itemMap = {}; // Sử dụng đối tượng để theo dõi các mục đã chọn
+                // Lấy thông tin từ các hàng có checkbox được chọn
+                $('.nhapKho-checkbox:checked').each(function() {
+                    var row = $(this).closest('tr'); // Lấy hàng chứa checkbox đang được chọn
+                    var soLuongNhapKho = row.find('td').eq(10).text().trim(); // Lấy giá trị từ cột "Số lượng in"
+                    var itemId = $(this).val();
+
+                    // Kiểm tra nếu phần tử đã tồn tại trong itemMap
+                    if (!itemMap[itemId]) {
+                        itemMap[itemId] = true; // Đánh dấu là đã thêm
+                        selectedItems.push({
+                            id: itemId,
+                            soLuongNhapKho: soLuongNhapKho
+                        });
+                    }
+                });
+
+                // Kiểm tra nếu không có mục nào được chọn
+                if (selectedItems.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Chưa chọn vật tư',
+                        text: 'Vui lòng chọn ít nhất một vật tư để nhập kho.'
+                    });
+                    return false;
+                }
+                        var baseUrl = "{{ route('quetBarcodeNhapKho') }}"; // Đảm bảo đường dẫn này được in đúng trong mã HTML của bạn
+                        var query = $.param({ 'selectedItems': selectedItems });
+                        var redirectUrl = baseUrl + '?' + query;
+
+                        window.location.href = redirectUrl;
+            });
+        });
+    </script>
 @endsection

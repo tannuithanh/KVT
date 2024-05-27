@@ -10,7 +10,7 @@ class Supply extends Model
     use HasFactory;
 
     protected $fillable = [
-        'catalog_id','order_id', 'tenvattu', 'maso', 'donvitinh', 'soluong', 'note', 'status','don_gia','thanh_tien', 'exportDrawings'
+        'catalog_id','order_id', 'tenvattu', 'maso', 'donvitinh', 'soluong', 'note', 'status','don_gia','thanh_tien', 'exportDrawings', 'soluongnhap'
     ];
 
     public function transactions()

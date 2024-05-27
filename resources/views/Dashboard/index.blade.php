@@ -27,15 +27,42 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+<div class="modal fade" id="qualityCheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đơn hàng cần kiểm tra chất lượng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    @foreach ($ordersNeedQualityCheck as $order)
+                        <li class="list-group-item">Đơn hàng số: {{ $order->sodonhang }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <a href="{{route('checkQuality')}}" class="btn btn-primary" id="checkQualityBtn">Kiểm tra</a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('script')
-<!-- Script cần thiết có thể đặt ở đây -->
+<script>
+    @if ($showPopup && !$ordersNeedQualityCheck->isEmpty())
+        window.onload = function() {
+            $('#qualityCheckModal').modal('show');
+        }
+    @endif
+</script>
 @endsection

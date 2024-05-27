@@ -3,7 +3,7 @@ use App\Http\Controllers\Insite;
 use Illuminate\Support\Facades\Route;
 
 //XUẤT KHO MODULE
-    Route::get('/Export-Warehouse/{project}', [Insite::class, 'listExportWarehouse'])->name('listExportWarehouse')->middleware('auth');
+    Route::get('/Export-Warehouse', [Insite::class, 'listExportWarehouse'])->name('listExportWarehouse')->middleware('auth');
 
     Route::get('/search-supplies', [Insite::class, 'searchSupplies'])->name('searchSuppliesReal')->middleware('auth');
 

@@ -11,9 +11,11 @@ class Login extends Controller
         return view('Login.login');
     }
 
-    public function loginPost(request $request){
+    public function loginPost(Request $request){
         $credentials = $request->only('msnv', 'password');
         if (Auth::attempt($credentials)) {
+            // Lưu trạng thái thông báo vào session
+            session(['show_popup' => true]);
             return redirect()->route('dashboard');
         }
 
@@ -21,6 +23,7 @@ class Login extends Controller
             'login_error' => 'Thông tin đăng nhập không chính xác.',
         ]);
     }
+    
     public function logout(request $request){
         Auth::logout();
         return redirect()->route('login.get');

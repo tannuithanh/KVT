@@ -47,63 +47,45 @@ In mã barcode
             <li class="breadcrumb-item">In mã barcode</li>
         </ol>
     </nav>
-</div>
-<section class="section">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Phần nhập liệu -->
-                        <div class="col-md-3 mt-2">
-                            <!-- Select 1 -->
-                            <div class="row mb-2">
-                                <div class="col-md-12">
-                                    <select class="form-control select2" name="maso" id="maso" placeholder="Chọn một lựa chọn">
-                                        @foreach ($supplies as $supply)
-                                            <option value="{{ $supply->maso }}">{{ $supply->maso }}</option>
-                                        @endforeach
-                                    </select>
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Phần nhập liệu -->
+                            <div class="col-md-3 mt-2">
+                                <!-- Select 1 -->
+                                <div class="row mb-2">
+                                    <div class="col-md-12">
+                                        <select class="form-control select2" name="maso" id="maso" placeholder="Chọn một lựa chọn">
+                                            @foreach ($supplies as $supply)
+                                                <option value="{{ $supply->maso }}">{{ $supply->maso }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-primary" id="btnTimKiem"><i class="bi bi-search"></i> Tìm kiếm</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <button type="button" class="btn btn-primary" id="btnTimKiem"><i class="bi bi-search"></i> Tìm kiếm</button>
+                            <!-- Phần hiển thị kết quả -->
+                            <div class="col-md-9 mt-2">
+                                <div class="row" id="searchResultsContainer" style="display: none;">
+                                    <!-- Kết quả tìm kiếm sẽ được chèn vào đây -->
                                 </div>
+                                <button id="btnInMaBarcode" class="btn btn-primary" style="display: none;">
+                                    <i class="bi bi-printer"></i> In mã
+                                </button>
                             </div>
-                        </div>
-                        <!-- Phần hiển thị bảng -->
-                        <div class="col-md-9 mt-2">
-                            <div class="table-responsive">
-                                <table class="table table-bordered bangchitiet">
-                                    <thead>
-                                        <tr>
-                                            <th>Đơn Hàng</th>
-                                            <th>Tên vật tư</th>
-                                            <th>Mã số</th>
-                                            <th>Barcode</th>
-                                            <th>Số lượng In</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="5" style="text-align:center">Tìm kiếm vật tư</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <button id="btnInMaBarcode" class="btn btn-primary" style="display: none;">
-                                <i class="bi bi-printer"></i> In mã
-                            </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
-    </div>
-</section>
-
+    </section>
 @endsection
 @section('script')
 <script src="{{asset('assets/js/select2.min.js')}}"></script>
@@ -129,24 +111,47 @@ In mã barcode
                 success: function(response) {
                     // Xử lý kết quả trả về
                     if(response && response.data) {
-                        var tbody = $(".bangchitiet tbody");
-                        tbody.empty(); // Xóa nội dung cũ của bảng
+                        var container = $("#searchResultsContainer");
+                        container.empty(); // Xóa nội dung cũ
 
-                        // Duyệt qua mảng dữ liệu trả về và thêm vào bảng
+                        // Duyệt qua mảng dữ liệu trả về và thêm vào container
                         $.each(response.data, function(index, item) {
-                            tbody.append(
-                                `<tr>
-                                    <td style="text-align: center; vertical-align: middle;">${item.donhang}</td>
-                                    <td style="text-align: center; vertical-align: middle;">${item.maso}</td>
-                                    <td style="text-align: center; vertical-align: middle;">${item.tenvattu}</td>
-                                    <td style=" vertical-align: middle;">${item.barcode}${item.maso}</td>
-                                    <td style="text-align: center; vertical-align: middle;">
-                                        <input type="number" class="form-control" style="width: 100px; margin: auto;" value="${item.soluongin}" />
-                                    </td>
-                                </tr>`
-                            );
+                            console.log(item)
+                            var cardHtml = `
+                                    <div class="col-md-12 mb-3">
+                                            <div class="card" style="border: 2px solid #007bff; border-radius: 10px; padding: 10px;">
+                                                <div class="card-body" style="padding: 0px 20px 0px 25px !important">
+                                                    <div class="row">
+                                                        <table class="table table-bordered">
+                                                            <tr>
+                                                                <td><strong>Mã số:</strong></td>
+                                                                <td>${item.maso}</td>
+                                                                <td rowspan="4" class="text-center align-middle" style="width: 120px;">
+                                                                    <div class="qr-code">${item.qrCode}</div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Tên vật Tư:</strong></td>
+                                                                <td>${item.tenvattu}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Số đơn hàng:</strong></td>
+                                                                <td>${item.donhang}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mt-2">
+                                                    <label for="quantity-${index}">Số lượng in:</label>
+                                                    <input type="number" id="quantity-${index}" class="form-control" value="1" min="1" />
+                                            </div>
+                                    </div>`;
+                            container.append(cardHtml);
                         });
+
                         $('#btnInMaBarcode').show();
+                        $('#searchResultsContainer').show();
                     }
                 },
                 error: function(xhr, status, error) {
@@ -155,41 +160,62 @@ In mã barcode
             });
         });
     });
+
 </script>
 
 <script>
     $(document).ready(function() {
         $('#btnInMaBarcode').click(function() {
-            var inputs = $(".bangchitiet tbody input[type='number']");
+            var inputs = $("#searchResultsContainer input[type='number']");
             var allEmpty = true;
 
-            var iframe = $('#printFrame').get(0);
+            var iframe = $('<iframe id="printFrame" style="display:none"></iframe>').appendTo('body')[0];
             var doc = iframe.contentDocument || iframe.contentWindow.document;
             doc.open();
             doc.write('<html><head><title>In Barcode</title>');
             doc.write('<style>');
-            doc.write('body { font-family: Arial, sans-serif; font-size: 8pt; }');
-            doc.write('.print-table { width: 100%; border-collapse: collapse; page-break-after: always; }');
-            doc.write('td, th { border: 1px solid #ddd; text-align: left; padding: 8px; font-size: 8pt; }');
-            doc.write('.ten-vat-tu { max-width: 200px; word-wrap: break-word; font-size: 8pt; }');
+            doc.write('@page { size: auto; margin: 10mm; }');
+            doc.write('body { font-family: Arial, sans-serif; }');
+            doc.write('.card {}');
+            doc.write('.card-body { padding: 0px 20px 0px 25px !important; }');
+            doc.write('.table { width: 100%; border-collapse: collapse; }');
+            doc.write('.table-bordered td { border: 1px solid #dee2e6; padding: 5px; vertical-align: middle; }');
+            doc.write('.text-center { text-align: center; }');
+            doc.write('.align-middle { vertical-align: middle; }');
             doc.write('</style></head><body>');
 
             inputs.each(function() {
                 var quantity = $(this).val(); // Số lượng từ input
                 if (quantity > 0) {
                     allEmpty = false;
-                    var $row = $(this).closest('tr');
-                    var maso = $row.find('td:eq(1)').text(); // Giả sử mã số là cột thứ 2
-                    var tenvattu = $row.find('td:eq(2)').text(); // Giả sử tên vật tư là cột thứ 3
-                    var barcode = $row.find('td:eq(3)').html(); // Giả sử barcode là cột thứ 4
+                    var $card = $(this).closest('.col-md-12');
+                    var maso = $card.find('td').eq(1).text(); // Giả sử mã số là cột thứ 2
+                    var tenvattu = $card.find('td').eq(4).text(); // Giả sử tên vật tư là cột thứ 3
+                    var donhang = $card.find('td').eq(6).text(); // Giả sử số đơn hàng là cột thứ 1
+                    var qrCode = $card.find('.qr-code').html(); // Giả sử qrCode là cột thứ 4
 
                     for (var i = 0; i < quantity; i++) {
-                        doc.write('<table class="print-table"><tbody>');
-                        doc.write(`<tr>
-                                        <td>${tenvattu}</td>
-                                        <td>${barcode}${maso}</td>
-                                    </tr>`);
-                        doc.write('</tbody></table>');
+                        doc.write('<div class="card">');
+                        doc.write('<div class="card-body">');
+                        doc.write('<div class="row">');
+                        doc.write('<table class="table table-bordered">');
+                        doc.write('<tr>');
+                        doc.write('<td><strong>Mã số:</strong></td>');
+                        doc.write('<td>' + maso + '</td>');
+                        doc.write('<td rowspan="3" class="text-center align-middle" style="width: 120px;"><div class="qr-code">' + qrCode + '</div></td>');
+                        doc.write('</tr>');
+                        doc.write('<tr>');
+                        doc.write('<td><strong>Tên vật tư:</strong></td>');
+                        doc.write('<td>' + tenvattu + '</td>');
+                        doc.write('</tr>');
+                        doc.write('<tr>');
+                        doc.write('<td><strong>Số đơn hàng:</strong></td>');
+                        doc.write('<td>' + donhang + '</td>');
+                        doc.write('</tr>');
+                        doc.write('</table>');
+                        doc.write('</div>');
+                        doc.write('</div>');
+                        doc.write('</div>');
                     }
                 }
             });
@@ -198,19 +224,22 @@ In mã barcode
             doc.close();
 
             if (!allEmpty) {
-                // In nội dung
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
+                $(iframe).remove();
             } else {
-                // Hiển thị thông báo yêu cầu nhập số lượng
                 Swal.fire({
                     icon: 'error',
-                    title: 'Oops...',
+                    title: 'Lỗi...',
                     text: 'Bạn hãy nhập số lượng in vào!',
                 });
             }
         });
     });
 </script>
+
+
+
+
 
 @endsection

@@ -7,8 +7,8 @@
             z-index: 12; /* Đảm bảo nó luôn trên cùng */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
-            height: 200px;
-            width: 320px;
+            height: 320px;
+            width: 300px;
             border: 3px solid #ddd;
             overflow: hidden;
         }
@@ -37,141 +37,156 @@
 </section>
 @endsection
 @section('script')
-    <script src="{{ asset('assets/js/quagga.min.js') }}"></script>
+
+    <script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
     <script src="{{ asset('assets/js/toastify-js.js') }}"></script>
     <script>
-                function submitData(id) {
-                    var idVatTu = id;
-                    var quantity = document.getElementById('soluongDatChatLuong-' + id).value;
+        var masos = @json($masos);
+
+        function submitData(id) {
+            var idVatTu = id;
+            var quantity = document.getElementById('soluongDatChatLuong-' + id).value;
+            var ghiChu = document.getElementById('ghichu-' + id).value;
+            alert(ghiChu);
+            $.ajax({
+                type: 'POST',
+                url: '{{ route("luuKiemTraChatLuong") }}',
+                data: {
+                    idQualityCheck: id,
+                    quantityDat: quantity,
+                    ghiChu: ghiChu,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Toastify({
+                            text: `Kiểm tra chất lượng thành công`,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                            className: "info",
+                        }).showToast();
+                        var input = document.getElementById('soluongDatChatLuong-' + idVatTu);
+                        var textarea = document.getElementById('ghichu-' + idVatTu);
+                        var button = document.querySelector(`button[onclick='submitData(${idVatTu})']`);
+                        var value = input.value;
+                        input.style.display = 'none';
+                        textarea.style.display = 'none';
+                        button.style.display = 'none';
+                        var parentParagraph = input.parentNode;
+                        parentParagraph.textContent = `Số lượng đạt chất lượng: ${value}`;
+                        var parentParagraphNote = textarea.parentNode;
+                        parentParagraphNote.textContent = `Ghi chú: ${ghiChu}`;
+                    } else {
+                        Toastify({
+                            text: `Lỗi: ${response.message}`,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
+                            className: "info",
+                        }).showToast();
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                    Toastify({
+                        text: 'Có lỗi xảy ra khi gửi dữ liệu!',
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
+                        className: "info",
+                    }).showToast();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var html5QrCode = new Html5Qrcode("barcode-scanner");
+
+            document.querySelector('#scan-button').addEventListener('click', function () {
+                const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                    if (scannedBarcodes.includes(decodedText)) {
+                        console.log('Mã này đã được quét và xử lý.');
+                        return;
+                    }
+
+                    if (!masos.includes(decodedText)) {
+                        Toastify({
+                            text: "Vật tư không nằm trong đơn hàng",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "center",
+                            backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                        }).showToast();
+                        return;
+                    }
+
+                    scannedBarcodes.push(decodedText);
+
                     $.ajax({
                         type: 'POST',
-                        url: '{{ route("luuKiemTraChatLuong") }}',
+                        url: '{{ route("takeIdByBarcode") }}',
                         data: {
-                            idQualityCheck: id,
-                            quantityDat: quantity,
+                            mavattu: decodedText,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function(response) {
-                            if (response.success) {
-                                Toastify({
-                                    text: `Kiểm tra chất lượng thành công`,
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "right",
-                                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                                    className: "info",
-                                }).showToast();
-                                var input = document.getElementById('soluongDatChatLuong-' + idVatTu);
-                                var button = document.querySelector(`button[onclick='submitData(${idVatTu})']`);
-                                var value = input.value;
-                                input.style.display = 'none';
-                                button.style.display = 'none';
-                                var parentParagraph = input.parentNode;
-                                parentParagraph.textContent = `Số lượng đạt chất lượng: ${value}`;
-                                                    } else {
-                                Toastify({
-                                    text: `Lỗi: ${response.message}`,
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "right",
-                                    backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                                    className: "info",
-                                }).showToast();
+                            if (response.status === 'Thành công') {
+                                var matchedSupply = response.data;
+                                var cardHtml = `
+                                    <div class="card mb-3" style="border-radius: 15px; background-color: #007bff; color: white;">
+                                        <div class="card-header" style="background-color: #0056b3; color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                                            Đơn hàng: ${matchedSupply.order.sodonhang}
+                                        </div>
+                                        <div class="card-body" style="background-color: #007bff;">
+                                            <h5 class="card-title">${matchedSupply.tenvattu}</h5>
+                                            <p class="card-text">Mã số: ${matchedSupply.maso}</p>
+                                            <p class="card-text">Số lượng đạt chất lượng:
+                                                <input class="form-control" type="number" name="soluongDatChatLuong" min="0" id="soluongDatChatLuong-${matchedSupply.id}">
+                                            </p>
+                                            <p class="card-text">Ghi chú:
+                                                <textarea class="form-control" name="ghichu" id="ghichu-${matchedSupply.id}" rows="3"></textarea>
+                                            </p>
+                                            <button class="btn btn-success" onclick="submitData(${matchedSupply.id})">Hoàn tất</button>
+                                        </div>
+                                    </div>`;
+                                document.querySelector('#Danhmucvattuxuat').innerHTML += cardHtml;
+                            } else {
+                                alert(response.message);
                             }
                         },
                         error: function(error) {
                             console.error('Error:', error);
-                            Toastify({
-                                text: 'Có lỗi xảy ra khi gửi dữ liệu!',
-                                duration: 3000,
-                                close: true,
-                                gravity: "top",
-                                position: "right",
-                                backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                                className: "info",
-                            }).showToast();
+                            alert('Có lỗi xảy ra khi truy vấn dữ liệu!');
                         }
                     });
-                }
-                document.addEventListener('DOMContentLoaded', function () {
-                    document.querySelector('#scan-button').addEventListener('click', function () {
-                        Quagga.init({
-                            inputStream: {
-                                name: "Live",
-                                type: "LiveStream",
-                                target: document.querySelector('#barcode-scanner'),
-                                constraints: {
-                                    facingMode: "environment"
-                                }
-                            },
-                            decoder: {
-                                readers: ["code_128_reader"]
-                            }
-                        }, function (err) {
-                            if (err) {
-                                console.log(err);
-                                alert("Không khởi tạo được QuaggaJS: " + err);
-                                return;
-                            }
-                            console.log("Initialization finished. Ready to start");
-                            Quagga.start();
-                        });
+                };
 
-                        var scannedBarcodes = []; // Mảng để lưu trữ các mã đã quét
-                        Quagga.onDetected(function(data) {
-                            var mavattu = data.codeResult.code;
+                const qrCodeErrorCallback = (errorMessage) => {
+                    console.log(`QR Code no longer in front of camera. (${errorMessage})`);
+                };
 
-                            // Kiểm tra xem mã đã được quét trước đó chưa
-                            if (scannedBarcodes.includes(mavattu)) {
-                                return; // Dừng xử lý nếu mã đã quét
-                            }
+                const config = { fps: 10, qrbox: 250 };
 
-                            // Thêm mã vào mảng các mã đã quét
-                            scannedBarcodes.push(mavattu);
-
-                            $.ajax({
-                                type: 'POST',
-                                url: '{{ route("takeIdByBarcode") }}',
-                                data: {
-                                    mavattu: mavattu,
-                                    _token: $('meta[name="csrf-token"]').attr('content')
-                                },
-                                success: function(response) {
-
-                                    if (response.status === 'Thành công') {
-                                        var matchedSupply = response.data;
-                                        // alert('Success: ' + JSON.stringify(matchedSupply.id));
-                                        var cardHtml = `
-                                            <div class="card mb-3" style="border-radius: 15px; background-color: #007bff; color: white;">
-                                                <div class="card-header" style="background-color: #0056b3;color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-                                                    Đơn hàng: ${matchedSupply.order.sodonhang}
-                                                </div>
-                                                <div class="card-body" style="background-color: #007bff;">
-                                                    <h5 class="card-title">${matchedSupply.tenvattu}</h5>
-                                                    <p class="card-text">Mã số: ${matchedSupply.maso}</p>
-                                                    <p class="card-text">Số lượng đạt chất lượng:
-                                                        <input class="form-control" type="number" name="soluongDatChatLuong" min="0" id="soluongDatChatLuong-${matchedSupply.id}">
-                                                    </p>
-                                                    <button class="btn btn-success" onclick="submitData(${matchedSupply.id})">Hoàn tất</button>
-                                                </div>
-                                            </div>`;
-                                        document.querySelector('#Danhmucvattuxuat').innerHTML += cardHtml;
-                                    } else {
-                                        alert(response.message);
-                                    }
-                                },
-                                error: function(error) {
-                                    console.error('Error:', error);
-                                    alert('Có lỗi xảy ra khi truy vấn dữ liệu!');
-                                }
-                            });
-                        });
-
+                if (html5QrCode.isScanning) {
+                    html5QrCode.stop().then((ignore) => {
+                        console.log("Quét đã dừng.");
+                    }).catch((err) => {
+                        console.log("Không thể dừng quét.", err);
                     });
-                });
+                }
 
+                html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback, qrCodeErrorCallback);
+            });
+
+            var scannedBarcodes = [];
+        });
     </script>
 @endsection
 

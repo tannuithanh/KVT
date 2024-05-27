@@ -7,7 +7,7 @@
             z-index: 1000; /* Đảm bảo nó luôn trên cùng */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
-            height: 200px;
+            height: 300px;
             width: 320px;
             border: 3px solid #ddd;
             overflow: hidden;
@@ -39,46 +39,27 @@
 </section>
 @endsection
 @section('script')
-    <script src="{{ asset('assets/js/quagga.min.js') }}"></script>
-    <script src="{{ asset('assets/js/toastify.min.js') }}" ></script>
+    {{-- <script src="{{ asset('assets/js/quagga.min.js') }}"></script> --}}
+    <script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
+    <script type="text/javascript" src="{{asset('assets/js/toastify-js.js')}}"></script>
 {{-- QUÉT BARCODE KHI NHẬP KHO--}}
     <script>
         var supplies = @json($supplies);
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('#scan-button').addEventListener('click', function () {
-                Quagga.init({
-                    inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: document.querySelector('#barcode-scanner'),
-                        constraints: {
-                            facingMode: "environment"
-                        }
-                    },
-                    decoder: {
-                        readers: ["code_128_reader"]
-                    }
-                }, function (err) {
-                    if (err) {
-                        console.log(err);
-                        alert("Không khởi tạo được QuaggaJS: " + err);
-                        return;
-                    }
-                    console.log("Initialization finished. Ready to start");
-                    Quagga.start();
-                });
 
-                var scannedBarcodes = []; // Mảng để theo dõi các mã đã quét
-                Quagga.onDetected(function (data) {
-                    var code = data.codeResult.code;
-                    if (scannedBarcodes.includes(code)) {
+        document.addEventListener('DOMContentLoaded', function () {
+            var html5QrCode = new Html5Qrcode("barcode-scanner");
+
+            document.querySelector('#scan-button').addEventListener('click', function () {
+                const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                    // Xử lý kết quả sau khi quét thành công
+                    if (scannedBarcodes.includes(decodedText)) {
                         console.log('Mã này đã được quét và xử lý.');
                         return; // Nếu mã đã tồn tại, không làm gì cả
                     }
 
-                    var matchedSupply = supplies.find(supply => supply.maso === code);
+                    var matchedSupply = supplies.find(supply => supply.maso === decodedText);
                     if (matchedSupply) {
-                        scannedBarcodes.push(code); // Thêm mã vào mảng các mã đã quét
+                        scannedBarcodes.push(decodedText); // Thêm mã vào mảng các mã đã quét
 
                         var cardHtml = `
                             <div class="card mb-3" style="border-radius: 15px; background-color: #007bff; color: white;">
@@ -92,6 +73,7 @@
                                 </div>
                             </div>`;
                         document.querySelector('#Danhmucvattuxuat').innerHTML += cardHtml;
+
                         $.ajax({
                             url: "{{ route('updateQuanlity') }}",
                             type: "POST",
@@ -101,10 +83,8 @@
                                         id: matchedSupply.id,
                                         quantity: matchedSupply.daNhan
                                     }
-                                ]
-                            },
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                ],
+                                _token: $('meta[name="csrf-token"]').attr('content') // Thêm CSRF token vào đây
                             },
                             success: function(response) {
                                 Toastify({
@@ -130,11 +110,44 @@
                                 }).showToast();
                             }
                         });
+                    } else {
+                        Toastify({
+                            text: "Vật tư không nằm trong đơn hàng",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top", // `top` or `bottom`
+                            position: "right", // `left`, `center` or `right`
+                            backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                            className: "error",
+                        }).showToast();
                     }
-                });
+                };
+
+                const qrCodeErrorCallback = (errorMessage) => {
+                    // Xử lý lỗi khi quét mã QR thất bại
+                    console.log(`QR Code no longer in front of camera. (${errorMessage})`);
+                };
+
+                const config = { fps: 10, qrbox: 300 };
+
+                // Nếu đang quét thì dừng lại
+                if (html5QrCode.isScanning) {
+                    html5QrCode.stop().then((ignore) => {
+                        console.log("Quét đã dừng.");
+                    }).catch((err) => {
+                        console.log("Không thể dừng quét.", err);
+                    });
+                }
+
+                // Bắt đầu quét mã QR
+                html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback, qrCodeErrorCallback);
             });
+
+            var scannedBarcodes = []; // Mảng để theo dõi các mã đã quét
         });
     </script>
+
+
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
             if (sessionStorage.getItem("visited")) {

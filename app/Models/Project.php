@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model{
     use HasFactory;
-
         protected $fillable = ['name', 'description', 'segment_id'];
 
         public function segment(){
@@ -25,5 +24,4 @@ class Project extends Model{
         public function orders(){
             return $this->hasManyThrough(Order::class, Catalog::class);
         }
-
 }

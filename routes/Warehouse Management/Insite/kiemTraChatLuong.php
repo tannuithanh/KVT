@@ -11,3 +11,5 @@ Route::POST('/luuKiemTraChatLuong', [Insite::class, 'luuKiemTraChatLuong'])->nam
 Route::POST('/timKiemVatTuCheck', [Insite::class, 'timKiemVatTuCheck'])->name('timKiemVatTuCheck')->middleware('auth');
 
 Route::POST('/takeIdByBarcode', [Insite::class, 'takeIdByBarcode'])->name('takeIdByBarcode')->middleware('auth');
+
+Route::POST('/vatTuKiemTra', [Insite::class, 'vatTuKiemTra'])->name('vatTuKiemTra')->middleware('auth');

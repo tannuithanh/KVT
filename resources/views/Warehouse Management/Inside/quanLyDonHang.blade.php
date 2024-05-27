@@ -2,6 +2,12 @@
 @section('style')
 <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
 <style>
+     .blink-warning {
+            background-color: rgba(255, 255, 0, 0.329) !important
+        }
+    .table-hover tbody tr:hover {
+        cursor: pointer;
+    }
     @media print {
         .btn, .close, .koin {
             display: none; /* Ẩn các nút và div 'koin' khi in */
@@ -111,6 +117,7 @@
                                     <th>Ghi chú</th>
                                     <th>File đính kèm</th>
                                     <th>Tình trạng</th>
+                                    <th>Trạng thái</th>
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
@@ -134,9 +141,18 @@
                                         <td style="text-align: center; vertical-align: middle; background-color: {{ $order->status == 0 ? 'yellow' : 'green' }};">
                                             {{ $order->status == 0 ? 'Chưa in' : 'Đã in' }}
                                         </td>
-                                        <td style="text-align: center; vertical-align: middle" class="no-modal-trigger">
+                                        <td style="text-align: center;vertical-align: middle;color: {{ $order->isEqual ? 'green' : 'red' }};">
+                                            @if($order->isEqual)
+                                                Hoàn thành
+                                            @else
+                                                Chưa hoàn thành
+                                            @endif
+                                        </td>
+                                        <td style="text-align: center; vertical-align: middle;" class="no-modal-trigger">
                                             <button  class="btn btn-danger xoadonhang" title="Xóa đơn hàng"><i class="ri ri-delete-bin-5-line"></i></button>
                                             <button class="btn btn-secondary suaDonHang" data-order-id="{{$order->id}}" data-bs-target="#chinhSuaVatTuDonHang" data-bs-toggle="modal" title="Sửa đơn hàng"><i class="bi bi-pencil-square"></i></button>
+                                            <button class="btn btn-success checkThongTin" data-order-id="{{$order->id}}" data-bs-target="#danhMucVatTuChiTiet" data-bs-toggle="modal" title="Xem thông tin đơn hàng"><i class="ri-file-list-3-line"></i></button>
+                                            <button class="btn btn-info historyOrder" data-order-id="{{$order->id}}" data-bs-target="#lichSuOrder" data-bs-toggle="modal" title="Lịch sử"><i class="bi bi-clock-history"></i></button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -316,7 +332,7 @@
                     Số: (Sẽ được tạo ra khi hoàn thành phiếu)
                 </div>
                 <div style="text-align: left;" id="kinhGuiCard">
-                    <strong style="text-decoration: underline; font-size: 20px">Kính gửi: ...............................</strong>
+                    <strong style="text-decoration: underline; font-size: 14px">Kính gửi: ...............................</strong>
                 </div>
                 <div style="text-align: left;">
                     Địa chỉ: KCN TAM HIỆP - NÚI THÀNH - QUẢNG NAM
@@ -410,152 +426,239 @@
         </div>
     </div>
 {{-- CARD ĐÃ KÝ --}}
-    <div id="printCardDaKy" class="card" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1050; padding: 40px;">
-        <div class="card-body" style="width: 400mm; height: 210mm; background-color: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); padding: 20px; border-radius: 10px; margin: auto; font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; overflow: auto;">
+    <div id="printCardDaKy" class="card" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1050; padding: 10px;">
+        <div class="card-body" style="max-width: 100%; height: auto; background-color: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); padding: 20px; border-radius: 10px; margin: auto; font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; overflow: auto;">
             <button type="button" class="close donglaimodal" aria-label="Close" style="position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; background: #fff; border-radius: 15px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="$('#printCardDaKy').hide();">
                 <span style="color: #333;">&times;</span>
             </button>
             <div class="table-responsive">
-                    <table class="table" style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; vertical-align: middle; width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-color: rgb(32, 30, 30); border-bottom: 3px solid rgb(32, 30, 30);">
-                                <th style="text-align: left; vertical-align: middle; width: 20%; background-color: white !important; color: black !important">
-                                    <img src="{{ asset('assets/img/logo.png') }}" alt="logo" style="height: 25px;">
-                                </th>
-                                <th style="text-align: center; vertical-align: middle; font-size: 16px; background-color: white !important; color: black !important">
-
-                                </th>
-                                <!-- Cột mã biểu mẫu -->
-                                <th style="text-align: center; vertical-align: middle; font-size: 12px; width: 20%; background-color: white !important; color: black !important">
-                                    QT.VPCL.TM 01-BM06
-                                </th>
-                            </tr>
-                            <tr style="border-color: rgb(253, 253, 253);">
-                                <!-- Cột logo -->
-                                <th style="text-align: left; vertical-align: middle; width: 20%; background-color: white !important; color: black !important">
-
-                                </th>
-                                <!-- Cột thông tin công ty -->
-                                <th style="text-align: center; vertical-align: middle; font-size: 16px; background-color: white !important; color: black !important">
-                                    <div id="companyNameDaKy">...</div>
-                                    <div>KCN Cơ Khí Ô tô Chu Lai Trường Hải, Xã Tam Hiệp, Huyện Núi Thành, Tỉnh Quảng Nam, Việt Nam</div>
-                                    <div id="contactInfoDaKy">
-                                        <span id="companyTelDaKy">Tel: ...</span> - <span id="companyFaxDaky">Fax:...</span>
-                                    </div>
-                                    <div id="companyTaxDaKy">MST: ...</div>
-                                </th>
-
-                                <!-- Cột mã biểu mẫu -->
-                                <th style="text-align: center; vertical-align: middle; font-size: 14px; width: 20%; background-color: white !important; color: black !important">
-
-                                </th>
-                            </tr>
-                            <!-- Tiêu đề lớn ĐƠN ĐẶT HÀNG -->
-                            <tr style="border-color: white;">
-                                <th colspan="3" style="text-align: center; font-size: 20px; vertical-align: middle; background-color: white !important; color: black !important">
-                                    ĐƠN ĐẶT HÀNG
-                                </th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-
-                <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
-                    <div style="text-align: right;" id="soDaKy">
-                        Số:...
-                    </div>
-                    <div style="text-align: left;" id="kinhGuiCardDaKy">
-                        <strong style="text-decoration: underline; font-size: 20px">Kính gửi: ...............................</strong>
-                    </div>
-                    <div style="text-align: left;">
-                        Địa chỉ: KCN TAM HIỆP - NÚI THÀNH - QUẢNG NAM
-                    </div>
-                    <div style="text-align: left;">
-                        Đề nghị quý Công ty cung cấp số lượng hàng hóa theo bảng kê sau:
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="tableInTrinhKyDaKy" style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; vertical-align: middle; width: 100%; border-collapse: collapse; border: 1px solid black;">
-                        <thead>
-                            <tr>
-                                <th style="width: 5%; text-align: center; border: 1px solid black;">STT</th>
-                                <th style="width: 10%; text-align: center; border: 1px solid black;">Mã vật tư</th>
-                                <th style="width: 20%; text-align: center; border: 1px solid black;">Tên vật tư</th>
-                                <th style="width: 10%; text-align: center; border: 1px solid black;">ĐVT</th>
-                                <th style="width: 5%; text-align: center; border: 1px solid black;">SL</th>
-                                <th style="width: 15%; text-align: center; border: 1px solid black;">Đơn giá (VNĐ)</th>
-                                <th style="width: 15%; text-align: center; border: 1px solid black;">Thành tiền (VNĐ)</th>
-                                <th style="width: 10%; text-align: center; border: 1px solid black;">Ngày yêu cầu hoàn thành</th>
-                                <th style="width: 10%; text-align: center; border: 1px solid black;">Ghi chú</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                        </tbody>
-                    </table>
-                </div>
-                <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
-                    <div style="text-align: left;">
-                        <strong style="text-decoration: underline;">Yêu cầu:</strong>
-                    </div>
-                    <ul style="text-align: left; list-style-type: none; padding-left: 0;">
-                        <li>- Báo giá: Không bao gồm thuế VAT.</li>
-                        <li>- Nhận được Đơn hàng này đề nghị Bên bán xác nhận lại cho Bên mua.</li>
-                        <li>- Giao hàng phải kèm theo đầy đủ chứng từ liên quan.</li>
-                        <li>- Địa điểm giao hàng: kho Trung tâm R&D Ô tô.</li>
-                    </ul>
-                    <div style="text-align: left;">
-                        Trân trọng!
-                    </div>
-                </div>
-                <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
-                    <div id="ngayHoanThanhDaKy" style="text-align: right;">
-                        Quảng Nam, ngày ... tháng ... năm ...
-                    </div>
-                    <div class="signatures" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px;">
-                        <div class="signature" style="text-align: center; flex: 1;">
-                            <strong>Duyệt</strong>
-                            <div class="signature-line" style="margin-top: 90px; "></div>
-                            <div>Phan Quỳnh Trung</div>
+                <div class="table" style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; vertical-align: middle; width: 100%; border-collapse: collapse;">
+                    <div class="thead">
+                        <div class="tr" style="display: flex; border-bottom: 3px solid rgb(32, 30, 30); flex-wrap: wrap;">
+                            <div class="th" style="text-align: left; vertical-align: middle; width: 30%; background-color: white; color: black;">
+                                <img src="{{ asset('assets/img/logo.png') }}" alt="logo" style="height: 25px;">
+                            </div>
+                            <div class="th" style="text-align: center; vertical-align: middle; flex: 1; font-size: 16px; background-color: white; color: black;">
+                            </div>
+                            <div class="th" style="text-align: center; vertical-align: middle; font-size: 12px; width: 20%; background-color: white; color: black;">
+                                <strong>QT.VPCL.TM 01-BM06</strong>
+                            </div>
                         </div>
-                        <div class="signature" style="text-align: center; flex: 1;">
-                            <strong>Kế toán</strong>
-                            <div class="signature-line" style="margin-top: 90px; "></div>
-                            <div>Nguyễn Văn Thứ</div>
+                        <div style="display: flex; border-bottom: 1px solid rgb(253, 253, 253); flex-wrap: wrap;">
+                            <div class="th" style="text-align: center; vertical-align: middle; flex: 1; font-size: 16px; background-color: white; color: black;">
+                                <strong><div id="companyNameDaKy">...</div></strong>
+                                <div><strong>KCN Cơ Khí Ô tô Chu Lai Trường Hải, Xã Tam Hiệp, Huyện Núi Thành, Tỉnh Quảng Nam, Việt Nam</strong></div>
+                                <div id="contactInfoDaKy">
+                                    <strong><span id="companyTelDaKy">Tel: ...</span></strong> - <strong><span id="companyFaxDaky">Fax:...</span></strong>
+                                </div>
+                                <strong><div id="companyTaxDaKy">MST: ...</div></strong>
+                            </div>
                         </div>
-                        <div class="signature" style="text-align: center; flex: 1;">
-                            <strong>Kiểm tra</strong>
-                            <div class="signature-line" style="margin-top: 90px; "></div>
-                            <div>Phan Thanh Tài</div>
-                        </div>
-                        <div class="signature" style="text-align: center; flex: 1;">
-                            <strong>Người lập</strong>
-                            <div class="signature-line" style="margin-top: 90px; "></div>
-                            <div>Nguyễn Thị Thu Yên</div>
+                        <div class="tr" style="display: flex; border-bottom: 1px solid white; flex-wrap: wrap;">
+                            <div class="th" style="text-align: center; flex: 1; font-size: 20px; vertical-align: middle; background-color: white; color: black;">
+                                <strong style="margin-left: 150px">ĐƠN ĐẶT HÀNG</strong>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; background-color: white; color: black;">
+                                <div id="QRCode" style="margin-bottom: 5px;">
+                                    <!-- QR Code content here -->
+                                </div>
+                                <div id="soDaKy" style="text-align: center;">
+                                    Số: RD_010524_CSC_BUS
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div style="text-align: left; margin-top: 20px; font-size: 16px;">
-                    <strong>Xác nhận đặt đơn hàng</strong>
-                </div>
-                <div style="text-align: left; margin-top: 5px;">
-                    .................................................................................................................
-                </div>
-                <div style="text-align: left; margin-top: 5px;">
-                    ..................................................................................................................
-                </div>
-                <div style="text-align: left; margin-top: 5px;">
-                    ..................................................................................................................
-                </div>
-                <hr class="koin">
-                <div style="text-align: center; margin-top: 20px;" >
-                    <button type="button" class="btn btn-success" style="margin-right: 10px;" id="inTrinhKy">
-                        <i class="bi bi-printer"></i> In Trình Ký
-                    </button>
                 </div>
             </div>
-    </div>
 
+            <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
+                <div style="text-align: left;" id="kinhGuiCardDaKy">
+                    <strong style="text-decoration: underline; font-size: 14px">Kính gửi: ...............................</strong>
+                </div>
+                <div style="text-align: left;">
+                    Địa chỉ: KCN TAM HIỆP - NÚI THÀNH - QUẢNG NAM
+                </div>
+                <div style="text-align: left;">
+                    Đề nghị quý Công ty cung cấp số lượng hàng hóa theo bảng kê sau:
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableInTrinhKyDaKy" style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; vertical-align: middle; width: 100%; border-collapse: collapse; border: 1px solid black;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%; text-align: center; border: 1px solid black;">STT</th>
+                            <th style="width: 10%; text-align: center; border: 1px solid black;">Mã vật tư</th>
+                            <th style="width: 20%; text-align: center; border: 1px solid black;">Tên vật tư</th>
+                            <th style="width: 10%; text-align: center; border: 1px solid black;">ĐVT</th>
+                            <th style="width: 5%; text-align: center; border: 1px solid black;">SL</th>
+                            <th style="width: 15%; text-align: center; border: 1px solid black;">Đơn giá (VNĐ)</th>
+                            <th style="width: 15%; text-align: center; border: 1px solid black;">Thành tiền (VNĐ)</th>
+                            <th style="width: 10%; text-align: center; border: 1px solid black;">Ngày yêu cầu hoàn thành</th>
+                            <th style="width: 10%; text-align: center; border: 1px solid black;">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
+                <div style="text-align: left;">
+                    <strong style="text-decoration: underline;">Yêu cầu:</strong>
+                </div>
+                <ul style="text-align: left; list-style-type: none; padding-left: 0;">
+                    <li>- Báo giá: Không bao gồm thuế VAT.</li>
+                    <li>- Nhận được Đơn hàng này đề nghị Bên bán xác nhận lại cho Bên mua.</li>
+                    <li>- Giao hàng phải kèm theo đầy đủ chứng từ liên quan.</li>
+                    <li>- Địa điểm giao hàng: kho Trung tâm R&D Ô tô.</li>
+                </ul>
+                <div style="text-align: left;">
+                    Trân trọng!
+                </div>
+            </div>
+            <div style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; padding: 20px;">
+                <div id="ngayHoanThanhDaKy" style="text-align: right;">
+                    Quảng Nam, ngày ... tháng ... năm ...
+                </div>
+                <div class="signatures" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-top: 40px;">
+                    <div class="signature" style="text-align: center; flex: 1;">
+                        <strong>Duyệt</strong>
+                        <div class="signature-line" style="margin-top: 90px;"></div>
+                        <div>Phan Quỳnh Trung</div>
+                    </div>
+                    <div class="signature" style="text-align: center; flex: 1;">
+                        <strong>Kế toán</strong>
+                        <div class="signature-line" style="margin-top: 90px;"></div>
+                        <div>Nguyễn Văn Thứ</div>
+                    </div>
+                    <div class="signature" style="text-align: center; flex: 1;">
+                        <strong>Kiểm tra</strong>
+                        <div class="signature-line" style="margin-top: 90px;"></div>
+                        <div>Phan Thanh Tài</div>
+                    </div>
+                    <div class="signature" style="text-align: center; flex: 1;">
+                        <strong>Người lập</strong>
+                        <div class="signature-line" style="margin-top: 90px;"></div>
+                        <div>Nguyễn Thị Thu Yên</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: left; margin-top: 20px; font-size: 16px;">
+                <strong>Xác nhận đặt đơn hàng</strong>
+            </div>
+            <div style="text-align: left; margin-top: 5px;">
+                .................................................................................................................
+            </div>
+            <div style="text-align: left; margin-top: 5px;">
+                ..................................................................................................................
+            </div>
+            <hr class="koin">
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="button" class="btn btn-success" style="margin-right: 10px;" id="inTrinhKy">
+                    <i class="bi bi-printer"></i> In Trình Ký
+                </button>
+            </div>
+        </div>
+    </div>
+{{-- MODAL DANH MỤC VẬT TƯ CỦA ĐƠN HÀNG--}}
+    <div class="modal fade" id="danhMucVatTuChiTiet" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Vật tư chi tiết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="location.reload();"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="filter-box mt-3">
+                        <div class="row">
+                            <div class="col-sm-2" style="width: 10%">
+                                <select class="tenvattuchitiet" aria-label="Default select example" >
+                                    <option selected="">Tên vật tư</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" style="width: 10%">
+                                <select class="masochitiet" aria-label="Default select example" >
+                                    <option selected="">Mã số</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-1" style="width: 10%">
+                                <select class="form-select donvitinhchitiet" aria-label="Default select example" >
+                                    <option selected="">Chọn đơn vị tính</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="submit" id="searchVatTuChiTiet" class="btn btn-primary" style="margin-left: -5px">Tìm kiếm</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <h6 class="modal-title" id="orderTitle">Đơn hàng:</h6>
+                        <span style="margin-left: 8px;">|</span>
+                        <h6 style="margin-left: 8px;" class="modal-title" id="tongsovattu">Tổng vật tư:</h6>
+                        <span style="margin-left: 8px;">|</span>
+                        <h6 style="margin-left: 8px;" class="modal-title" id="tongdanhan">Tổng đã nhận:</h6>
+                        <span style="margin-left: 8px;">|</span>
+                        <h6 style="margin-left: 8px;" class="modal-title" id="tongchuanhan">Tổng chưa nhận:</h6>
+                        <span style="margin-left: 8px;">|</span>
+                        <h6 style="margin-left: 8px;" class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
+                    </div>
+                    <div class="table-responsive" style="max-height: 650px;">
+                        <table class="table table-bordered table-hover danhmucvattuchitiet">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
+                                    <th colspan="5" style="text-align: center;">Tình trạng</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align: center; vertical-align: middle;">Tổng</th>
+                                    <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
+                                    <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
+                                    <th style="text-align: center; vertical-align: middle;">Chưa nhận</th>
+                                    <th style="text-align: center; vertical-align: middle;">Đã xuất</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="location.reload();">Trở lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{-- LỊCH SỬ ĐƠN HÀNG--}}
+    <div class="modal fade" id="lichSuOrder" style="background-color: #000000bb" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Lịch sử giao dịch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive" style="max-height: 450px;">
+                        <table class="table table-bordered lichSuOrder">
+                            <thead>
+                            <tr>
+                                <th style="text-align: center; vertical-align: middle;">STT</th>
+                                <th style="text-align: center; vertical-align: middle;">Nội dung thay đổi</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Nội dung lịch sử sẽ được tải động vào đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </section>
 @endsection
@@ -719,7 +822,7 @@
             function initializeCompanySelect() {
                 var selectHTML = '<select id="companySelect" class="form-control">';
                 // Thêm tùy chọn mặc định mới
-                selectHTML += `<option value="" selected></option>`;
+                selectHTML += `<option value="Chọn nhà máy chi phí" selected></option>`;
                 chiPhi.forEach(function(expense) {
                     selectHTML += `<option value="${expense.id}"
                                     data-telephone="${expense.telephone ? expense.telephone : '...'}"
@@ -1074,6 +1177,7 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(data) {
+                            $('#QRCode').html(data.qrCode);
                             $('#inTrinhKy').attr('data-status', data.order.status);
                             $('#inTrinhKy').attr('data-id', data.order.id);
                             var ngayTaoPhieu = new Date(data.order.ngaytaophieu);
@@ -1084,7 +1188,7 @@
                             $('#companyFaxDaKy').text('Fax: ' + data.expense.fax);
                             $('#companyTaxDaKy').text('MST: ' + data.expense.tax_number);
                             $('#soDaKy').text('Số: ' + data.order.sodonhang);
-                            $('#kinhGuiCardDaKy').html(`<strong style="text-decoration: underline; font-size: 20px">Kính gửi: ${data.providerInfo.describe}</strong>`);
+                            $('#kinhGuiCardDaKy').html(`<strong style="text-decoration: underline; font-size: 16px">Kính gửi: ${data.providerInfo.describe}</strong>`);
                             $('#tableInTrinhKyDaKy tbody').empty()
                             if (data.order.excel_file) {
                                 let downloadLink = `<a href="/path/to/files/${data.order.excel_file}" download="${data.order.excel_file.split('/').pop()}" class="btn btn-primary">Download File</a>`;
@@ -1165,6 +1269,10 @@
     {{-- SỬA ĐƠN HÀNG --}}
         <script>
             $(document).ready(function() {
+                var initialSupplies = []; // Mảng lưu trạng thái ban đầu của các vật tư
+                var initialSuppliesDetails = {}; // Đối tượng lưu thông tin chi tiết của các vật tư ban đầu
+
+                // SỬA ĐƠN HÀNG
                 $('.suaDonHang').on('click', function() {
                     var orderId = $(this).data('order-id'); // Lấy ID của đơn hàng từ data attribute
                     $('.editvattu').data('order-id', orderId);
@@ -1174,16 +1282,32 @@
                         data: { order_id: orderId },
                         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                         success: function(response) {
+                            console.log(response);
                             if (response.error) {
                                 alert(response.error);
                                 return;
                             }
                             var tbody = $('#chinhSuaVatTuDonHang .vatTuDonHangChinhSua tbody');
                             tbody.empty(); // Xóa các hàng hiện tại trong bảng
+                            initialSupplies = []; // Xóa trạng thái ban đầu cũ
+                            initialSuppliesDetails = {}; // Xóa thông tin chi tiết ban đầu cũ
+
                             $.each(response.supplies, function(index, supply) {
+                                var checked = supply.order_id === orderId ? 'checked' : '';
+                                var disabled = supply.order_id !== null && supply.order_id !== orderId ? 'disabled style="opacity: 0.5;"' : '';
+
+                                // Lưu trạng thái ban đầu và thông tin chi tiết
+                                if (supply.order_id === orderId) {
+                                    initialSupplies.push(supply.id);
+                                    initialSuppliesDetails[supply.id] = {
+                                        tenvattu: supply.tenvattu,
+                                        maso: supply.maso
+                                    };
+                                }
+
                                 tbody.append(`
-                                    <tr data-supply-id="${supply.id}">
-                                        <td style="text-align: center; vertical-align: middle;"><input class="form-check-input" type="checkbox" ${supply.order_id === orderId ? 'checked' : ''}></td>
+                                    <tr data-supply-id="${supply.id}" ${disabled}>
+                                        <td style="text-align: center; vertical-align: middle;"><input class="form-check-input" type="checkbox" ${checked} ${disabled}></td>
                                         <td style="text-align: center; vertical-align: middle;">${index + 1}</td>
                                         <td style="text-align: center; vertical-align: middle;">${supply.tenvattu}</td>
                                         <td style="text-align: center; vertical-align: middle;">${supply.maso}</td>
@@ -1200,29 +1324,90 @@
                         }
                     });
                 });
-            });
-        </script>
-    {{-- CẬP NHẬT ĐƠN HÀNG --}}
-        <script>
-            $(document).ready(function() {
+
+                // CẬP NHẬT ĐƠN HÀNG
                 $('.editvattu').on('click', function() {
                     var orderId = $(this).data('order-id');
                     var updatedSupplies = [];
+                    var removedSupplies = [];
+                    var addedSupplies = [];
+
                     $('#chinhSuaVatTuDonHang .vatTuDonHangChinhSua tbody tr').each(function() {
-                        var supplyId = $(this).data('supply-id');  // Giả sử mỗi hàng có attribute này chứa ID của vật tư
+                        var supplyId = $(this).data('supply-id');
                         var isChecked = $(this).find('.form-check-input').is(':checked');
-                        updatedSupplies.push({
-                            supply_id: supplyId,
-                            selected: isChecked,
-                            orderId: orderId
-                        });
+                        if (isChecked) {
+                            updatedSupplies.push(supplyId);
+                        }
                     });
 
+                    // So sánh để tìm ra sự thay đổi
+                    initialSupplies.forEach(function(supplyId) {
+                        if (!updatedSupplies.includes(supplyId)) {
+                            removedSupplies.push(supplyId);
+                        }
+                    });
+
+                    updatedSupplies.forEach(function(supplyId) {
+                        if (!initialSupplies.includes(supplyId)) {
+                            addedSupplies.push(supplyId);
+                        }
+                    });
+
+                    // Tạo danh sách tên và mã số vật tư đã thay đổi
+                    var changesText = '';
+
+                    if (removedSupplies.length > 0) {
+                        var removedSuppliesText = removedSupplies.map(function(supplyId) {
+                            var supply = initialSuppliesDetails[supplyId];
+                            return `${supply.tenvattu} - ${supply.maso}`;
+                        }).join('<br>');
+                        changesText += `<p>Bạn đã bỏ chọn các vật tư:</p><p>${removedSuppliesText}</p>`;
+                    } else {
+                        changesText += `<p>Bạn đã bỏ chọn các vật tư:</p><p>Không có vật tư nào</p>`;
+                    }
+
+                    if (addedSupplies.length > 0) {
+                        var addedSuppliesText = addedSupplies.map(function(supplyId) {
+                            // Lấy tên và mã số vật tư từ phần tử hiện tại trong bảng
+                            var row = $(`#chinhSuaVatTuDonHang .vatTuDonHangChinhSua tbody tr[data-supply-id="${supplyId}"]`);
+                            var tenvattu = row.find('td:nth-child(3)').text();
+                            var maso = row.find('td:nth-child(4)').text();
+                            return `${tenvattu} - ${maso}`;
+                        }).join('<br>');
+                        changesText += `<p>Bạn đã chọn thêm các vật tư:</p><p>${addedSuppliesText}</p>`;
+                    } else {
+                        changesText += `<p>Bạn đã chọn thêm các vật tư:</p><p>Không có vật tư nào</p>`;
+                    }
+
+                    // Hiển thị thông báo xác nhận với SweetAlert2
+                    Swal.fire({
+                        title: 'Xác nhận thay đổi',
+                        html: `
+                            ${changesText}
+                            <p>Bạn có muốn thay đổi vật tư không?</p>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Có, thay đổi',
+                        cancelButtonText: 'Không, hủy bỏ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Người dùng xác nhận thay đổi, thực hiện cập nhật
+                            updateOrder(orderId, updatedSupplies, removedSupplies, addedSupplies, changesText);
+                        }
+                    });
+                });
+
+                function updateOrder(orderId, updatedSupplies, removedSupplies, addedSupplies, changesText) {
                     $.ajax({
                         url: '{{ route("capNhatDonHang") }}',
                         type: 'POST',
                         data: {
-                            supplies: updatedSupplies
+                            supplies: updatedSupplies,
+                            removedSupplies: removedSupplies,
+                            addedSupplies: addedSupplies,
+                            order_id: orderId,
+                            changes_text: changesText
                         },
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -1251,9 +1436,11 @@
                             });
                         }
                     });
-                });
+                }
             });
         </script>
+
+
     {{-- TÌM KIẾM DANH MỤC VẬT TƯ --}}
         <script>
             $(document).ready(function() {
@@ -1384,7 +1571,8 @@
         <script>
             $(document).ready(function() {
                 $('#inTrinhKy').on('click', function() {
-                    $('.donglaimodal, .koIn').hide();
+                    $('.koIn').hide();
+                    $('.donglaimodal').hide();
                     var content = $('#printCardDaKy .card-body').html(); // Lấy nội dung cần in
                     var dataId = $(this).data('id');
                     var status = $(this).data('status');
@@ -1463,6 +1651,184 @@
                     }
                 });
             });
+        </script>
+    {{-- HIỂN THỊ VẬT TƯ TRONG ĐƠN HÀNG --}}
+        <script>
+            $(document).ready(function() {
+                //HIỂN THỊ VẬT TƯ CHI TIẾT
+                $('.checkThongTin').click(function() {
+                    var orderId = $(this).data('order-id');
+                    $('input[name="order_id"]').val(orderId);
+                    $.ajax({
+                        url: "{{ route('DuLieuVatTuChiTiet') }}",
+                        type: 'POST',
+                        data: {
+                            id: orderId,
+                            _token: '{{ csrf_token() }}' // Đảm bảo bạn thêm token CSRF
+                        },
+                        success: function(data) {
+                            var tbody = $('#danhMucVatTuChiTiet').find('tbody');
+                            tbody.empty(); // Xóa nội dung hiện tại của tbody
+                            $('#themvattuchitiet').attr('data-id', orderId);
+                            $('#searchVatTuChiTiet').attr('data-id', orderId);
+                            var userFunctionId = {{$user->function_id}};
+                            var orderName = data.orderName; // Lấy giá trị orderName từ dữ liệu trả về
+
+                            var totalSupplies = data.totalSupplies;
+                            var totalDanhan = data.totalDanhan;
+                            var totalChuanhan = data.totalChuanhan;
+                            var totalDaxuat = data.totalDaxuat;
+                            $('#orderTitle').text('Đơn hàng: ' + orderName);
+                            $('#tongsovattu').text('Tổng vật tư: ' + totalSupplies);
+                            $('#tongdanhan').text('Tổng đã nhận: ' + totalDanhan);
+                            $('#tongchuanhan').text('Tổng chưa nhận: ' + totalChuanhan);
+                            $('#tongdaxuat').text('Tổng đã xuất: ' + totalDaxuat);
+                            $.each(data.supplies, function(index, item) {
+                                var selectTenVatTu = $('.tenvattuchitiet').empty().append('<option selected="">Tên vật tư</option>');
+                                var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
+                                var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
+                                var totalNhapKho = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
+                                var totalDatChatLuong = item.viewVatTuChiTiet.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+
+                                // Kiểm tra điều kiện để thêm class blink-warning
+                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+
+                                var donvitinhSet = new Set();
+                                $.each(data.supplies, function(index, item) {
+                                    selectTenVatTu.append(new Option(item.tenvattu, item.tenvattu));
+                                    selectMaSo.append(new Option(item.maso, item.maso));
+                                    if (!donvitinhSet.has(item.donvitinh)) {
+                                        selectDonViTinhChiTiet.append(new Option(item.donvitinh, item.donvitinh));
+                                        donvitinhSet.add(item.donvitinh);
+                                    }
+                                });
+
+                                if (item) {
+                                    var row = '<tr id="supply-row-' + item.id + '" data-id="' + item.id + '">' +
+                                        '<td style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' tenvattu">' + (item.tenvattu) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' maso">' + (item.maso) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' donvitinh">' + (item.donvitinh) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluong">' + (item.soluong) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongnhapkho">' + totalNhapKho + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongdatchatluong">' + totalDatChatLuong + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' chuanhan">' + (item.chuanhan) + '</td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' daxuat">' + (item.daxuat) + '</td>' +
+                                        '<td class="barcode ' + rowClass + '">' + (item.barcodeHtml || '') + '<div>' + (item.maso || '') + '</div></td>' +
+                                        '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
+                                        '</tr>';
+                                    tbody.append(row);
+                                }
+                            });
+                            // Hiển thị modal
+                            $('#danhMucVatTuChiTiet').modal('show');
+                        },
+                        error: function(error) {
+                            console.log(error);
+                            alert('Có lỗi xảy ra');
+                        }
+                    });
+                });
+
+                $('#danhMucVatTuChiTiet').on('shown.bs.modal', function () {
+                    $('.tenvattuchitiet, .masochitiet').select2({
+                        placeholder: "Chọn...",
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#danhMucVatTuChiTiet') // Đặt phần tử cha cho dropdown
+                    });
+                });
+            });
+        </script>
+    {{-- TÌM KIẾM VẬT TƯ CHI TIẾT --}}
+        <script>
+            $(document).ready(function(){
+                $("#searchVatTuChiTiet").click(function() {
+                    var tenvattu = $(".tenvattuchitiet").val() === "Tên vật tư" ? "" : $(".tenvattuchitiet").val();
+                    var maso = $(".masochitiet").val() === "Mã số" ? "" : $(".masochitiet").val();
+                    var donvitinh = $(".donvitinhchitiet").val() === "Đơn vị Tính" ? "" : $(".donvitinhchitiet").val()
+                    var orderId = $(this).data('id');
+                    $.ajax({
+                        url: '{{ route("timkiemvattuchitiet") }}', // Đường dẫn tới route xử lý tìm kiếm
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            _token: '{{ csrf_token() }}', // Đảm bảo thêm token CSRF cho request POST
+                            tenvattu: tenvattu,
+                            maso: maso,
+                            donvitinh: donvitinh,
+                            orderId: orderId,
+                        },
+                        success: function(data) {
+                            console.log(data);
+                            // Xử lý dữ liệu trả về và hiển thị trong bảng
+                            var tbody = $("#danhMucVatTuChiTiet tbody");
+                            tbody.empty(); // Xóa nội dung hiện tại của tbody
+
+                            if (data.suppliesDetail && data.suppliesDetail.length > 0) {
+                                $.each(data.suppliesDetail, function(index, supplyDetail) {
+                                    // Tính tổng số lượng nhập kho và đạt chất lượng
+                                    var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + (vtct.soluongnhapkho || 0), 0);
+                                    var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + (vtct.soluongdatchatluong || 0), 0);
+
+                                    // Kiểm tra điều kiện để thêm class blink-warning
+                                    var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+
+                                    const row = `
+                                        <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${index + 1}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.supply.tenvattu}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.supply.maso}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.supply.donvitinh}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.supply.soluong}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${totalNhapKho}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${totalDatChatLuong}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.chuanhan}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.daxuat}</td>
+                                            <td class="barcode ${rowClass}">${supplyDetail.barcodeHtml || ''}<div>${supplyDetail.supply.maso || ''}</div></td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass}">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
+                                        </tr>
+                                    `;
+                                    tbody.append(row);
+                                });
+                            } else {
+                                // Nếu không có supplies, chỉ hiển thị một hàng thông báo
+                                tbody.append(
+                                    `<tr>
+                                        <td colspan="10" style="text-align:center;vertical-align: middle">Không có dữ liệu</td>
+                                    </tr>`
+                                );
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert("Có lỗi xảy ra: " + error);
+                        }
+                    });
+                });
+            });
+        </script>
+    {{-- HIỂN THỊ LỊCH SỬ ĐƠN HÀNG --}}
+    <script>
+        $(document).ready(function() {
+            $('.historyOrder').on('click', function() {
+                var orderId = $(this).data('order-id');
+
+                $.ajax({
+                    url: '{{ route("lichSuOrder") }}',
+                    type: 'POST',
+                    data: { order_id: orderId },
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    success: function(response) {
+                        // Hiển thị lịch sử đơn hàng trong modal
+                        $('#lichSuOrder .modal-body .table tbody').html(response);
+                        $('#lichSuOrder').modal('show');
+                    },
+                    error: function(xhr) {
+                        alert('Error: ' + xhr.responseJSON.error);
+                    }
+                });
+            });
+        });
         </script>
 
 

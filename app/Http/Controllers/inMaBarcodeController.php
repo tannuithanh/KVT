@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Milon\Barcode\DNS1D;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class inMaBarcodeController extends Controller
 {
@@ -24,12 +25,12 @@ class inMaBarcodeController extends Controller
         // Tạo mảng dữ liệu để trả về, bao gồm HTML của barcode cho mỗi vật tư
         $data = $supplies->map(function($supply) {
             // Tạo HTML cho barcode
-            $barcodeHtml = DNS1D::getBarcodeHTML($supply->maso, 'C128', 1, 33);
+            $qrCode = Qrcode::size(100)->encoding('UTF-8')->generate($supply->maso);
             return [
                 'donhang' => $supply->order ? $supply->order->sodonhang : 'Không có đơn hàng', // Kiểm tra và lấy số đơn hàng
                 'tenvattu' => $supply->tenvattu,
                 'maso' => $supply->maso,
-                'barcode' => $barcodeHtml, // Giá trị này giờ là HTML của barcode
+                'qrCode' => $qrCode->toHtml(), // Giá trị này giờ là HTML của barcode
                 'soluongin' => 'Số Lượng In' // Thay đổi này bằng cách lấy số lượng in thực tế
             ];
         });

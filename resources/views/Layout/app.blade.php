@@ -228,7 +228,6 @@
         $isActiveWarehouseEntry = $module == 'Nhập kho'
   @endphp
 
-
   <aside id="sidebar" class="sidebar">
 
     <ul class="sidebar-nav" id="sidebar-nav">
@@ -262,14 +261,14 @@
                 @endif
                 @if (in_array($user->appFunction->id, [1, 5]) || $user->is_admin == 1)
                     <li>
-                        <a href="{{ route('listBrand', ['module' => 'Nhập kho']) }}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
+                        <a href="{{ route('listNhapKho', ['module' => 'Nhập kho']) }}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
                             <i class="bi bi-circle"></i><span>Nhập kho</span>
                         </a>
                     </li>
                 @endif
                 @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin == 1)
                     <li>
-                        <a href="{{ route('listBrand', ['module' => 'Xuất kho']) }}" class="{{ $xuatkho ? 'active' : '' }}">
+                        <a href="{{ route('listExportWarehouse', ['module' => 'Xuất kho']) }}" class="{{ $xuatkho ? 'active' : '' }}">
                             <i class="bi bi-circle"></i><span>Xuất kho</span>
                         </a>
                     </li>
@@ -319,15 +318,15 @@
   </main><!-- End #main -->
 
   <!-- ======= Footer ======= -->
-  <footer id="footer" class="footer">
-    <div class="left-content">
-        <span>Ứng dụng quản lý vật tư linh kiện tại kho Trung Tâm R&D ÔTô</span>
-    </div>
-    <div class="right-content">
-        <div>Bản quyền © 2023 tại Trung Tâm R&D</div></br>
-        <div>✆ hotline: 0886418363</div>
-    </div>
-</footer><!-- End Footer -->
+    <footer id="footer" class="footer">
+        <div class="left-content">
+            <span>Ứng dụng quản lý vật tư linh kiện tại kho Trung Tâm R&D ÔTô</span>
+        </div>
+        <div class="right-content">
+            <div>Bản quyền © 2023 tại Trung Tâm R&D</div></br>
+            <div>✆ hotline: 0886418363</div>
+        </div>
+    </footer><!-- End Footer -->
 
 
 
@@ -335,8 +334,8 @@
       class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="{{ asset('assets/js/jquery.min.js')}}"></script>
-  <script src="{{ asset('assets/js/sweetalert2.all.min.js')}}"></script>
+  <script src="{{asset('assets/js/jquery.min.js')}}"></script>
+  <script src="{{asset('assets/js/sweetalert2.all.min.js')}}"></script>
   <script src="{{asset('assets/vendor/apexcharts/apexcharts.min.js')}}"></script>
   <script src="{{asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
   <script src="{{asset('assets/vendor/chart.js/chart.umd.js')}}"></script>

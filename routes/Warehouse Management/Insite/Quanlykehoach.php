@@ -61,3 +61,5 @@ use Illuminate\Support\Facades\Route;
     Route::post('/duLieuDaKy', [Insite::class, 'duLieuDaKy'])->name('duLieuDaKy')->middleware('auth');
 
     Route::post('/luuGiaTriIn', [Insite::class, 'luuGiaTriIn'])->name('luuGiaTriIn')->middleware('auth');
+
+    Route::post('/lichSuOrder', [Insite::class, 'lichSuOrder'])->name('lichSuOrder')->middleware('auth');

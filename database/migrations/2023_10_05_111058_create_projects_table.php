@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('segment_id');
-            $table->string('name')->unique(); 
-            $table->text('description'); 
+            $table->string('name')->unique();
+            $table->text('description');
             $table->foreign('segment_id')
                 ->references('id')
                 ->on('segments')
                 ->onDelete('cascade');
+            $table->data('start_date');
+            $table->data('end_date');
             $table->timestamps();
         });
     }

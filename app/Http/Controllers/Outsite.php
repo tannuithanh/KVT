@@ -63,14 +63,20 @@ class Outsite extends Controller
 
 
 
-    public function addProject(Request $request)
-    {
-        // Cập nhật dữ liệu để lấy segment_id
-        $data = $request->only(['name', 'description', 'segment_id']);
+    public function addProject(Request $request){
+        $data = $request->only(['name', 'description', 'segment_id', 'start_date', 'end_date']);
 
-        // Tạo dự án mới với segment_id
+        // Tạo dự án mới với dữ liệu được cung cấp
         $project = new Project($data);
-        $project->segment_id = $data['segment_id']; // Đảm bảo rằng bạn đang set segment_id
+
+        // Đảm bảo rằng bạn đang set segment_id
+        $project->segment_id = $data['segment_id'];
+
+        // Lưu start_date và end_date vào đối tượng project
+        $project->start_date = $data['start_date'];
+        $project->end_date = $data['end_date'];
+
+        // Lưu đối tượng project vào cơ sở dữ liệu
         $saved = $project->save();
 
         if ($saved) {
@@ -79,6 +85,7 @@ class Outsite extends Controller
             return response()->json(['success' => false]);
         }
     }
+
 
 
     public function editProject(Request $request)
