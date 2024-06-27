@@ -10,7 +10,7 @@ class Supply extends Model
     use HasFactory;
 
     protected $fillable = [
-        'catalog_id','order_id', 'tenvattu', 'maso', 'donvitinh', 'soluong', 'note', 'status','don_gia','thanh_tien', 'exportDrawings', 'soluongnhap'
+        'catalog_id', 'tenvattu', 'maso','maso_new', 'donvitinh', 'soluong', 'note', 'status','don_gia','thanh_tien', 'exportDrawings', 'soluongnhap'
     ];
 
     public function transactions()
@@ -25,9 +25,10 @@ class Supply extends Model
     {
         return $this->hasMany(ViewVatTuChiTiet::class, 'supply_id');
     }
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
+    public function orders(){
+        return $this->belongsToMany(Order::class, 'order_supply')
+                    ->withPivot('soluong')
+                    ->withTimestamps();
     }
     // Thay đổi hoặc thêm vào Supply model
     public function catalog()

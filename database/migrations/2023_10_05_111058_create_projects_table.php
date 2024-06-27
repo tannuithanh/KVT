@@ -20,8 +20,8 @@ return new class extends Migration
                 ->references('id')
                 ->on('segments')
                 ->onDelete('cascade');
-            $table->data('start_date');
-            $table->data('end_date');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->timestamps();
         });
     }

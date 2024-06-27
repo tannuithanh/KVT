@@ -100,6 +100,7 @@
                                     <th style="text-align: center" scope="col">Stt</th>
                                     <th style="text-align: center" scope="col">Tên vật tư</th>
                                     <th style="text-align: center" scope="col">Mã số</th>
+                                    <th style="text-align: center" scope="col">Mã số mới</th>
                                     <th style="text-align: center" scope="col">Số lượng nhận</th>
                                     <th style="text-align: center" scope="col">Tình trạng</th>
                                 </tr>
@@ -137,7 +138,7 @@
                             console.log(response);
 
                             $('#vatTuTableBody').empty();
-                            var orderName = response.length > 0 ? response[0].supply.order.sodonhang : 'Không có đơn hàng';
+                            var orderName = response.length > 0 ? response[0].supply.orders[0].sodonhang : 'Không có đơn hàng';
                             $('h5#orderName').text('Đơn hàng: ' + orderName);
                             selectedOrderData = response;
 
@@ -147,6 +148,7 @@
                                         <td>${index + 1}</td>
                                         <td>${item.supply.tenvattu}</td>
                                         <td class="maso">${item.supply.maso}</td>
+                                        <td class="maso_new">${item.supply.maso_new ?? ""}</td>
                                         <td>${item.soluongnhapkho}</td>
                                         <td>${item.status == 0 ? 'Chưa kiểm tra' : 'Đã kiểm tra'}</td>
                                     </tr>
@@ -182,5 +184,6 @@
                 });
             });
         </script>
+
 @endsection
 

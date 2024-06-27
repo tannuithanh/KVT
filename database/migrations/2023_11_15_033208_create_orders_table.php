@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('expense_id');  // Sử dụng expense_id thay vì chiphi
             $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
             $table->string('sodonhang');
+            $table->string('nhacungcap')->nullable();
             $table->string('noidung')->nullable();
             $table->date('ngayhoanthanh');
             $table->string('ghichu')->nullable();

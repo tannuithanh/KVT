@@ -1,4 +1,46 @@
 @extends('Layout.app')
+@section('style')
+<style>
+  .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+
+
+    .card-title {
+        font-size: 1.5rem;
+        color: #12236d !important;
+        margin-bottom: 1rem;
+    }
+
+    .segment-box {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    .segment-box:hover {
+        background-color: #f1f1f1;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+
+    .btn-outline-primary:hover {
+        background-color: #12236d;
+        color: white;
+    }
+
+    @media (max-width: 767px) {
+        .card {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+@endsection
 
 @section('title')
     Thương hiệu
@@ -17,62 +59,35 @@
     </div>
 
     <section class="section">
-    <div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Danh sách thương hiệu</h5>
-            <div class="table-responsive">
-                <table class="table table-borderless table-bordered" style="font-size: 20px">
-                    <thead>
-                        <tr>
-                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">STT</th>
-                            <th style="text-align: left; background-color: #12236d; color: white" scope="col">Thương hiệu</th>
-                            <th style="text-align: left; background-color: #12236d; color: white" scope="col">Phân khúc</th>
-                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng dự án</th>
-                            <th style="text-align: center; background-color: #12236d; color: white" scope="col">Số lượng vật tư</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $stt = 1; @endphp
-                        @foreach ($brands as $brand)
-                            @php $brandSegmentsCount = $brand->segments ? $brand->segments->count() : 0; @endphp
-                            @foreach ($brand->segments as $index => $segment)
-                                <tr>
-                                    @if ($index == 0 && $brandSegmentsCount)
-                                        <td style="text-align: center;vertical-align: middle;width: 1%;" rowspan="{{ $brandSegmentsCount }}">{{ $stt++ }}</td>
-                                        <td style="text-align: left;vertical-align: middle;color: black" rowspan="{{ $brandSegmentsCount }}">{{ $brand->name }}</td>
-                                    @endif
-                                    <td style="text-align: left;">
-                                        <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}">{{ $segment->name }}</a>
-                                    </td>
-                                    <td style="text-align: center;">{{ $segment->projects ? $segment->projects->count() : 0 }}</td>
-                                    <td style="text-align: center;">
+        <div class="row">
+            @foreach ($brands as $brand)
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ $brand->name }}</h5>
+                            @foreach ($brand->segments as $segment)
+                                <div class="segment-box mb-3 p-3">
+                                    <h6 class="text-dark font-weight-bold">Phân khúc:  <a href="{{ route('listProject', ['segment' => $segment->id, 'module' => $module]) }}" class="">{{ $segment->name }}</a></h6>
+
+                                    <p class="mb-1"><strong>Số lượng dự án:</strong> {{ $segment->projects ? $segment->projects->count() : 0 }}</p>
+                                    <p class="mb-1">
                                         @php
-                                        $totalSupplies = $segment->projects ? $segment->projects->reduce(function ($carry, $project) {
-                                            $projectOrderCount = $project->orders ? $project->orders->count() : 0;
-                                            return $carry + ($projectOrderCount ? $project->orders->reduce(function ($carryOrder, $order) {
-                                                return $carryOrder + ($order->supplies ? $order->supplies->sum('soluong') : 0);
-                                            }, 0) : 0);
-                                        }, 0) : 0;
+                                            $totalSupplies = $segment->projects ? $segment->projects->reduce(function ($carry, $project) {
+                                                $projectOrderCount = $project->orders ? $project->orders->count() : 0;
+                                                return $carry + ($projectOrderCount ? $project->orders->reduce(function ($carryOrder, $order) {
+                                                    return $carryOrder + ($order->supplies ? $order->supplies->sum('soluong') : 0);
+                                                }, 0) : 0);
+                                            }, 0) : 0;
                                         @endphp
-                                        {{ $totalSupplies }}
-                                    </td>
-                                </tr>
+                                        <strong>Số lượng vật tư:</strong> {{ $totalSupplies }}
+                                    </p>
+                                </div>
                             @endforeach
-                        @endforeach
-                    </tbody>
-
-
-                </table>
-            </div>
-
-
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-        </div>
-        </div>
-    </div>
-    </div>
     </section>
 @endsection
 

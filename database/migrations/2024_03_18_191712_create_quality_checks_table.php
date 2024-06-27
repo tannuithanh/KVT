@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('supply_id');
             $table->integer('soluongnhapkho');
-            $table->integer('soluongdatchatluong');
+            $table->integer('soluongdatchatluong')->nullable();
             $table->integer('status')->default('0');
             $table->text('note')->nullable();
             $table->date('ngaykiemtra')->nullable();

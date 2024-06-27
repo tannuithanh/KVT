@@ -1,23 +1,26 @@
 <?php
 namespace App\Imports;
+
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Models\Catalog;
 use App\Models\Supply;
 use App\Models\ProviderDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class SuppliesImport implements ToModel{
+class SuppliesImport implements ToModel {
     private $project_id;
+    private $exportDrawings;
     private $catalog_id;
     private $rowNumber = 0;
     private $errors = [];
     private $catalogName = null;
     private $providerData = null;
     private $validProviderFound = false;
-    private $requiresBlueprint = false;  // Biến để kiểm tra yêu cầu xuất bản vẽ
 
-    public function __construct($project_id){
+    public function __construct($project_id, $exportDrawings){
         $this->project_id = $project_id;
+        $this->exportDrawings = $exportDrawings; // Gán giá trị cho biến
     }
 
     public function model(array $row){
@@ -29,10 +32,8 @@ class SuppliesImport implements ToModel{
             return null;
         }
 
-        if ($this->rowNumber >= 4) {
-            if ($row[5] == 'X' || $row[11] == 'X' || $row[12] == 'X' || $row[13] == 'X') {  // Chỉ số cột bắt đầu từ 0
-                $this->requiresBlueprint = true;
-            }
+        // Bắt đầu kiểm tra từ hàng thứ 2
+        if ($this->rowNumber > 3) {
             $this->checkAndSetProvider($row[14]);
         }
 
@@ -50,7 +51,7 @@ class SuppliesImport implements ToModel{
             $this->catalog_id = $existingCatalog->id;
             $this->errors[] = "Danh mục '{$this->catalogName}' đã tồn tại trong dự án.";
         } else {
-            $description = $this->requiresBlueprint ? "Yêu cầu xuất bản vẽ" : "Không xuất bản vẽ";
+            $description = $this->exportDrawings === 'X' ? "Yêu cầu xuất bản vẽ" : "Không xuất bản vẽ";
             $catalog = Catalog::create([
                 'project_id' => $this->project_id,
                 'name' => $this->catalogName,
@@ -68,15 +69,16 @@ class SuppliesImport implements ToModel{
                 $this->errors[] = "Vật tư với mã số '{$row[2]}' đã tồn tại trong danh mục.";
                 return null;
             } else {
-                // Kiểm tra xem hàng này có yêu cầu xuất bản vẽ không
-                $exportDrawings = ($row[5] == 'X' || $row[11] == 'X' || $row[12] == 'X' || $row[13] == 'X') ? 'X' : null;
+                $donvitinh = !empty($row[7]) ? $row[7] : 'default_value';
                 return new Supply([
                     'catalog_id' => $this->catalog_id,
                     'tenvattu' => $row[1],
                     'maso' => $row[2],
-                    'donvitinh' => $row[7],
+                    'donvitinh' => $donvitinh,
                     'soluong' => $row[8],
-                    'exportDrawings' => $exportDrawings  // Gán giá trị dựa trên điều kiện đã kiểm tra
+                    'exportDrawings' => $this->exportDrawings,
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
             }
         }
@@ -85,6 +87,8 @@ class SuppliesImport implements ToModel{
 
     private function checkAndSetProvider($providerName){
         $providerName = trim($providerName);
+        Log::info("Đang kiểm tra nhà cung cấp: '{$providerName}'");
+
         if (!empty($providerName)) {
             $provider = ProviderDetail::where('name', $providerName)->first();
             if ($provider) {

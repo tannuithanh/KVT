@@ -1,194 +1,193 @@
 @extends('Layout.app')
 @section('style')
     <style>
-        .fixed-barcode-scanner {
-            position: sticky; /* Thay đổi từ fixed sang sticky */
-            top: 10px; /* Khoảng cách từ top màn hình khi thành sticky */
-            z-index: 12; /* Đảm bảo nó luôn trên cùng */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+         .fixed-barcode-scanner {
+            position: sticky;
+            top: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            height: 320px;
-            width: 300px;
+            height: 300px;
+            width: 100%;
+            max-width: 320px;
             border: 3px solid #ddd;
             overflow: hidden;
+            margin: 0 auto;
         }
     </style>
     <link rel="stylesheet" type="text/css" href="{{asset('assets/css/toastify.min.css')}}">
 @endsection
 @section('content')
-<div class="pagetitle">
-    <h1>Quét barcode kiểm tra chất lượng</h1>
-</div>
-<section class="section">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    <button id="scan-button" class="btn btn-primary" style="width: 100%; margin-bottom: 20px;">Khởi động camera</button>
-                    <div id="barcode-scanner" class="fixed-barcode-scanner">
-                        <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
-                    </div>
-                    <div id="Danhmucvattuxuat" class="mt-4">
+    <div class="pagetitle">
+        <h1>Kiểm tra chất lượng barcode</h1>
+    </div>
+    <section class="section">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3 mt-3">
+                            <button id="scan-button" class="btn btn-primary w-45">Khởi động camera</button>
+                            <button id="manual-button" class="btn btn-secondary w-45">Nhập thủ công</button>
+                        </div>
+                        <div id="barcode-scanner" class="fixed-barcode-scanner" style="display: none;">
+                            <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
+                        </div>
+                        <div id="manual-entry" class="mt-4" style="display: none;">
+                            <input type="text" id="manual-input" class="form-control mb-3" placeholder="Nhập mã số vật tư">
+                            <button id="manual-submit" class="btn btn-success w-100">Xác nhận</button>
+                        </div>
+                        <div id="Danhmucvattuxuat" class="mt-4"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 @endsection
+
 @section('script')
-
-    <script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
-    <script src="{{ asset('assets/js/toastify-js.js') }}"></script>
+    <script src="{{ asset('assets/js/html5-qrcode.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('assets/js/toastify-js.js') }}"></script>
     <script>
-        var masos = @json($masos);
+        $(document).ready(function () {
+            var supplies = @json($supplies);
 
-        function submitData(id) {
-            var idVatTu = id;
-            var quantity = document.getElementById('soluongDatChatLuong-' + id).value;
-            var ghiChu = document.getElementById('ghichu-' + id).value;
-            alert(ghiChu);
-            $.ajax({
-                type: 'POST',
-                url: '{{ route("luuKiemTraChatLuong") }}',
-                data: {
-                    idQualityCheck: id,
-                    quantityDat: quantity,
-                    ghiChu: ghiChu,
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Toastify({
-                            text: `Kiểm tra chất lượng thành công`,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                            className: "info",
-                        }).showToast();
-                        var input = document.getElementById('soluongDatChatLuong-' + idVatTu);
-                        var textarea = document.getElementById('ghichu-' + idVatTu);
-                        var button = document.querySelector(`button[onclick='submitData(${idVatTu})']`);
-                        var value = input.value;
-                        input.style.display = 'none';
-                        textarea.style.display = 'none';
-                        button.style.display = 'none';
-                        var parentParagraph = input.parentNode;
-                        parentParagraph.textContent = `Số lượng đạt chất lượng: ${value}`;
-                        var parentParagraphNote = textarea.parentNode;
-                        parentParagraphNote.textContent = `Ghi chú: ${ghiChu}`;
-                    } else {
-                        Toastify({
-                            text: `Lỗi: ${response.message}`,
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                            className: "info",
-                        }).showToast();
-                    }
-                },
-                error: function(error) {
-                    console.error('Error:', error);
-                    Toastify({
-                        text: 'Có lỗi xảy ra khi gửi dữ liệu!',
-                        duration: 3000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                        className: "info",
-                    }).showToast();
+            var html5QrCode;
+
+            // Kiểm tra xem thư viện Html5QrCode đã được tải chưa
+            if (typeof Html5QrCode !== 'undefined') {
+                html5QrCode = new Html5QrCode("barcode-scanner");
+            } else {
+                console.error('Thư viện Html5QrCode chưa được tải.');
+            }
+
+            $('#scan-button').on('click', function () {
+                if (html5QrCode) {
+                    $('#barcode-scanner').show();
+                    $('#manual-entry').hide();
+
+                    html5QrCode.start(
+                        { facingMode: "environment" },
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        function onScanSuccess(decodedText, decodedResult) {
+                            $('#Danhmucvattuxuat').text(`Mã quét được: ${decodedText}`);
+
+                            var matchedSupply = supplies.find(supply => supply.maso === decodedText);
+
+                            if (matchedSupply) {
+                                displaySupplyCard(matchedSupply);
+                            } else {
+                                showError('Không tìm thấy vật tư nào khớp.');
+                            }
+                        }
+                    ).catch(err => {
+                        console.log(`Lỗi khi khởi tạo quét mã QR: ${err}`);
+                    });
+                } else {
+                    showError('Thư viện Html5QrCode chưa được tải.');
                 }
             });
-        }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var html5QrCode = new Html5Qrcode("barcode-scanner");
+            $('#manual-button').on('click', function () {
+                $('#barcode-scanner').hide();
+                $('#manual-entry').show();
+            });
 
-            document.querySelector('#scan-button').addEventListener('click', function () {
-                const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                    if (scannedBarcodes.includes(decodedText)) {
-                        console.log('Mã này đã được quét và xử lý.');
-                        return;
-                    }
+            $('#manual-input').on('input', function () {
+                $(this).val($(this).val().toUpperCase());
+            });
 
-                    if (!masos.includes(decodedText)) {
-                        Toastify({
-                            text: "Vật tư không nằm trong đơn hàng",
-                            duration: 3000,
-                            gravity: "top",
-                            position: "center",
-                            backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)"
-                        }).showToast();
-                        return;
-                    }
+            $('#manual-submit').on('click', function () {
+                var inputValue = $('#manual-input').val().toUpperCase();
+                var matchedSupply = supplies.find(supply => supply.maso === inputValue);
 
-                    scannedBarcodes.push(decodedText);
+                if (matchedSupply) {
+                    displaySupplyCard(matchedSupply);
+                } else {
+                    showError('Không tìm thấy vật tư nào khớp.');
+                }
+            });
 
+            function displaySupplyCard(supply) {
+                var cardHtml = `
+                    <div class="card mb-3 supply-card" id="supply-card-${supply.id}" style="border-radius: 15px; background-color: #007bff; color: white;">
+                        <div class="card-header" style="background-color: #0056b3; color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                            Đơn hàng: ${supply.orders.length > 0 ? supply.orders[0].sodonhang : 'Không có đơn hàng'}
+                        </div>
+                        <div class="card-body" style="background-color: #007bff;">
+                            <h5 class="card-title">${supply.tenvattu}</h5>
+                            <p class="card-text">Mã số: ${supply.maso}</p>
+                            <p class="card-text">Số lượng đạt chất lượng:
+                                <input class="form-control" type="number" name="soluongDatChatLuong" min="0" id="soluongDatChatLuong-${supply.id}">
+                            </p>
+                            <p class="card-text">Ghi chú:
+                                <textarea class="form-control" name="ghichu" id="ghichu-${supply.id}" rows="3"></textarea>
+                            </p>
+                            <button class="btn btn-success" onclick="submitData(${supply.id})">Hoàn tất</button>
+                        </div>
+                    </div>
+                `;
+                $('#Danhmucvattuxuat').html(cardHtml);
+            }
+
+            window.submitData = function (id) {
+                var quantity = $(`#soluongDatChatLuong-${id}`).val();
+                var note = $(`#ghichu-${id}`).val();
+
+                if (quantity && !isNaN(quantity)) {
                     $.ajax({
-                        type: 'POST',
-                        url: '{{ route("takeIdByBarcode") }}',
+                        url: "{{ route('luuKiemTraChatLuong') }}",
+                        type: "POST",
                         data: {
-                            mavattu: decodedText,
-                            _token: $('meta[name="csrf-token"]').attr('content')
+                            id: id,
+                            quantity: parseInt(quantity),
+                            note: note,
+                            _token: '{{ csrf_token() }}'
                         },
-                        success: function(response) {
-                            if (response.status === 'Thành công') {
-                                var matchedSupply = response.data;
-                                var cardHtml = `
-                                    <div class="card mb-3" style="border-radius: 15px; background-color: #007bff; color: white;">
-                                        <div class="card-header" style="background-color: #0056b3; color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-                                            Đơn hàng: ${matchedSupply.order.sodonhang}
-                                        </div>
-                                        <div class="card-body" style="background-color: #007bff;">
-                                            <h5 class="card-title">${matchedSupply.tenvattu}</h5>
-                                            <p class="card-text">Mã số: ${matchedSupply.maso}</p>
-                                            <p class="card-text">Số lượng đạt chất lượng:
-                                                <input class="form-control" type="number" name="soluongDatChatLuong" min="0" id="soluongDatChatLuong-${matchedSupply.id}">
-                                            </p>
-                                            <p class="card-text">Ghi chú:
-                                                <textarea class="form-control" name="ghichu" id="ghichu-${matchedSupply.id}" rows="3"></textarea>
-                                            </p>
-                                            <button class="btn btn-success" onclick="submitData(${matchedSupply.id})">Hoàn tất</button>
-                                        </div>
-                                    </div>`;
-                                document.querySelector('#Danhmucvattuxuat').innerHTML += cardHtml;
+                        success: function (response) {
+                            if (response.success) {
+                                Toastify({
+                                    text: response.message,
+                                    duration: 5000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    className: "info",
+                                }).showToast();
+                                $(`#supply-card-${id}`).remove();  // Xóa thẻ div sau khi hoàn thành tác vụ
                             } else {
-                                alert(response.message);
+                                showError(response.message);
                             }
                         },
-                        error: function(error) {
-                            console.error('Error:', error);
-                            alert('Có lỗi xảy ra khi truy vấn dữ liệu!');
+                        error: function (xhr, status, error) {
+                            console.error('Có lỗi xảy ra: ', error);
+                            let message = xhr.responseJSON ? xhr.responseJSON.message : "Có lỗi xảy ra khi cập nhật";
+                            showError(message);
                         }
                     });
-                };
-
-                const qrCodeErrorCallback = (errorMessage) => {
-                    console.log(`QR Code no longer in front of camera. (${errorMessage})`);
-                };
-
-                const config = { fps: 10, qrbox: 250 };
-
-                if (html5QrCode.isScanning) {
-                    html5QrCode.stop().then((ignore) => {
-                        console.log("Quét đã dừng.");
-                    }).catch((err) => {
-                        console.log("Không thể dừng quét.", err);
-                    });
+                } else {
+                    showError('Vui lòng nhập số lượng hợp lệ.');
                 }
+            };
 
-                html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback, qrCodeErrorCallback);
-            });
-
-            var scannedBarcodes = [];
+            function showError(message) {
+                Toastify({
+                    text: message,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    className: "error",
+                }).showToast();
+            }
         });
     </script>
 @endsection
+
 
 
 

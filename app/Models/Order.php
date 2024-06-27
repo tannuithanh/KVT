@@ -21,7 +21,9 @@ class Order extends Model
 
     public function supplies()
     {
-        return $this->hasMany(Supply::class, 'order_id');
+        return $this->belongsToMany(Supply::class, 'order_supply')
+                    ->withPivot('soluong')
+                    ->withTimestamps();
     }
 
     public function expense()

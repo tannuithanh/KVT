@@ -57,7 +57,7 @@
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
-            <li class="breadcrumb-item">Nhập kho</li>
+            <li class="breadcrumb-item">Xuất kho</li>
         </ol>
     </nav>
 </div>
@@ -68,29 +68,23 @@
                 <div class="card-body">
                     <div class="d-flex flex-wrap align-items-center mt-2">
                         <h6 class="modal-title" id="orderTitle">Đơn hàng:</h6>
-                        <span>|</span>
-                        <h6 class="modal-title" id="tongsovattu">Tổng vật tư:</h6>
-                        <span>|</span>
-                        <h6 class="modal-title" id="tongdanhan">Tổng đã nhận:</h6>
-                        <span>|</span>
-                        <h6 class="modal-title" id="tongchuanhan">Tổng chưa nhận:</h6>
-                        <span>|</span>
-                        <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                     </div>
+                    <button id="xuatKhoBarcode" style="display: none" class="btn btn-outline-primary bi bi-upc-scan mt-2"> Quét Mã</button>
                     <div class="table-responsive" style="max-height: 550px;">
-                        <table class="table table-borderless table-bordered table-hover mt-2 vattuchitiet fixed-header">
+                        <table class="table table-borderless table-bordered table-hover mt-2 vattuchitiet fixed-header" id="bangxuatkho" >
                             <thead>
                                     <tr>
                                         <th style="text-align: center;display:none;" scope="col"> Chọn </th>
                                         <th style="text-align: center" scope="col">Stt</th>
-                                        <th style="text-align: center" scope="col">Đơn hàng</th>
                                         <th style="text-align: center" scope="col">Tên vật tư</th>
                                         <th style="text-align: center" scope="col">Mã vật tư</th>
                                         <th style="text-align: center" scope="col">số lượng còn</th>
-                                        <th style="text-align: center" scope="col">Chi Phí</th>
                                         <th style="text-align: center" scope="col">Ghi chú</th>
                                     </tr>
                             </thead>
+                            <tbody>
+
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -155,7 +149,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 @section('script')
 <script src="{{asset('assets/js/choices.min.js')}}"></script>
@@ -198,58 +191,60 @@
 
                 if (orderId) {
                     const $actionModal = $('#actionModal');
-                    const $vatTuDonHangTableBody = $('.vatTuDonHang tbody');
+                    const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
                     const $orderTitle = $('#orderTitle');
-                    const $tongSoVatTu = $('#tongsovattu');
-                    const $tongDaNhan = $('#tongdanhan');
-                    const $tongChuaNhan = $('#tongchuanhan');
-                    const $tongDaXuat = $('#tongdaxuat');
+                    const $xuatKhoBarcode = $('#xuatKhoBarcode');
                     $actionModal.modal('hide');
                     $actionModal.remove();
                     $.ajax({
-                        url: "{{ route('layThongTinDonHang') }}",
+                        url: "{{ route('searchSuppliesReal') }}",
                         type: 'POST',
                         data: {
                             id: orderId,
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            console.log(response)
+                            console.log(response);
                             $vatTuDonHangTableBody.empty();
-                            response.suppliesDetail.forEach((supplyDetail, index) => {
-                                var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
-                                var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
 
-                                // Kiểm tra điều kiện để thêm class blink-warning
-                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+                            // Chuyển đổi phản hồi thành một mảng thực sự
+                            var supplies = Object.values(response);
 
-                                const row = `
-                                    <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="barcode ${rowClass}">${supplyDetail.qrCode || ''}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
-                                    </tr>
-                                `;
-                                $vatTuDonHangTableBody.append(row);
-                            });
-                            $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
-                            $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
-                            $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
-                            $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
-                            $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
+                            if (supplies.length > 0) {
+                                supplies.forEach((item, index) => {
+                                    const row = `
+                                        <tr>
+                                            <td class="text-center">${index + 1}</td>
+                                            <td class="text-center">${item.tenvattu}</td>
+                                            <td class="text-center">${item.maso}</td>
+                                            <td class="text-center">${item.soluong_conlai}</td>
+                                            <td class="text-center">${item.ghichu}</td>
+                                        </tr>
+                                    `;
+                                    $vatTuDonHangTableBody.append(row);
+                                });
+                                $xuatKhoBarcode.show(); // Hiển thị thẻ a có id="xuatKhoBarcode"
+                                $orderTitle.text(`Đơn hàng: ${supplies[0]?.sodonhang || ''}`);
+
+                                // Gắn sự kiện click vào nút xuatKhoBarcode
+                                $xuatKhoBarcode.off('click').on('click', function(e) {
+                                    e.preventDefault();
+
+                                    var maso = supplies.map(supply => supply.maso);
+
+                                    // Encode the ids array as a JSON string and then URI encode it
+                                    var encodedmaso = encodeURIComponent(JSON.stringify(maso));
+
+                                    // Redirect to the route with query parameter
+                                    window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
+                                });
+                            } else {
+                                $vatTuDonHangTableBody.append('<tr><td colspan="5" class="text-center">Không có vật tư tồn kho</td></tr>');
+                                $xuatKhoBarcode.hide(); // Ẩn thẻ a có id="xuatKhoBarcode" nếu không có dữ liệu
+                            }
                         },
                         error: function(xhr, status, error) {
                             console.error('Lỗi khi gửi yêu cầu AJAX:', error);
-                            // Hiển thị thông báo lỗi cho người dùng
                         }
                     });
                 } else {
@@ -258,6 +253,7 @@
             };
         });
     </script>
+
 {{-- CAMERA --}}
     <script>
         $(document).ready(function() {
@@ -266,14 +262,9 @@
             const $barcodeInfoContainer = $('#barcode-info-container');
             const $NTDH = $('#NTDH');
             const $actionModal = $('#actionModal');
-            const $vatTuDonHangTableBody = $('.vatTuDonHang tbody');
-
+            const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
             const $orderTitle = $('#orderTitle');
-            const $tongSoVatTu = $('#tongsovattu');
-            const $tongDaNhan = $('#tongdanhan');
-            const $tongChuaNhan = $('#tongchuanhan');
-            const $tongDaXuat = $('#tongdaxuat');
-
+            const $xuatKhoBarcode = $('#xuatKhoBarcode');
             $scanButton.on('click', function() {
                 $barcodeScanner.show();
                 $scanButton.hide();
@@ -286,54 +277,65 @@
                     }).catch(err => {
                         console.error("Failed to stop scanning.", err);
                     });
+
                     $.ajax({
-                        url: "{{ route('layThongTinDonHang') }}",
+                        url: "{{ route('searchSuppliesReal') }}",
                         type: 'POST',
                         data: {
                             sodonhang: qrCodeMessage,
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            $vatTuDonHangTableBody.empty();
+                                console.log(response);
+                                $vatTuDonHangTableBody.empty();
 
-                            // Duyệt qua các phần tử trong suppliesDetail và tạo các hàng mới
-                            response.suppliesDetail.forEach((supplyDetail, index) => {
-                                var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
-                                var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+                                // Chuyển đổi phản hồi thành một mảng thực sự
+                                var supplies = Object.values(response);
 
-                                // Kiểm tra điều kiện để thêm class blink-warning
-                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+                                if (supplies.length > 0) {
+                                    supplies.forEach((item, index) => {
+                                        const row = `
+                                            <tr>
+                                                <td class="text-center">${index + 1}</td>
+                                                <td class="text-center">${item.tenvattu}</td>
+                                                <td class="text-center">${item.maso}</td>
+                                                <td class="text-center">${item.soluong_conlai}</td>
+                                                <td class="text-center">${item.ghichu}</td>
+                                            </tr>
+                                        `;
+                                        $vatTuDonHangTableBody.append(row);
+                                    });
+                                    $xuatKhoBarcode.show(); // Hiển thị thẻ a có id="xuatKhoBarcode"
+                                    $orderTitle.text(`Đơn hàng: ${supplies[0]?.sodonhang || ''}`);
 
-                                const row = `
-                                    <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
-                                        <td class="barcode ${rowClass}">${supplyDetail.barcodeHtml || ''}<div>${supplyDetail.supply.maso || ''}</div></td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
-                                    </tr>
-                                `;
-                                $vatTuDonHangTableBody.append(row);
-                            });
-                            $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
-                            $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
-                            $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
-                            $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
-                            $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
-                        },
+                                    // Gắn sự kiện click vào nút xuatKhoBarcode
+                                    $xuatKhoBarcode.off('click').on('click', function(e) {
+                                        e.preventDefault();
+
+                                        var maso = supplies.map(supply => supply.maso);
+
+                                        // Encode the ids array as a JSON string and then URI encode it
+                                        var encodedmaso = encodeURIComponent(JSON.stringify(maso));
+
+                                        // Redirect to the route with query parameter
+                                        window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
+                                    });
+                                } else {
+                                    $vatTuDonHangTableBody.append('<tr><td colspan="5" class="text-center">Không có vật tư tồn kho</td></tr>');
+                                    $xuatKhoBarcode.hide(); // Ẩn thẻ a có id="xuatKhoBarcode" nếu không có dữ liệu
+                                }
+                            },
                         error: function(xhr, status, error) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi',
+                            console.error('Lỗi khi gửi yêu cầu AJAX:', error);
+                            Toastify({
                                 text: 'Đơn hàng không tồn tại',
-                            });
+                                duration: 3000,
+                                close: true,
+                                gravity: 'top',
+                                position: 'right',
+                                backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
+                                className: 'info',
+                            }).showToast();
                             setTimeout(() => {
                                 location.reload();
                             }, 1000);
@@ -353,6 +355,7 @@
             });
         });
     </script>
+
 
 {{-- HIỂN THỊ LỊCH SỬ --}}
     <script>

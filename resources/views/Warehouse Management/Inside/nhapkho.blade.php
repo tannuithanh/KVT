@@ -45,8 +45,6 @@
         text-align: center;
     }
 </style>
-
-
 @endsection
 @section('title')
     Nhập kho
@@ -87,9 +85,9 @@
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số mới</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
                                     <th colspan="5" style="text-align: center;">Tình trạng</th>
-                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã QrCode</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Số lượng in</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
                                 </tr>
@@ -178,20 +176,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-bordered" id="selectedItemsTable">
-                        <thead>
-                            <tr>
-                                <th>Stt</th>
-                                <th>Tên Vật Tư</th>
-                                <th>Mã Số</th>
-                                <th style="width: 100px;">Số Lượng In</th>
-                                <th>Mã Barcode</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Dữ liệu sẽ được thêm vào đây -->
-                        </tbody>
-                    </table>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered" id="selectedItemsTable">
+                            <thead>
+                                <tr>
+                                    <th>Stt</th>
+                                    <th>Tên Vật Tư</th>
+                                    <th>Mã Số</th>
+                                    <th style="width: 100px;">Số Lượng In</th>
+                                    <th>Mã Barcode</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dữ liệu sẽ được thêm vào đây -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở về</button>
@@ -272,13 +272,14 @@
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
+                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso_new ?? ""}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="barcode ${rowClass}">${supplyDetail.qrCode || ''}</td>
+                                        <td style="display:none" class="barcode ${rowClass}">${supplyDetail.qrCode || ''}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
                                     </tr>
@@ -360,7 +361,6 @@
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
-                                        <td class="barcode ${rowClass}">${supplyDetail.barcodeHtml || ''}<div>${supplyDetail.supply.maso || ''}</div></td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
                                     </tr>
                                 `;

@@ -1292,7 +1292,7 @@ h6 {
   align-items: center; /* Căn giữa các phần tử theo chiều dọc */
   padding: 13px 30px;
   font-size: 14px;
-  background-color: #173e86;
+  background-color: #00529C;
   color: white;
   position: fixed;
   left: 0;
@@ -1322,14 +1322,14 @@ h6 {
 
 .footer .copyright {
   text-align: left;
-  color: #012970;
+  color: #00529C;
 }
 
 .footer .credits {
   padding-top: 5px;
   text-align: center;
   font-size: 13px;
-  color: #012970;
+  color: #00529C;
 }
 
 .background-overlay {

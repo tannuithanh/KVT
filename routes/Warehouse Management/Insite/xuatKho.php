@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 //XUẤT KHO MODULE
     Route::get('/Export-Warehouse', [Insite::class, 'listExportWarehouse'])->name('listExportWarehouse')->middleware('auth');
 
-    Route::get('/search-supplies', [Insite::class, 'searchSupplies'])->name('searchSuppliesReal')->middleware('auth');
+    Route::POST('/search-supplies', [Insite::class, 'searchSupplies'])->name('searchSuppliesReal')->middleware('auth');
 
     Route::post('/formTrinhKy', [Insite::class, 'formTrinhKy'])->name('formTrinhKy')->middleware('auth');
 

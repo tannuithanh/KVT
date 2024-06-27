@@ -31,7 +31,30 @@
 
   @yield('style')
   <style>
+        body {
+            margin: 0;
+            padding: 0;
+            padding-bottom: 60px; /* Thêm khoảng trống dưới cùng để tránh footer che nội dung */
+            box-sizing: border-box;
+        }
+        #footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 30px;
+            font-size: 14px;
+            background-color: #00529C;
+            color: white;
+            position: fixed;
+            left: 0;
+            right: 0;
+            transition: all 0.3s;
+            z-index: 1000; /* Đảm bảo footer luôn ở trên cùng */
+        }
 
+        #footer.visible-footer {
+            bottom: 0; /* Hiển thị footer */
+        }
         body {
               font-family: Arial, sans-serif;
             }
@@ -73,7 +96,7 @@
 <body>
     <iframe name="printFrame" id="printFrame" style="display:none;"></iframe>
   <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center" style="background-color: #05438a;color: white !important; font-family:Arial, Helvetica, sans-serif " >
+  <header id="header" class="header fixed-top d-flex align-items-center" style="background-color: #00529C;color: white !important; font-family:Arial, Helvetica, sans-serif " >
 
     <div class="d-flex align-items-center justify-content-between">
         <a href="{{ route('dashboard') }}" class="logo d-flex align-items-center justify-content-center" style="text-align: center; border-radius: 30px; background-color: white; padding: 5px;">
@@ -81,8 +104,8 @@
         </a>
         <i class="bi bi-list toggle-sidebar-btn" style="color: white"></i>
     </div><!-- End Logo -->
-    <div class="header-title" style="font-size: 25px;">
-        QUẢN LÝ VẬT TƯ LINH KIỆN TẠI KHO
+    <div class="header-title" style="font-size: 25px; ">
+        QUẢN LÝ VẬT TƯ LINH KIỆN KHO
     </div>
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
@@ -247,15 +270,7 @@
                 @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin == 1)
                     <li>
                         <a href="{{ route('listBrand', ['module' => 'Quản lý đơn hàng']) }}" class="{{ $quanLyDonHang ? 'active' : '' }}">
-                            <i class="bi bi-circle"></i><span>Quản lý đơn hàng</span>
-                        </a>
-                    </li>
-                @endif
-                            <!-- Các mục khác dựa trên appFunction->id hoặc trạng thái admin -->
-                @if ((in_array($user->appFunction->id, [3, 5, 1]) || $user->is_admin == 1) && $user->department_id == 4)
-                    <li>
-                        <a href="{{ route('trangTonKho', ['module' => 'Quản lý tồn kho']) }}" class="{{ $quanLyTonKho ? 'active' : '' }}">
-                            <i class="bi bi-circle"></i><span>Quản lý tồn kho</span>
+                            <i class="bi bi-circle"></i><span>Quản lý DMVT</span>
                         </a>
                     </li>
                 @endif

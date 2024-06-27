@@ -2,17 +2,18 @@
 @section('style')
 <style>
     .fixed-barcode-scanner {
-        position: sticky; /* Thay đổi từ fixed sang sticky */
-        top: 10px; /* Khoảng cách từ top màn hình khi thành sticky */
-        z-index: 1000; /* Đảm bảo nó luôn trên cùng */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        height: 200px;
-        width: 320px;
-        border: 3px solid #ddd;
-        overflow: hidden;
-    }
+            position: sticky; /* Thay đổi từ fixed sang sticky */
+            top: 10px; /* Khoảng cách từ top màn hình khi thành sticky */
+            z-index: 12; /* Đảm bảo nó luôn trên cùng */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            height: 320px;
+            width: 300px;
+            border: 3px solid #ddd;
+            overflow: hidden;
+        }
 </style>
+<link rel="stylesheet" type="text/css" href="{{asset('assets/css/toastify.min.css')}}">
 @endsection
 @section('title')
     Xuất kho barcode
@@ -27,7 +28,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <button id="scan-button" class="btn btn-primary" style="width: 100%; margin-bottom: 20px;">Khởi động camera</button>
+                    <button id="scan-button" class="btn btn-primary mt-3" style="width: 100%; margin-bottom: 20px;">Khởi động camera</button>
                     <!-- Set a fixed height for the scanner container to prevent it from expanding -->
                     <div id="barcode-scanner" class="fixed-barcode-scanner">
                         <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
@@ -43,10 +44,12 @@
 @endsection
 
 @section('script')
-<script src="{{ asset('assets/js/quagga.min.js') }}"></script>
+<script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
+<script src="{{ asset('assets/js/toastify-js.js') }}"></script>
 {{-- CAMERA --}}
     <script>
         var scannedBarcodes = [];
+        var allowedMasos = @json($maso);
 
         document.addEventListener('DOMContentLoaded', function () {
             const scanButton = document.getElementById('scan-button');
@@ -57,34 +60,14 @@
                 barcodeScanner.style.display = 'block';  // Always show the scanner
                 scanButton.style.display = 'none';  // Hide the button after starting
 
-                Quagga.init({
-                    inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: barcodeScanner,
-                        constraints: {
-                            facingMode: "environment"
-                        }
-                    },
-                    decoder: {
-                        readers: ["code_128_reader"]
-                    }
-                }, function (err) {
-                    if (err) {
-                        console.error("Cannot initialize QuaggaJS", err);
-                        return;
-                    }
-                    Quagga.start();
-                });
+                function onScanSuccess(qrCodeMessage) {
+                    if (!scannedBarcodes.includes(qrCodeMessage) && allowedMasos.includes(qrCodeMessage)) {
+                        scannedBarcodes.push(qrCodeMessage);
 
-                Quagga.onDetected(function(result) {
-                    var barcode = result.codeResult.code;
-                    if (!scannedBarcodes.includes(barcode)) {
-                        scannedBarcodes.push(barcode);
                         $.ajax({
                             url: "{{ route('checkVatTuXuatKho') }}",
                             type: 'POST',
-                            data: { barcode: barcode },
+                            data: { barcode: qrCodeMessage },
                             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                             success: function(data) {
                                 if (data.exists && data.remaining > 0) {
@@ -101,20 +84,74 @@
                                             </div>
                                         </div>`;
                                     barcodeInfoContainer.innerHTML += cardHtml;
+
+                                    Toastify({
+                                        text: `Vật tư đã sẵn sàng xuất kho`,
+                                        duration: 3000,
+                                        close: true,
+                                        gravity: "top",
+                                        position: "right",
+                                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                        className: "info",
+                                    }).showToast();
                                 } else {
-                                    alert(data.message);
+                                    Toastify({
+                                        text: `Lỗi: ${data.message}`,
+                                        duration: 3000,
+                                        close: true,
+                                        gravity: "top",
+                                        position: "right",
+                                        backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
+                                        className: "info",
+                                    }).showToast();
                                 }
                             },
                             error: function(error) {
                                 console.error('Error:', error);
-                                alert('Có lỗi xảy ra khi kiểm tra vật tư!');
+                                Toastify({
+                                    text: 'Có lỗi xảy ra khi kiểm tra vật tư!',
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
+                                    className: "info",
+                                }).showToast();
                             }
                         });
+                    } else if (!allowedMasos.includes(qrCodeMessage)) {
+                        Toastify({
+                            text: 'Mã không khớp với danh sách cho phép.',
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
+                            className: "info",
+                        }).showToast();
                     }
+                }
+
+                function onScanFailure(error) {
+                    console.warn(`QR error: ${error}`);
+                }
+
+                const html5QrCode = new Html5Qrcode("barcode-scanner");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: 250
+                    },
+                    onScanSuccess,
+                    onScanFailure
+                ).catch(err => {
+                    console.error(`Unable to start scanning, error: ${err}`);
                 });
             });
         });
     </script>
+
 
 {{-- XÁC NHẬN XUẤT KHO --}}
     <script>
@@ -137,21 +174,53 @@
                                 cardBody.find('.card-text').text('Số lượng còn lại: ' + response.remaining);
                                 button.siblings('input').remove(); // Xóa input số lượng
                                 button.remove(); // Xóa nút xác nhận xuất kho
-                                Swal.fire('Thành công!', 'Xuất kho thành công.', 'success');
+                                Toastify({
+                                    text: 'Thành công! Xuất kho thành công.',
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: 'top',
+                                    position: 'right',
+                                    backgroundColor: 'linear-gradient(to right, #00b09b, #96c93d)',
+                                    className: 'info',
+                                }).showToast();
                             } else {
-                                Swal.fire('Lỗi!', response.message, 'error');
+                                Toastify({
+                                    text: `Lỗi! ${response.message}`,
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: 'top',
+                                    position: 'right',
+                                    backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
+                                    className: 'info',
+                                }).showToast();
                             }
                         },
                         error: function(xhr, status, error) {
-                            Swal.fire('Lỗi!', 'Có lỗi xảy ra: ' + error, 'error');
+                            Toastify({
+                                text: `Lỗi! Có lỗi xảy ra: ${error}`,
+                                duration: 3000,
+                                close: true,
+                                gravity: 'top',
+                                position: 'right',
+                                backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
+                                className: 'info',
+                            }).showToast();
                         }
                     });
                 } else {
-                    Swal.fire('Thông báo', 'Vui lòng nhập số lượng hợp lệ không quá số lượng còn lại.', 'warning');
+                    Toastify({
+                        text: 'Thông báo! Vui lòng nhập số lượng hợp lệ không quá số lượng còn lại.',
+                        duration: 3000,
+                        close: true,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
+                        className: 'info',
+                    }).showToast();
                 }
             });
         });
-
     </script>
+
 
 @endsection

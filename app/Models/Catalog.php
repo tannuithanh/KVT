@@ -28,8 +28,7 @@ class Catalog extends Model
         return $this->hasMany(Supply::class);
     }
 
-    public function getProviderInfo()
-    {
+    public function getProviderInfo(){
         return ProviderDetail::where('name', $this->nhacungcap)
             ->with('provider')
             ->first();

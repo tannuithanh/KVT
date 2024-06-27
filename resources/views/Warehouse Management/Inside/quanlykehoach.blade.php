@@ -1,6 +1,6 @@
 @extends('Layout.app')
 @section('style')
-    <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{{asset('assets/css/choices.min.css')}}">
     <style>
         .table-hover tbody tr:hover {
             cursor: pointer;
@@ -19,7 +19,6 @@
     </style>
 
     <style>
-
         .blink-warning {
             background-color: rgba(255, 255, 0, 0.329) !important
         }
@@ -29,30 +28,6 @@
             padding: 11px;
             margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
             border-radius: 5px; /* Bo góc cho khung */
-        }
-        .select2-container--default .select2-selection--single,
-        .select2-selection .select2-selection--single {
-            border: 1px solid #ced4da;
-            border-radius: 0.30rem;
-            height: calc(2.25rem + 2px);
-            line-height: 1.5;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: calc(2.25rem + 2px);
-        }
-
-        .select2-container .select2-selection--single .select2-selection__rendered {
-            padding-left: 0.75rem;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 2.25rem;
-        }
-
-        .select2-container--open .select2-dropdown {
-            border-color: #ced4da;
-            z-index: 9999;
         }
 
     </style>
@@ -92,11 +67,12 @@
                   <!-- Default Tabs -->
                   <ul class="nav nav-tabs d-flex" id="myTabjustified" role="tablist">
                     <li class="nav-item flex-fill" role="presentation">
-                      <button class="nav-link w-100 " id="home-tab" data-bs-toggle="tab" data-bs-target="#home-justified" type="button" role="tab" aria-controls="home" aria-selected="false" tabindex="-1">Danh sách đơn hàng</button>
+                        <button class="nav-link w-100 active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-justified" type="button" role="tab" aria-controls="profile" aria-selected="true">Danh sách vật tư</button>
                     </li>
                     <li class="nav-item flex-fill" role="presentation">
-                      <button class="nav-link w-100 active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-justified" type="button" role="tab" aria-controls="profile" aria-selected="true">Danh sách vật tư</button>
+                      <button class="nav-link w-100 " id="home-tab" data-bs-toggle="tab" data-bs-target="#home-justified" type="button" role="tab" aria-controls="home" aria-selected="false" tabindex="-1">Danh sách đơn hàng</button>
                     </li>
+
                   </ul>
                   <div class="tab-content pt-2" id="myTabjustifiedContent">
                     <div class="tab-pane fade" id="home-justified" role="tabpanel" aria-labelledby="home-tab">
@@ -206,7 +182,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Vật tư chi tiết</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" onclick="location.reload()" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="filter-box mt-3">
@@ -228,6 +204,7 @@
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">STT</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Tên vật tư</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Mã số</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Mã số mới</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Đơn vị tính</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Số lượng</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Thao tác</th>
@@ -242,7 +219,7 @@
                         {{-- <button type="button" class="btn btn-outline-primary" id="themvattuchitiet" data-id="">+ Thêm vật tư</i></button> --}}
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Trở lại</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="location.reload()">Trở lại</button>
                         </div>
                     </div>
                 </div>
@@ -284,17 +261,16 @@
                                 </button>
                             </a>
                         </div>
-                        <form action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
+                        <form id="importForm" action="{{ route('importSupplies') }}" method="POST" class="mt-2" enctype="multipart/form-data">
                             @csrf
                             <input type="number" class="form-control" value="{{$project->id}}" name="project_id" required hidden />
+                            <input type="text" id="exportDrawings" name="exportDrawings" hidden />
                             <div class="mb-3">
                                 <input type="file" class="form-control" name="file" required />
                             </div>
-
-
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                <button type="submit" class="btn btn-primary">Thêm</button>
+                                <button type="button" id="submitBtn" class="btn btn-primary">Thêm</button>
                             </div>
                         </form>
                     </div>
@@ -352,7 +328,6 @@
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
                                         <th colspan="5" style="text-align: center;">Tình trạng</th>
-                                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã Boardcode</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Thao tác</th>
                                     </tr>
@@ -414,7 +389,7 @@
 @endsection
 
 @section('script')
-<script src="{{asset('assets/js/select2.min.js')}}"></script>
+<script src="{{asset('assets/js/choices.min.js')}}"></script>
 {{-- ĐƠN HÀNG --}}
   <script>
     $('.btn-secondary').click(function() {
@@ -518,6 +493,7 @@
                                 _token: '{{ csrf_token() }}' // Đảm bảo bạn thêm token CSRF
                             },
                             success: function(data) {
+                                console.log(data)
                                 var tbody = $('#danhMucVatTuChiTiet').find('tbody');
                                 tbody.empty(); // Xóa nội dung hiện tại của tbody
                                 $('#themvattuchitiet').attr('data-id', orderId);
@@ -577,7 +553,6 @@
                                             '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongdatchatluong">' + totalDatChatLuong + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' chuanhan">' + (item.chuanhan) + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' daxuat">' + (item.daxuat) + '</td>' +
-                                            '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' barcode">' + (item.qrCode || '') + '</td>' +
                                             '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' ghichu">' + (item.ghichu !== null ? item.ghichu : '') + '</td>' +
                                             buttonsHtml +
                                             '</tr>';
@@ -594,11 +569,18 @@
                         });
                     });
                     $('#danhMucVatTuChiTiet').on('shown.bs.modal', function () {
-                        $('.tenvattuchitiet, .masochitiet').select2({
-                            placeholder: "Chọn...",
-                            allowClear: true,
-                            width: '100%',
-                            dropdownParent: $('#danhMucVatTuChiTiet') // Đặt phần tử cha cho dropdown
+                        new Choices('.tenvattuchitiet', {
+                            searchEnabled: true,
+                            removeItemButton: true,
+                            shouldSort: false,
+                            placeholderValue: 'Chọn...'
+                        });
+
+                        new Choices('.masochitiet', {
+                            searchEnabled: true,
+                            removeItemButton: true,
+                            shouldSort: false,
+                            placeholderValue: 'Chọn...'
                         });
                     });
                 //SỬA VẬT TƯ CHI TIẾT
@@ -976,7 +958,6 @@
             $(document).ready(function() {
                 $('.tabledanhmucvat tbody').on('click', 'tr', function(event) {
                     if ($(event.target).closest('.action-column').length) {
-                        // Bỏ qua nếu click vào nút thuộc class "action-btn"
                         return;
                     }
                     var catalogId = $(this).data('catalog-id');
@@ -993,42 +974,133 @@
                             $.each(response.supplies, function(index, supply) {
                                 masovattuHtml += `<option value="${supply.id}">${supply.maso}</option>`;
                             });
-
                             var masovattuSelect = $('.masovattu');
+
                             masovattuSelect.empty().append(masovattuHtml);
-                            masovattuSelect.select2({
-                                placeholder: "Chọn mã số",
-                                allowClear: true
-                            }).data('select2').destroy(); // Hủy khởi tạo cũ trước khi khởi tạo mới
+
+                            if (masovattuSelect.data('choices')) {
+                                masovattuSelect.data('choices').destroy();
+                            }
+
+                            var choices = new Choices('.masovattu', {
+                                placeholder: true,
+                                placeholderValue: 'Chọn mã số',
+                                searchPlaceholderValue: 'Tìm kiếm...'
+                            });
+                            masovattuSelect.data('choices', choices);
 
                             var tbodyHtml = '';
                             $.each(response.supplies, function(index, supply) {
                                 var noteIcon = supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${supply.note}"></span>` : '';
-                                var actionColumnHtml = supply.order_id ? `<td class='action-column' style="text-align: center; vertical-align: middle;"></td>` : `<td class='action-column' style="text-align: center; vertical-align: middle;">
-                                    <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                        <i class="bx bx-transfer"></i>
-                                    </button>
-                                </td>`;
+
+                                var actionColumnHtml = '';
+
+                                if (supply.orders && supply.orders.some(order => order.status === 1)) {
+                                    actionColumnHtml = '';
+                                } else {
+                                        actionColumnHtml = `<td class='action-column' style="text-align: center; vertical-align: middle;">
+                                            <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
+                                                <i class="bx bx-transfer"></i>
+                                            </button>
+                                        </td>`;
+
+                                }
 
                                 tbodyHtml += `<tr data-supply-id="${supply.id}">
                                     <td style="text-align: center;vertical-align: middle">${index + 1}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.tenvattu} ${noteIcon}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.maso}</td>
+                                    <td style="text-align: center;vertical-align: middle" class="maso-moi">${supply.maso_new ?? ""}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.donvitinh}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
                                     ${actionColumnHtml}
                                 </tr>`;
                             });
                             $('.vattucuadanhmuc tbody').empty().append(tbodyHtml);
-                            $('[data-bs-toggle="popover"]').popover();  // Kích hoạt tất cả các popover
-                            $('#tongsovattu').text('Tổng vật tư: ' + response.totalSupplies);
+                            $('[data-bs-toggle="popover"]').popover();
+                            $('#tongsovattu').text('Tổng vật tư: ' + response.stats.totalSupplies);
                             $('#vautucuadanhmuc .modal-title').html(`Danh mục vật tư: ${catalogName}`);
                             $('#vautucuadanhmuc').modal('show');
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+                        }
+                    });
+                });
+
+                $('.vattucuadanhmuc tbody').on('click', '.btn-secondary', function(event) {
+                    event.preventDefault();
+                    var $row = $(this).closest('tr');
+                    var originalData = $row.find('.maso-moi').text();
+
+                    var inputHtml = `<input type="text" class="form-control" name="maso-moi" value="${originalData}">`;
+                    $row.find('.maso-moi').html(inputHtml);
+
+                    $(this).html('<i class="ri-save-3-line"></i>').attr('title', 'Lưu').removeClass('btn-secondary').addClass('btn-primary save-btn');
+                    $row.data('original', originalData);
+                });
+
+                $('.vattucuadanhmuc tbody').on('click', '.save-btn', function(event) {
+                    var $row = $(this).closest('tr');
+                    var newData = $row.find('input[name="maso-moi"]').val();
+                    var originalData = $row.data('original');
+
+                    if (newData !== originalData) {
+                        $('#editReasonModal').modal('show');
+                    } else {
+                        $row.find('.maso-moi').html(originalData);
+                        $(this).html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
+                    }
+                });
+
+                $('#saveChanges').on('click', function() {
+                    var reason = $('#changeReason').val();
+                    if (!reason.trim()) {
+                        alert('Vui lòng nhập lý do thay đổi.');
+                        return;
+                    }
+                    var changes = [];
+                    $('.vattucuadanhmuc tbody tr').each(function() {
+                        if ($(this).find('input[name="maso-moi"]').length > 0) {
+                            var row = {
+                                supply_id: $(this).data('supply-id'),
+                                masoMoi: $(this).find('input[name="maso-moi"]').val()
+                            };
+                            changes.push(row);
+                        }
+                    });
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ route("thayTheVatTu") }}',
+                        data: {
+                            note: reason,
+                            supplies: changes
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            $('.vattucuadanhmuc tbody tr').each(function() {
+                                if ($(this).find('input[name="maso-moi"]').length > 0) {
+                                    var newData = $(this).find('input[name="maso-moi"]').val();
+                                    $(this).find('.maso-moi').html(newData);
+                                    $(this).find('.save-btn').html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
+                                }
+                            });
+                            $('#editReasonModal').modal('hide');
+                            $('[data-bs-toggle="popover"]').popover();
+                        },
+                        error: function(error) {
+                            console.log(error);
+                            alert('Có lỗi xảy ra, vui lòng thử lại.');
                         }
                     });
                 });
             });
+
         </script>
+
     {{-- XÓA VẬT TƯ --}}
         <script>
             $(document).ready(function() {
@@ -1079,115 +1151,6 @@
                 });
             });
         </script>
-    {{-- CHUYỂN ĐỔI THÀNH INPUT VÀ MODAL NGUYÊN NHÂN --}}
-        <script>
-                $(document).ready(function() {
-                    // Xử lý khi nhấp vào nút "Thay đổi"
-                    $('.vattucuadanhmuc tbody').on('click', '.btn-secondary', function(event) {
-                        event.preventDefault();
-                        var $row = $(this).closest('tr');
-                        var supplyId = $row.data('supply-id');
-                        var originalData = [];
-
-                        // Chuyển đổi các giá trị td thành input
-                        $row.children('td').not(':first, :last').each(function(index) {
-                            var content = $(this).text();
-                            originalData.push(content);
-                            var fieldName = '';
-                            switch (index) {
-                                case 0: fieldName = 'tenvattu'; break;
-                                case 1: fieldName = 'maso'; break;
-                                case 2: fieldName = 'donvitinh'; break;
-                                case 3: fieldName = 'soluong'; break;
-                            }
-                            var inputHtml = `<input type="text" class="form-control" name="${fieldName}" value="${content}">`;
-                            $(this).html(inputHtml);
-                        });
-
-                        // Thay đổi nút thành "Lưu"
-                        $(this).html('<i class="ri-save-3-line"></i>').attr('title', 'Lưu').removeClass('btn-secondary').addClass('btn-primary save-btn');
-                        $row.data('original', originalData);
-                    });
-
-                    // Xử lý khi nhấp vào nút "Lưu"
-                    $('.vattucuadanhmuc tbody').on('click', '.save-btn', function(event) {
-                        var $row = $(this).closest('tr');
-                        var newData = $row.find('input').map(function() { return $(this).val(); }).get();
-                        var originalData = $row.data('original');
-                        var hasChanged = newData.some((value, index) => value !== originalData[index]);
-
-                        // Kiểm tra có thay đổi không và hiển thị modal nhập lý do
-                        if (hasChanged) {
-                            $('#editReasonModal').modal('show');
-                        } else {
-                            // Nếu không có thay đổi, khôi phục lại trạng thái ban đầu
-                            $row.children('td').not(':first, :last').each(function(index) {
-                                $(this).html(originalData[index]);
-                            });
-                            $(this).html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
-                        }
-                    });
-
-                    // Xử lý khi nhấn nút 'Lưu Thay Đổi' trên modal
-                    $('#saveChanges').on('click', function() {
-                        var reason = $('#changeReason').val();
-                        if (!reason.trim()) {
-                            alert('Vui lòng nhập lý do thay đổi.');
-                            return;
-                        }
-                        var changes = [];
-                        $('.vattucuadanhmuc tbody tr').each(function() {
-                            if ($(this).find('input').length > 0) {
-                                var row = {
-                                    supply_id: $(this).data('supply-id'),
-                                    tenvattu: $(this).find('input[name="tenvattu"]').val(),
-                                    maso: $(this).find('input[name="maso"]').val(),
-                                    donvitinh: $(this).find('input[name="donvitinh"]').val(),
-                                    soluong: $(this).find('input[name="soluong"]').val()
-                                };
-                                changes.push(row);
-                            }
-                        });
-
-                        $.ajax({
-                            type: 'POST',
-                            url: '{{ route("thayTheVatTu") }}',
-                            data: {
-                                note: reason,
-                                supplies: changes
-                            },
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function(response) {
-                                // Cập nhật lại dữ liệu trên giao diện người dùng
-                                $('.vattucuadanhmuc tbody tr').each(function() {
-                                    if ($(this).find('input').length > 0) {
-                                        $(this).children('td').not(':first, :last').each(function(index) {
-                                            var input = $(this).find('input');
-                                            var text = input.val(); // Lấy giá trị từ input
-                                            var htmlContent = text; // Nội dung HTML mặc định là giá trị text
-                                            if (index === 0) { // Giả sử chỉ thêm icon cho cột 'Tên vật tư'
-                                                htmlContent += ` <span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${reason}"></span>`;
-                                            }
-                                            $(this).html(htmlContent); // Cập nhật HTML của td
-                                        });
-                                        // Đặt lại nút sau khi lưu
-                                        $(this).find('.save-btn').html('<i class="bx bx-transfer"></i>').attr('title', 'Thay đổi').removeClass('btn-primary save-btn').addClass('btn-secondary');
-                                    }
-                                });
-                                $('#editReasonModal').modal('hide');
-                                // Kích hoạt popover mới thêm vào
-                                $('[data-bs-toggle="popover"]').popover();
-                            },
-                            error: function(error) {
-                                console.log(error);
-                                alert('Có lỗi xảy ra, vui lòng thử lại.');
-                            }
-                        });
-                    });
-                });
-        </script>
     {{-- TÌM KIẾM VẬT TƯ TRONG DANH MỤC --}}
         <script>
             $(document).ready(function() {
@@ -1210,19 +1173,36 @@
                             if (response.status === 'success') {
                                 // Xóa bảng hiện tại và thêm các hàng mới từ kết quả tìm kiếm
                                 $('.vattucuadanhmuc tbody').empty();
-                                var actionColumnHtml = response.supply.order_id ? `<td class='action-column' style="text-align: center; vertical-align: middle;"></td>` : `<td class='action-column' style="text-align: center; vertical-align: middle;">
-                                        <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </button>
-                                    </td>`;
-                                var noteIcon = response.supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${response.supply.note}"></span>` : '';
+                                var supply = response.supply;
+
+                                var noteIcon = supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${supply.note}"></span>` : '';
+
+                                var actionColumnHtml = '';
+
+                                // Kiểm tra nếu đơn hàng có status = 1 thì không hiển thị button
+                                if (supply.orders && supply.orders.some(order => order.status === 1)) {
+                                    actionColumnHtml = ''; // Không hiển thị button
+                                } else {
+                                    // Kiểm tra số lượng vật tư trong order_supply so với supply
+                                    var totalOrderQuantity = supply.orders ? supply.orders.reduce((total, order) => total + order.pivot.soluong, 0) : 0;
+                                    if (totalOrderQuantity < supply.soluong) {
+                                        actionColumnHtml = `<td class='action-column' style="text-align: center; vertical-align: middle;">
+                                            <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
+                                                <i class="bx bx-transfer"></i>
+                                            </button>
+                                        </td>`;
+                                    } else {
+                                        actionColumnHtml = `<td class='action-column' style="text-align: center; vertical-align: middle;"></td>`;
+                                    }
+                                }
+
                                 $('.vattucuadanhmuc tbody').append(
-                                    `<tr data-supply-id="${response.supply.id}">
+                                    `<tr data-supply-id="${supply.id}">
                                         <td style="text-align: center;vertical-align: middle">1</td>
-                                        <td style="text-align: center;vertical-align: middle">${response.supply.tenvattu} ${noteIcon}</td>
-                                        <td style="text-align: center;vertical-align: middle">${response.supply.maso}</td>
-                                        <td style="text-align: center;vertical-align: middle">${response.supply.donvitinh}</td>
-                                        <td style="text-align: center;vertical-align: middle">${response.supply.soluong}</td>
+                                        <td style="text-align: center;vertical-align: middle">${supply.tenvattu} ${noteIcon}</td>
+                                        <td style="text-align: center;vertical-align: middle">${supply.maso}</td>
+                                        <td style="text-align: center;vertical-align: middle">${supply.donvitinh}</td>
+                                        <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
                                         ${actionColumnHtml}
                                     </tr>`
                                 );
@@ -1241,6 +1221,7 @@
                 });
             });
         </script>
+
     {{-- HIỂN THỊ MODAL THÊM VẬT TƯ BẰNG EXCEL --}}
         <script>
             $(document).ready(function() {
@@ -1261,5 +1242,23 @@
             });
         </script>
 
-
+        <script>
+            document.getElementById('submitBtn').addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Chọn yêu cầu xuất bản vẽ',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yêu cầu xuất bản vẽ',
+                    cancelButtonText: 'Không xuất bản vẽ',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('exportDrawings').value = 'X';
+                    } else {
+                        document.getElementById('exportDrawings').value = '';
+                    }
+                    document.getElementById('importForm').submit();
+                });
+            });
+        </script>
 @endsection
