@@ -47,7 +47,7 @@
     {{-- <script src="{{ asset('assets/js/quagga.min.js') }}"></script> --}}
     <script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
     <script type="text/javascript" src="{{asset('assets/js/toastify-js.js')}}"></script>
-{{-- QUÉT BARCODE KHI NHẬP KHO--}}
+{{-- QUÉT QR KHI NHẬP KHO--}}
     <script>
         $(document).ready(function () {
             var supplies = @json($supplies);
@@ -67,7 +67,7 @@
                     function onScanSuccess(decodedText, decodedResult) {
                         $('#Danhmucvattuxuat').text(`Mã quét được: ${decodedText}`);
 
-                        var matchedSupply = supplies.find(supply => supply.maso === decodedText);
+                        var matchedSupply = supplies.find(supply => supply.maso === decodedText || supply.maso_new === decodedText);
 
                         if (matchedSupply) {
                             displaySupplyCard(matchedSupply);
@@ -91,7 +91,7 @@
 
             $('#manual-submit').on('click', function () {
                 var inputValue = $('#manual-input').val().toUpperCase();
-                var matchedSupply = supplies.find(supply => supply.maso === inputValue);
+                var matchedSupply = supplies.find(supply => supply.maso_new ? supply.maso_new === inputValue : supply.maso === inputValue);
 
                 if (matchedSupply) {
                     displaySupplyCard(matchedSupply);

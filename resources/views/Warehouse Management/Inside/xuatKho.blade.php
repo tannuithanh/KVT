@@ -33,6 +33,11 @@
         }
 </style>
 <style>
+    @media (max-width: 768px) {
+        .hide-on-mobile {
+        display: none !important;
+        }
+    }
     #selectedItemsTable th, #selectedItemsTable td {
         text-align: center;
         vertical-align: middle;
@@ -56,7 +61,7 @@
     <h1>Xuất kho</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Xuất kho</li>
         </ol>
     </nav>
@@ -78,8 +83,10 @@
                                         <th style="text-align: center" scope="col">Stt</th>
                                         <th style="text-align: center" scope="col">Tên vật tư</th>
                                         <th style="text-align: center" scope="col">Mã vật tư</th>
+                                        <th style="text-align: center" scope="col">Mã vật mới</th>
+                                        <th style="text-align: center" class="hide-on-mobile" scope="col">Đơn vị tính</th>
                                         <th style="text-align: center" scope="col">số lượng còn</th>
-                                        <th style="text-align: center" scope="col">Ghi chú</th>
+                                        <th style="text-align: center" class="hide-on-mobile" scope="col">Ghi chú</th>
                                     </tr>
                             </thead>
                             <tbody>
@@ -156,7 +163,7 @@
 {{-- CHUYỂN ĐỔI THÀNH ĐƠN HÀNG SELECT2 --}}
     <script type="text/javascript">
         $(document).ready(function() {
-            var orders = @json($orders);
+            var orders = @json($orders); // Biến orders chứa danh sách các đơn hàng từ server
             $('#actionModal').modal('show');
 
             // Hàm để hiển thị modal và cập nhật nội dung của nó
@@ -175,7 +182,7 @@
 
                 $('#actionModal .modal-body').html(selectHTML);
 
-                // Khởi tạo Choices
+                // Khởi tạo Choices cho thẻ select để cải thiện tính năng tìm kiếm
                 var element = document.getElementById('orderSelect');
                 var choices = new Choices(element, {
                     searchEnabled: true,
@@ -204,55 +211,63 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                            console.log(response);
+                            console.log(response); // Kiểm tra xem dữ liệu có đúng như mong đợi không
+
+                            const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
                             $vatTuDonHangTableBody.empty();
 
-                            // Chuyển đổi phản hồi thành một mảng thực sự
-                            var supplies = Object.values(response);
+                            // Chuyển đổi đối tượng thành mảng
+                            const dataArray = Object.values(response.data);
 
-                            if (supplies.length > 0) {
+                            if (dataArray.length > 0) {
+                                var supplies = dataArray; // Lưu trữ mảng vật tư để sử dụng sau này
+
                                 supplies.forEach((item, index) => {
                                     const row = `
                                         <tr>
                                             <td class="text-center">${index + 1}</td>
                                             <td class="text-center">${item.tenvattu}</td>
                                             <td class="text-center">${item.maso}</td>
-                                            <td class="text-center">${item.soluong_conlai}</td>
-                                            <td class="text-center">${item.ghichu}</td>
+                                            <td class="text-center">${item.maso_new ?? ""}</td>
+                                            <td class="text-center hide-on-mobile">${item.donvitinh}</td>
+                                            <td class="text-center">${item.soluong}</td>
+                                            <td class="text-center hide-on-mobile">${item.note ?? ""}</td> <!-- Sửa từ ghichu thành note -->
                                         </tr>
                                     `;
                                     $vatTuDonHangTableBody.append(row);
                                 });
-                                $xuatKhoBarcode.show(); // Hiển thị thẻ a có id="xuatKhoBarcode"
-                                $orderTitle.text(`Đơn hàng: ${supplies[0]?.sodonhang || ''}`);
+                                $('#xuatKhoBarcode').show();
+                                $('#orderTitle').text(`Đơn hàng: ${supplies[0].sodonhang || ''}`);
 
-                                // Gắn sự kiện click vào nút xuatKhoBarcode
-                                $xuatKhoBarcode.off('click').on('click', function(e) {
+                                // Đặt sự kiện click cho nút xuatKhoBarcode
+                                $('#xuatKhoBarcode').off('click').on('click', function(e) {
                                     e.preventDefault();
 
                                     var maso = supplies.map(supply => supply.maso);
 
-                                    // Encode the ids array as a JSON string and then URI encode it
+                                    // Encode the maso array as a JSON string and then URI encode it
                                     var encodedmaso = encodeURIComponent(JSON.stringify(maso));
 
                                     // Redirect to the route with query parameter
                                     window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
                                 });
                             } else {
-                                $vatTuDonHangTableBody.append('<tr><td colspan="5" class="text-center">Không có vật tư tồn kho</td></tr>');
-                                $xuatKhoBarcode.hide(); // Ẩn thẻ a có id="xuatKhoBarcode" nếu không có dữ liệu
+                                $vatTuDonHangTableBody.append('<tr><td colspan="7" class="text-center">Không có vật tư tồn kho</td></tr>');
+                                $('#xuatKhoBarcode').hide();
                             }
                         },
                         error: function(xhr, status, error) {
                             console.error('Lỗi khi gửi yêu cầu AJAX:', error);
                         }
                     });
+
                 } else {
                     console.warn('Vui lòng chọn một đơn hàng.');
                 }
             };
         });
     </script>
+
 
 {{-- CAMERA --}}
     <script>
@@ -286,59 +301,53 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response) {
-                                console.log(response);
-                                $vatTuDonHangTableBody.empty();
+                            console.log(response); // Kiểm tra xem dữ liệu có đúng như mong đợi không
 
-                                // Chuyển đổi phản hồi thành một mảng thực sự
-                                var supplies = Object.values(response);
+                            const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
+                            $vatTuDonHangTableBody.empty();
 
-                                if (supplies.length > 0) {
-                                    supplies.forEach((item, index) => {
-                                        const row = `
-                                            <tr>
-                                                <td class="text-center">${index + 1}</td>
-                                                <td class="text-center">${item.tenvattu}</td>
-                                                <td class="text-center">${item.maso}</td>
-                                                <td class="text-center">${item.soluong_conlai}</td>
-                                                <td class="text-center">${item.ghichu}</td>
-                                            </tr>
-                                        `;
-                                        $vatTuDonHangTableBody.append(row);
-                                    });
-                                    $xuatKhoBarcode.show(); // Hiển thị thẻ a có id="xuatKhoBarcode"
-                                    $orderTitle.text(`Đơn hàng: ${supplies[0]?.sodonhang || ''}`);
+                            // Chuyển đổi đối tượng thành mảng
+                            const dataArray = Object.values(response.data);
 
-                                    // Gắn sự kiện click vào nút xuatKhoBarcode
-                                    $xuatKhoBarcode.off('click').on('click', function(e) {
-                                        e.preventDefault();
+                            if (dataArray.length > 0) {
+                                var supplies = dataArray; // Lưu trữ mảng vật tư để sử dụng sau này
 
-                                        var maso = supplies.map(supply => supply.maso);
+                                supplies.forEach((item, index) => {
+                                    const row = `
+                                        <tr>
+                                            <td class="text-center">${index + 1}</td>
+                                            <td class="text-center">${item.tenvattu}</td>
+                                            <td class="text-center">${item.maso}</td>
+                                            <td class="text-center">${item.maso_new ?? ""}</td>
+                                            <td class="text-center hide-on-mobile">${item.donvitinh}</td>
+                                            <td class="text-center">${item.soluong}</td>
+                                            <td class="text-center hide-on-mobile">${item.note ?? ""}</td> <!-- Sửa từ ghichu thành note -->
+                                        </tr>
+                                    `;
+                                    $vatTuDonHangTableBody.append(row);
+                                });
+                                $('#xuatKhoBarcode').show();
+                                $('#orderTitle').text(`Đơn hàng: ${supplies[0].sodonhang || ''}`);
 
-                                        // Encode the ids array as a JSON string and then URI encode it
-                                        var encodedmaso = encodeURIComponent(JSON.stringify(maso));
+                                // Đặt sự kiện click cho nút xuatKhoBarcode
+                                $('#xuatKhoBarcode').off('click').on('click', function(e) {
+                                    e.preventDefault();
 
-                                        // Redirect to the route with query parameter
-                                        window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
-                                    });
-                                } else {
-                                    $vatTuDonHangTableBody.append('<tr><td colspan="5" class="text-center">Không có vật tư tồn kho</td></tr>');
-                                    $xuatKhoBarcode.hide(); // Ẩn thẻ a có id="xuatKhoBarcode" nếu không có dữ liệu
-                                }
-                            },
+                                    var maso = supplies.map(supply => supply.maso);
+
+                                    // Encode the maso array as a JSON string and then URI encode it
+                                    var encodedmaso = encodeURIComponent(JSON.stringify(maso));
+
+                                    // Redirect to the route with query parameter
+                                    window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
+                                });
+                            } else {
+                                $vatTuDonHangTableBody.append('<tr><td colspan="7" class="text-center">Không có vật tư tồn kho</td></tr>');
+                                $('#xuatKhoBarcode').hide();
+                            }
+                        },
                         error: function(xhr, status, error) {
                             console.error('Lỗi khi gửi yêu cầu AJAX:', error);
-                            Toastify({
-                                text: 'Đơn hàng không tồn tại',
-                                duration: 3000,
-                                close: true,
-                                gravity: 'top',
-                                position: 'right',
-                                backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
-                                className: 'info',
-                            }).showToast();
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
                         }
                     });
                 }

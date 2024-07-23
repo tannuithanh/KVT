@@ -17,10 +17,14 @@ return new class extends Migration
             $table->string('sodonhang');
             $table->string('nhacungcap')->nullable();
             $table->string('noidung')->nullable();
+            $table->string('ketoan')->nullable();  // Thêm cột ketoan
+            $table->string('nguoilap')->nullable();  // Thêm cột nguoilap
+            $table->text('requestOrder')->nullable();  // Thêm cột requestOrder
             $table->date('ngayhoanthanh');
             $table->string('ghichu')->nullable();
             $table->string('excel_file')->nullable();  // Cột mới để lưu tên file Excel
             $table->unsignedBigInteger('status')->default(0);
+
             $table->timestamps();
         });
     }

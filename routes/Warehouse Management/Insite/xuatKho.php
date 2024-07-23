@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Route;
 
     Route::get('/xuat-Kho-Barcode', [Insite::class, 'xuatKhoBarcode'])->name('xuatKhoBarcode')->middleware('auth');
 
-    Route::post('/checkVatTuXuatKho', [Insite::class, 'checkVatTuXuatKho'])->name('checkVatTuXuatKho')->middleware('auth');
-
     Route::post('/xacNhanXuatKho', [Insite::class, 'xacNhanXuatKho'])->name('xacNhanXuatKho')->middleware('auth');
 //XƯỞNG MODULE
     Route::get('/xuongYeuCau', [Insite::class, 'xuongYeuCau'])->name('xuongYeuCau')->middleware('auth');

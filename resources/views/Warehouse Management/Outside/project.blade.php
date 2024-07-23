@@ -9,7 +9,7 @@
         <h1>Danh sách dự án</h1>
         <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">{{ $module }}</li>
             <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
             <li class="breadcrumb-item active">Dự án</li>

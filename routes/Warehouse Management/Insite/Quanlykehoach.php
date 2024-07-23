@@ -46,6 +46,8 @@ use Illuminate\Support\Facades\Route;
 
     Route::post('/layDanhMucChuaCoDonHang', [Insite::class, 'layDanhMucChuaCoDonHang'])->name('layDanhMucChuaCoDonHang')->middleware('auth');
 
+    Route::post('/layDanhMucCoDonHang', [Insite::class, 'layDanhMucCoDonHang'])->name('layDanhMucCoDonHang')->middleware('auth');
+
     Route::post('/duLieuVatTuCuaDanhMuc', [Insite::class, 'duLieuVatTuCuaDanhMuc'])->name('duLieuVatTuCuaDanhMuc')->middleware('auth');
 
     Route::post('/taoDonHangMoi', [Insite::class, 'taoDonHangMoi'])->name('taoDonHangMoi')->middleware('auth');
@@ -65,3 +67,5 @@ use Illuminate\Support\Facades\Route;
     Route::post('/lichSuOrder', [Insite::class, 'lichSuOrder'])->name('lichSuOrder')->middleware('auth');
 
     Route::post('/layVatTuHetHang', [Insite::class, 'layVatTuHetHang'])->name('layVatTuHetHang')->middleware('auth');
+
+    Route::post('/getProviderDetail', [Insite::class, 'getProviderDetail'])->name('getProviderDetail')->middleware('auth');

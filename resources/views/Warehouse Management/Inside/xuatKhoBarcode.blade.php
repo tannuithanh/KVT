@@ -24,23 +24,28 @@
     <h1>Quét barcode xuất kho</h1>
 </div>
 <section class="section">
-    <div class="row">
-        <div class="col-lg-12">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
-                    <button id="scan-button" class="btn btn-primary mt-3" style="width: 100%; margin-bottom: 20px;">Khởi động camera</button>
-                    <!-- Set a fixed height for the scanner container to prevent it from expanding -->
-                    <div id="barcode-scanner" class="fixed-barcode-scanner">
+                    <div class="d-flex justify-content-between mb-3 mt-3">
+                        <button id="scan-button" class="btn btn-primary w-45">Khởi động camera</button>
+                        <button id="manual-button" class="btn btn-secondary w-45">Nhập thủ công</button>
+                    </div>
+                    <div id="barcode-scanner" class="fixed-barcode-scanner" style="display: none;">
                         <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
                     </div>
-                    <div id="barcode-info-container" class="mt-4">
-
+                    <div id="manual-entry" class="mt-4" style="display: none;">
+                        <input type="text" id="manual-input" class="form-control mb-3" placeholder="Nhập mã số vật tư">
+                        <button id="manual-submit" class="btn btn-success w-100">Xác nhận</button>
                     </div>
+                    <div id="Danhmucvattuxuat" class="mt-4"></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 @endsection
 
 @section('script')
@@ -48,112 +53,135 @@
 <script src="{{ asset('assets/js/toastify-js.js') }}"></script>
 {{-- CAMERA --}}
     <script>
-        var scannedBarcodes = [];
-        var allowedMasos = @json($maso);
+        $(document).ready(function () {
+            var supplies = @json($supplies);
+            var html5QrCode = new Html5Qrcode("barcode-scanner");
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const scanButton = document.getElementById('scan-button');
-            const barcodeScanner = document.getElementById('barcode-scanner');
-            const barcodeInfoContainer = document.getElementById('barcode-info-container');
+            $('#scan-button').on('click', function () {
+                $('#barcode-scanner').show();
+                $('#manual-entry').hide();
 
-            scanButton.addEventListener('click', function () {
-                barcodeScanner.style.display = 'block';  // Always show the scanner
-                scanButton.style.display = 'none';  // Hide the button after starting
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    function onScanSuccess(decodedText, decodedResult) {
+                        $('#Danhmucvattuxuat').text(`Mã quét được: ${decodedText}`);
 
-                function onScanSuccess(qrCodeMessage) {
-                    if (!scannedBarcodes.includes(qrCodeMessage) && allowedMasos.includes(qrCodeMessage)) {
-                        scannedBarcodes.push(qrCodeMessage);
+                        var matchedSupply = supplies.find(supply => supply.maso === decodedText || supply.maso_new === decodedText);
 
+                        if (matchedSupply) {
+                            displaySupplyCard(matchedSupply);
+                        } else {
+                            showError('Không tìm thấy vật tư nào khớp.');
+                        }
+                    }
+                ).catch(err => {
+                    console.error(`Lỗi khi khởi tạo quét mã QR: ${err}`);
+                });
+            });
+
+            $('#manual-button').on('click', function () {
+                $('#barcode-scanner').hide();
+                $('#manual-entry').show();
+            });
+
+            $('#manual-input').on('input', function () {
+                $(this).val($(this).val().toUpperCase());
+            });
+
+            $('#manual-submit').on('click', function () {
+                var inputValue = $('#manual-input').val().toUpperCase();
+                var matchedSupply = supplies.find(supply => supply.maso_new ? supply.maso_new === inputValue : supply.maso === inputValue);
+
+                if (matchedSupply) {
+                    displaySupplyCard(matchedSupply);
+                } else {
+                    showError('Không tìm thấy vật tư nào khớp.');
+                }
+            });
+
+            function displaySupplyCard(supply) {
+                var cardHtml = `
+                    <div class="card mb-3" id="supply-card">
+                        <div class="card-header">
+                            Đơn hàng: ${supply.orders.length > 0 ? supply.orders[0].sodonhang : 'Không có đơn hàng'}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${supply.tenvattu}</h5>
+                            <p class="card-text">Mã số: ${supply.maso}</p>
+                            <p class="card-text">
+                                Số lượng xuất kho:
+                                <input type="number" id="quantity-input" class="form-control" placeholder="Nhập số lượng xuất">
+                            </p>
+                            <button id="xuat-kho-button" class="btn btn-primary">Xuất kho</button>
+                        </div>
+                    </div>
+                `;
+                $('#Danhmucvattuxuat').html(cardHtml);
+
+                $('#xuat-kho-button').on('click', function () {
+                    var quantity = $('#quantity-input').val();
+                    if (quantity && !isNaN(quantity) && quantity > 0) {
                         $.ajax({
-                            url: "{{ route('checkVatTuXuatKho') }}",
-                            type: 'POST',
-                            data: { barcode: qrCodeMessage },
-                            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                            success: function(data) {
-                                if (data.exists && data.remaining > 0) {
-                                    var cardHtml = `
-                                        <div class="card mb-3" style="border-radius: 15px; background-color: #007bff; color: white;">
-                                            <div class="card-header" style="background-color: #0056b3;color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-                                                Đơn hàng: ${data.orderName}
-                                            </div>
-                                            <div class="card-body" style="background-color: #007bff;">
-                                                <h5 class="card-title">${data.name}</h5>
-                                                <p class="card-text">Số lượng còn lại: ${data.remaining}</p>
-                                                <input type="number" class="form-control" placeholder="Nhập số lượng muốn xuất" min="1" max="${data.remaining}" id="input-quantity-${data.id}">
-                                                <button class="btn btn-light mt-2 confirm-export" data-id="${data.id}">Xác nhận xuất kho</button>
-                                            </div>
-                                        </div>`;
-                                    barcodeInfoContainer.innerHTML += cardHtml;
-
+                            url: "{{ route('xacNhanXuatKho') }}",
+                            type: "POST",
+                            data: {
+                                id: supply.id,
+                                quantity: parseInt(quantity),
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function (response) {
+                                if (response.success) {
                                     Toastify({
-                                        text: `Vật tư đã sẵn sàng xuất kho`,
-                                        duration: 3000,
+                                        text: `Xuất kho thành công: ${supply.tenvattu}`,
+                                        duration: 5000,
                                         close: true,
                                         gravity: "top",
                                         position: "right",
                                         backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
                                         className: "info",
                                     }).showToast();
+                                    $('#supply-card').remove();
                                 } else {
-                                    Toastify({
-                                        text: `Lỗi: ${data.message}`,
-                                        duration: 3000,
-                                        close: true,
-                                        gravity: "top",
-                                        position: "right",
-                                        backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                                        className: "info",
-                                    }).showToast();
+                                    showError(response.message); // Sửa lỗi từ `response.error` thành `response.message`
                                 }
                             },
-                            error: function(error) {
-                                console.error('Error:', error);
-                                Toastify({
-                                    text: 'Có lỗi xảy ra khi kiểm tra vật tư!',
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "right",
-                                    backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                                    className: "info",
-                                }).showToast();
+                            error: function (xhr, status, error) {
+                                console.error('Có lỗi xảy ra: ', error);
+                                let message = xhr.responseJSON ? xhr.responseJSON.message : "Có lỗi xảy ra khi cập nhật"; // Sửa lỗi từ `xhr.responseJSON.error` thành `xhr.responseJSON.message`
+                                showError(message);
                             }
                         });
-                    } else if (!allowedMasos.includes(qrCodeMessage)) {
-                        Toastify({
-                            text: 'Mã không khớp với danh sách cho phép.',
-                            duration: 3000,
-                            close: true,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "linear-gradient(to right, #ff5f5f, #d33d3d)",
-                            className: "info",
-                        }).showToast();
+                    } else {
+                        showError('Vui lòng nhập số lượng hợp lệ.');
                     }
-                }
-
-                function onScanFailure(error) {
-                    console.warn(`QR error: ${error}`);
-                }
-
-                const html5QrCode = new Html5Qrcode("barcode-scanner");
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: 250
-                    },
-                    onScanSuccess,
-                    onScanFailure
-                ).catch(err => {
-                    console.error(`Unable to start scanning, error: ${err}`);
                 });
-            });
+            }
+
+            function showError(message) {
+                Toastify({
+                    text: message,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    className: "error",
+                }).showToast();
+            }
         });
     </script>
 
 
-{{-- XÁC NHẬN XUẤT KHO --}}
+
+
+
+
+
+{{-- XÁC NHẬN XUẤT KHO
     <script>
         $(document).ready(function() {
             $('body').on('click', '.confirm-export', function() {
@@ -220,7 +248,7 @@
                 }
             });
         });
-    </script>
+    </script> --}}
 
 
 @endsection

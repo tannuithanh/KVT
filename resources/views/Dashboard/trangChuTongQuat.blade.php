@@ -2,62 +2,6 @@
 @extends('Layout.app')
 
 @section('style')
-    <style>
-        .card {
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        .card-body h5 {
-            font-weight: bold;
-        }
-        .btn-custom {
-            margin: 5px;
-        }
-        .table-custom thead th {
-            background-color: #4e73df;
-            color: white;
-        }
-        .chart-container {
-            position: relative;
-            margin: auto;
-            height: 400px;
-            width: 100%;
-        }
-        .info-card {
-            text-align: center;
-            padding: 20px;
-            background-color: #f8f9fc;
-            margin: 10px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .info-card h5 {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .info-card p {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .list-group-item {
-            border: none;
-            padding: 10px 0;
-        }
-        .info-card.blue {
-            border: 2px solid #4e73df;
-        }
-        .info-card.green {
-            border: 2px solid #1cc88a;
-        }
-        .info-card.yellow {
-            border: 2px solid #f6c23e;
-        }
-        .info-card.red {
-            border: 2px solid #e74a3b;
-        }
-    </style>
-
 @endsection
 
 @section('title')
@@ -76,7 +20,7 @@
         </div>
     </div>
 </section>
-        <!-- Modal kiểm tra chất lượng -->
+        {{-- <!-- Modal kiểm tra chất lượng -->
         <div class="modal fade" id="qualityCheckModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -97,7 +41,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
 @endsection
 

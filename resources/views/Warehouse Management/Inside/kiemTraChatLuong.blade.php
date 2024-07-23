@@ -59,7 +59,7 @@
     <h1>Kiểm tra chất lượng</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Kiểm tra chất lượng</li>
         </ol>
     </nav>

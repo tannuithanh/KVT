@@ -20,14 +20,14 @@ class inMaBarcodeController extends Controller
     public function timKiemMaBarcode(Request $request) {
         $maso = $request->maso;
         // Tìm kiếm vật tư dựa trên mã số
-        $supplies = Supply::with('order')->where('maso', $maso)->get();
+        $supplies = Supply::with('orders')->where('maso', $maso)->get();
 
         // Tạo mảng dữ liệu để trả về, bao gồm HTML của barcode cho mỗi vật tư
         $data = $supplies->map(function($supply) {
             // Tạo HTML cho barcode
             $qrCode = Qrcode::size(100)->encoding('UTF-8')->generate($supply->maso);
             return [
-                'donhang' => $supply->order ? $supply->order->sodonhang : 'Không có đơn hàng', // Kiểm tra và lấy số đơn hàng
+                'donhang' => $supply->orders->first() ? $supply->orders->first()->sodonhang : 'Không có đơn hàng', // Kiểm tra và lấy số đơn hàng từ mối quan hệ nhiều-nhiều
                 'tenvattu' => $supply->tenvattu,
                 'maso' => $supply->maso,
                 'qrCode' => $qrCode->toHtml(), // Giá trị này giờ là HTML của barcode
@@ -37,4 +37,5 @@ class inMaBarcodeController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
 }

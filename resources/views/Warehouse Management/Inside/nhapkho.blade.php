@@ -1,50 +1,55 @@
 @extends('Layout.app')
 @section('style')
-<link rel="stylesheet" type="text/css" href="{{asset('assets/css/choices.min.css')}}">
-<style>
-    .blink-warning {
-            background-color: rgba(255, 255, 0, 0.329) !important
+    <link rel="stylesheet" type="text/css" href="{{asset('assets/css/choices.min.css')}}">
+    <style>
+        .blink-warning {
+                background-color: rgba(255, 255, 0, 0.329) !important
+            }
+        .table-hover tbody tr:hover {
+            cursor: pointer;
         }
-    .table-hover tbody tr:hover {
-        cursor: pointer;
-    }
-    .fixed-barcode-scanner {
-            position: sticky;
-            top: 10px;
-            z-index: 9999;
-            height: 400px;
-            width: 100%;
-            border: 3px solid #ddd;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
+        .fixed-barcode-scanner {
+                position: sticky;
+                top: 10px;
+                z-index: 9999;
+                height: 400px;
+                width: 100%;
+                border: 3px solid #ddd;
+                overflow: hidden;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                border-radius: 8px;
+            }
+            .modal-content {
+                border-radius: 10px;
+            }
+            .btn-close {
+                background: none;
+                border: none;
+            }
+        #barcode-scanner {
+                display: none;
+                position: relative;
+                z-index: 1050;
+            }
+    </style>
+    <style>
+        @media (max-width: 768px) {
+            .hide-on-mobile {
+            display: none !important;
+            }
         }
-        .modal-content {
-            border-radius: 10px;
+        #selectedItemsTable th, #selectedItemsTable td {
+            text-align: center;
+            vertical-align: middle;
         }
-        .btn-close {
-            background: none;
-            border: none;
+        #selectedItemsTable th:nth-child(4), #selectedItemsTable td:nth-child(4) {
+            width: 100px;
         }
-    #barcode-scanner {
-            display: none;
-            position: relative;
-            z-index: 1050;
+        .soluongin {
+            width: 80px; /* Điều chỉnh độ rộng của input */
+            text-align: center;
         }
-</style>
-<style>
-    #selectedItemsTable th, #selectedItemsTable td {
-        text-align: center;
-        vertical-align: middle;
-    }
-    #selectedItemsTable th:nth-child(4), #selectedItemsTable td:nth-child(4) {
-        width: 100px;
-    }
-    .soluongin {
-        width: 80px; /* Điều chỉnh độ rộng của input */
-        text-align: center;
-    }
-</style>
+    </style>
 @endsection
 @section('title')
     Nhập kho
@@ -54,7 +59,7 @@
     <h1>Nhập kho</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Nhập kho</li>
         </ol>
     </nav>
@@ -76,7 +81,7 @@
                         <h6 class="modal-title" id="tongdaxuat">Tổng đã xuất:</h6>
                     </div>
                     <div class="table-responsive mt-3">
-                        <button id="chonVatTu" type="button" class="btn btn-outline-success mt-2"></i>Chọn vật tư in</button>
+                        <button id="chonVatTu" type="button" class="btn btn-outline-success mt-2 hide-on-mobile"><i class="bi bi-printer"></i> Chọn vật tư in</button>
                         <button id="nhapKho" type="button" class="btn btn-outline-primary mt-2"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</button>
 
                         <table class="table table-borderless table-bordered table-hover mt-2 vatTuDonHang">
@@ -86,12 +91,12 @@
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
                                     <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số mới</th>
-                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
-                                    <th colspan="5" style="text-align: center;">Tình trạng</th>
-                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">Số lượng in</th>
-                                    <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;" class="hide-on-mobile">Đơn vị tính</th>
+                                    <th colspan="5" style="text-align: center;" class="hide-on-mobile">Tình trạng</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;" class="hide-on-mobile">Số lượng in</th>
+                                    <th rowspan="2" style="text-align: center; vertical-align: middle;" class="hide-on-mobile">Ghi chú</th>
                                 </tr>
-                                <tr>
+                                <tr class="hide-on-mobile">
                                     <th style="text-align: center; vertical-align: middle;">Tổng</th>
                                     <th style="text-align: center; vertical-align: middle;">Đã nhận</th>
                                     <th style="text-align: center; vertical-align: middle;">Lưu kho</th>
@@ -102,7 +107,7 @@
                             <tbody>
                             </tbody>
                         </table>
-                        <button id="inVatTu" type="button" style="display: none" class="btn btn-outline-success mt-2"><i class="bi bi-printer"></i>In mã barcode</button>
+                        <button id="inVatTu" type="button" style="display: none" class="btn btn-outline-success mt-2"><i class="bi bi-printer"></i> In mã barcode</button>
                         <button id="nhanVatTu" type="button" class="btn btn-outline-primary mt-2" style="display: none"><i class="bi bi-box-arrow-in-down"></i> Nhận vật tư</button>
                     </div>
                 </div>
@@ -146,7 +151,7 @@
                 </div>
                 <div class="modal-body ">
                     <div class="table-responsive" style="max-height: 450px;">
-                        <table class="table table-bordered vatTuDonHang">
+                        <table class="table table-bordered lichSuVatTuDonHang">
                             <thead>
                             <tr>
                                 <th style="text-align: center; vertical-align: middle;">STT</th>
@@ -272,16 +277,16 @@
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
-                                         <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso_new ?? ""}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso_new ?? ""}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh hide-on-mobile">${supplyDetail.supply.donvitinh}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong hide-on-mobile">${supplyDetail.supply.soluong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho hide-on-mobile">${totalNhapKho}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong hide-on-mobile">${totalDatChatLuong}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan hide-on-mobile">${supplyDetail.chuanhan}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat hide-on-mobile">${supplyDetail.daxuat}</td>
                                         <td style="display:none" class="barcode ${rowClass}">${supplyDetail.qrCode || ''}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode hide-on-mobile">${supplyDetail.supply.soluongnhap ?? ''}</td>
+                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu hide-on-mobile">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
                                     </tr>
                                 `;
                                 $vatTuDonHangTableBody.append(row);
@@ -466,11 +471,18 @@
                 if (!isCheckboxAdded) {
                     // Thêm checkbox vào bảng và thay đổi nút "Chọn Vật Tư" thành "Trở Về"
                     $('.vatTuDonHang tbody tr').each(function() {
-                        var soluongIn = $(this).find('.soluonginbarcode').text().trim(); // Lấy giá trị từ cột "Số lượng in"
+                        var soluongIn = $(this).find('.soluonginbarcode').text().trim();
+                        var chuaNhan = parseInt($(this).find('.chuanhan').text().trim(), 10); // Lấy giá trị từ cột "Chưa nhận"
+
                         if ($(this).find('td.blink-warning').length === 0 && soluongIn === '') {
-                            var vattuId = $(this).data('id');
-                            var checkboxHtml = '<input type="checkbox" class="form-check-input stt-checkbox" name="selectedItems[]" value="' + vattuId + '">';
-                            $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html(checkboxHtml);
+                            if (chuaNhan !== 0) {
+                                var vattuId = $(this).data('id');
+                                var checkboxHtml = '<input type="checkbox" class="form-check-input stt-checkbox" name="selectedItems[]" value="' + vattuId + '">';
+                                $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html(checkboxHtml);
+                            } else {
+                                $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html('');
+                                $(this).css('opacity', '0.5'); // Làm mờ hàng
+                            }
                         }
                     });
 
@@ -494,13 +506,14 @@
                             }
                         });
                         $(this).find('td:first').html(index + 1);
+                        $(this).css('opacity', '1'); // Khôi phục độ mờ của hàng
                     });
 
                     // Khôi phục tiêu đề cột STT và loại bỏ checkbox "Chọn Tất Cả"
                     $('.vatTuDonHang thead th:first').html('STT');
 
                     isCheckboxAdded = false;
-                    $(this).html('<i class="bi bi-printer"></i>Chọn Vật Tư');
+                    $(this).html('<i class="bi bi-printer"></i> Chọn Vật Tư in');
 
                     // Ẩn nút In mã barcode
                     $('#inVatTu').hide();
@@ -512,6 +525,7 @@
 
             // Hiển thị modal khi bấm nút inVatTu
             $('#inVatTu').click(function() {
+                $('#selectedItemsTable tbody').empty();
                 updateModalTable();
                 $('#basicModal').modal('show');
             });
@@ -568,6 +582,7 @@
             // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi
             $(document).on('change', '.stt-checkbox', function() {
                 checkInputsAndToggleButtons();
+                updateSelectAllCheckbox();
             });
 
             // Sự kiện cho checkbox "Chọn Tất Cả"
@@ -586,6 +601,12 @@
                 } else {
                     $('#inVatTu').hide();
                 }
+            }
+
+            // Hàm cập nhật trạng thái của checkbox "Chọn Tất Cả"
+            function updateSelectAllCheckbox() {
+                var allChecked = $('.stt-checkbox').length === $('.stt-checkbox:checked').length;
+                $('#selectAll').prop('checked', allChecked);
             }
 
             // Vô hiệu hóa các nút khác khi ở trạng thái "In mã barcode"
@@ -615,6 +636,8 @@
             });
         });
     </script>
+
+
 
 {{-- KIỂM TRA ĐÃ NHẬP MÃ VẬT TƯ CHƯA VÀ IN MÃ LƯU VÀO CSDL--}}
     <script>
@@ -678,7 +701,7 @@
                             doc.write('.align-middle { vertical-align: middle; }');
                             doc.write('</style></head><body>');
 
-                            // Lấy thông tin từ bảng selectedItemsTable
+
                             $('#selectedItemsTable tbody tr').each(function() {
                                 var $row = $(this);
                                 var maSo = $row.find('td:nth-child(3)').text().trim();
