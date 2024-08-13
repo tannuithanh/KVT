@@ -8,7 +8,7 @@
         <h1>Cài đặt hệ thống</h1>
         <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item active">Cài đặt hệ thống</li>
         </ol>
         </nav>

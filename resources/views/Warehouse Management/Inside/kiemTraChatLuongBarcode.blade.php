@@ -14,7 +14,23 @@
             margin: 0 auto;
         }
     </style>
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-selection {
+            height: calc(2.25rem + 2px) !important;
+            padding: 0.375rem 0.75rem !important;
+        }
+        .select2-selection__rendered {
+            line-height: 1.25rem !important;
+        }
+        .select2-selection__arrow {
+            height: calc(2.25rem + 2px) !important;
+        }
+    </style>
     <link rel="stylesheet" type="text/css" href="{{asset('assets/css/toastify.min.css')}}">
+    <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
 @endsection
 @section('content')
     <div class="pagetitle">
@@ -33,8 +49,8 @@
                             <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
                         </div>
                         <div id="manual-entry" class="mt-4" style="display: none;">
-                            <input type="text" id="manual-input" class="form-control mb-3" placeholder="Nhập mã số vật tư">
-                            <button id="manual-submit" class="btn btn-success w-100">Xác nhận</button>
+                            <select id="manual-input" class="form-control mb-3"></select>
+                            <button id="manual-submit" class="btn btn-success w-100 mt-3">Xác nhận</button>
                         </div>
                         <div id="Danhmucvattuxuat" class="mt-4"></div>
                     </div>
@@ -47,17 +63,22 @@
 @section('script')
     <script src="{{ asset('assets/js/html5-qrcode.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/js/toastify-js.js') }}"></script>
+    <script src="{{asset('assets/js/select2.min.js')}}"></script>
     <script>
         $(document).ready(function () {
             var supplies = @json($supplies);
-            var html5QrCode;
+            console.log(supplies);
+            var html5QrCode = new Html5Qrcode("barcode-scanner");
 
-            // Kiểm tra xem thư viện Html5QrCode đã được tải chưa
-            if (typeof Html5QrCode !== 'undefined') {
-                html5QrCode = new Html5QrCode("barcode-scanner");
-            } else {
-                console.error('Thư viện Html5QrCode chưa được tải.');
-            }
+            // Initialize Select2
+            $('#manual-input').select2({
+                placeholder: 'Chọn mã số vật tư',
+                width: '100%',
+                data: supplies.map(supply => ({
+                    id: supply.maso_new ? supply.maso_new : supply.maso,
+                    text: (supply.maso_new ? supply.maso_new : supply.maso) + ' - ' + supply.tenvattu
+                }))
+            });
 
             $('#scan-button').on('click', function () {
                 if (html5QrCode) {
@@ -92,13 +113,9 @@
                 $('#manual-entry').show();
             });
 
-            $('#manual-input').on('input', function () {
-                $(this).val($(this).val().toUpperCase());
-            });
-
             $('#manual-submit').on('click', function () {
-                var inputValue = $('#manual-input').val().toUpperCase();
-                var matchedSupply = supplies.find(supply => supply.maso_new ? supply.maso_new === inputValue : supply.maso === inputValue);
+                var selectedValue = $('#manual-input').val();
+                var matchedSupply = supplies.find(supply => supply.maso_new === selectedValue || supply.maso === selectedValue);
 
                 if (matchedSupply) {
                     displaySupplyCard(matchedSupply);
@@ -116,30 +133,68 @@
                         <div class="card-body" style="background-color: #007bff;">
                             <h5 class="card-title">${supply.tenvattu}</h5>
                             <p class="card-text">Mã số: ${supply.maso}</p>
-                            <p class="card-text">Số lượng đạt chất lượng:
-                                <input class="form-control" type="number" name="soluongDatChatLuong" min="0" id="soluongDatChatLuong-${supply.id}">
-                            </p>
-                            <p class="card-text">Ghi chú:
-                                <textarea class="form-control" name="ghichu" id="ghichu-${supply.id}" rows="3"></textarea>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="card-text">Số lượng đạt chất lượng:
+                                        <input class="form-control" type="number" name="soluongDatChatLuong" min="0" max="${supply.soluong}" value="${supply.soluong}" id="soluongDatChatLuong-${supply.id}">
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="card-text">Số lượng không đạt chất lượng:
+                                        <input class="form-control" type="number" name="soluongKhongDatChatLuong" min="0" max="${supply.soluong}" value="0" id="soluongKhongDatChatLuong-${supply.id}">
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="card-text d-none" id="nguyennhan-container-${supply.id}">Nguyên nhân:
+                                <textarea class="form-control" name="nguyennhan" id="nguyennhan-${supply.id}" rows="3"></textarea>
                             </p>
                             <button class="btn btn-success" onclick="submitData(${supply.id})">Hoàn tất</button>
                         </div>
                     </div>
                 `;
                 $('#Danhmucvattuxuat').html(cardHtml);
+
+                var $datChatLuong = $(`#soluongDatChatLuong-${supply.id}`);
+                var $khongDatChatLuong = $(`#soluongKhongDatChatLuong-${supply.id}`);
+                var $nguyenNhanContainer = $(`#nguyennhan-container-${supply.id}`);
+
+                function updateValues() {
+                    var datChatLuongValue = parseInt($datChatLuong.val()) || 0;
+                    var khongDatChatLuongValue = supply.soluong - datChatLuongValue;
+
+                    if (datChatLuongValue < 0) datChatLuongValue = 0;
+                    if (datChatLuongValue > supply.soluong) datChatLuongValue = supply.soluong;
+                    if (khongDatChatLuongValue < 0) khongDatChatLuongValue = 0;
+                    if (khongDatChatLuongValue > supply.soluong) khongDatChatLuongValue = supply.soluong;
+
+                    $datChatLuong.val(datChatLuongValue);
+                    $khongDatChatLuong.val(khongDatChatLuongValue);
+
+                    $nguyenNhanContainer.toggleClass('d-none', khongDatChatLuongValue <= 0);
+                }
+
+                $datChatLuong.on('input', updateValues);
+                $khongDatChatLuong.on('input', updateValues);
             }
 
             window.submitData = function (id) {
-                var quantity = $(`#soluongDatChatLuong-${id}`).val();
-                var note = $(`#ghichu-${id}`).val();
+                var quantityDat = $(`#soluongDatChatLuong-${id}`).val();
+                var quantityKhongDat = $(`#soluongKhongDatChatLuong-${id}`).val();
+                var note = $(`#nguyennhan-${id}`).val();
 
-                if (quantity && !isNaN(quantity)) {
+                if (quantityDat && !isNaN(quantityDat) && quantityKhongDat && !isNaN(quantityKhongDat)) {
+                    if (parseInt(quantityKhongDat) > 0 && (!note || note.trim() === "")) {
+                        showError('Bạn phải nhập vào nguyên nhân không đạt chất lượng.');
+                        return;
+                    }
+
                     $.ajax({
                         url: "{{ route('luuKiemTraChatLuong') }}",
                         type: "POST",
                         data: {
                             id: id,
-                            quantity: parseInt(quantity),
+                            quantityDat: parseInt(quantityDat),
+                            quantityKhongDat: parseInt(quantityKhongDat),
                             note: note,
                             _token: '{{ csrf_token() }}'
                         },
@@ -183,6 +238,7 @@
             }
         });
     </script>
+
 @endsection
 
 

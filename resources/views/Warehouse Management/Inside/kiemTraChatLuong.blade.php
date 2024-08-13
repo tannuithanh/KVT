@@ -59,7 +59,7 @@
     <h1>Kiểm tra chất lượng</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Kiểm tra chất lượng</li>
         </ol>
     </nav>
@@ -88,31 +88,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 id="orderName" class="mt-2" style="font-size: 18px;font-weight: 600;color: #012970;">Đơn hàng: ...</h5>
-                    <div class="table-responsive mt-2" style="max-height: 600px;">
-
-                        <table class="table table-borderless table-bordered sticky-header vatTuCuaDonHang mt-2">
-                            <thead>
-                                <tr>
-                                    <th style="text-align: center" scope="col">Stt</th>
-                                    <th style="text-align: center" scope="col">Tên vật tư</th>
-                                    <th style="text-align: center" scope="col">Mã số</th>
-                                    <th style="text-align: center" scope="col">Mã số mới</th>
-                                    <th style="text-align: center" scope="col">Số lượng nhận</th>
-                                    <th style="text-align: center" scope="col">Tình trạng</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vatTuTableBody">
-                                <!-- Nội dung sẽ được thêm động tại đây -->
-                            </tbody>
-                        </table>
-                      </div>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 @endsection
@@ -122,8 +97,6 @@
         <script src="{{asset('assets/js/select2.min.js')}}"></script>
         <script>
             $(document).ready(function() {
-                var selectedOrderData = [];
-
                 $('.card-custom').on('click', function() {
                     var orderId = $(this).data('order-id');
 
@@ -137,45 +110,15 @@
                         success: function(response) {
                             console.log(response);
 
-                            $('#vatTuTableBody').empty();
-                            var orderName = response.length > 0 ? response[0].supply.orders[0].sodonhang : 'Không có đơn hàng';
-                            $('h5#orderName').text('Đơn hàng: ' + orderName);
-                            selectedOrderData = response;
-
-                            response.forEach(function(item, index) {
-                                $('#vatTuTableBody').append(`
-                                    <tr>
-                                        <td>${index + 1}</td>
-                                        <td>${item.supply.tenvattu}</td>
-                                        <td class="maso">${item.supply.maso}</td>
-                                        <td class="maso_new">${item.supply.maso_new ?? ""}</td>
-                                        <td>${item.soluongnhapkho}</td>
-                                        <td>${item.status == 0 ? 'Chưa kiểm tra' : 'Đã kiểm tra'}</td>
-                                    </tr>
-                                `);
+                            var masos = response.map(function(item) {
+                                return item.supply.maso; // Giả sử mỗi item trả về có một property 'supply' với 'maso'
                             });
 
-                            if ($('#scanBarcodeBtn').length === 0) {
-                                $('h5#orderName').after(`
-                                    <a id="scanBarcodeBtn" href="#" class="btn btn-outline-primary bi bi-upc-scan mt-2"> Quét Mã</a>
-                                `);
+                            // Encode the masos array as a JSON string and then URI encode it
+                            var encodedMasos = encodeURIComponent(JSON.stringify(masos));
 
-                                $('#scanBarcodeBtn').on('click', function(e) {
-                                    e.preventDefault();
-
-                                    var masos = [];
-                                    $('#vatTuTableBody tr').each(function() {
-                                        var maso = $(this).find('.maso').text();
-                                        masos.push(maso);
-                                    });
-
-                                    // Encode the masos array as a JSON string and then URI encode it
-                                    var encodedMasos = encodeURIComponent(JSON.stringify(masos));
-
-                                    // Redirect to the route with query parameter
-                                    window.location.href = "{{ route('kiemTraCLBarcode') }}" + "?masos=" + encodedMasos;
-                                });
-                            }
+                            // Redirect to the route with query parameter
+                            window.location.href = "{{ route('kiemTraCLBarcode') }}" + "?masos=" + encodedMasos;
                         },
                         error: function(xhr, status, error) {
                             console.error(xhr.responseText);
@@ -183,7 +126,7 @@
                     });
                 });
             });
-        </script>
+            </script>
 
 @endsection
 

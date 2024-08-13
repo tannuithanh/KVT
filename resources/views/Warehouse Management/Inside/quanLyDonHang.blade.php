@@ -89,7 +89,7 @@
     <h1>Quản lý đơn hàng</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item active">Quản Lý Đơn Hàng</li>
         </ol>
     </nav>
@@ -720,7 +720,37 @@
             </div>
         </div>
     </div>
+{{-- LỊCH SỬ GIAO DỊCH VẬT TƯ --}}
+<div class="modal fade" style="background-color: #000000bb" id="lichsugiaodich" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lịch sử giao dịch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center; vertical-align: middle;">STT</th>
+                            <th style="text-align: center; vertical-align: middle;">Tên vật tư</th>
+                            <th style="text-align: center; vertical-align: middle;">Mã số</th>
+                            <th style="text-align: center; vertical-align: middle;">Loại giao dịch</th>
+                            <th style="text-align: center; vertical-align: middle;">Số lượng</th>
+                            <th style="text-align: center;">Ngày giao dịch</th>
+                            <th style="text-align: center; vertical-align: middle;">Ghi chú</th>
+                        </tr>
+                        </thead>
+                        <tbody>
 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </section>
 @endsection
 @section('script')
@@ -1993,6 +2023,59 @@
                 });
             });
         </script>
+    {{-- LỊCH SỬ GIAO DỊCH --}}
+        <script>
+            $('.danhmucvattuchitiet tbody').on('click', 'tr', function(event) {
+                if ($(event.target).closest('.action-btn').length) {
+                    // Bỏ qua nếu click vào nút thuộc class "action-btn"
+                    return;
+                }
 
+                var supplyId = $(this).data('id'); // Lấy id của vật tư
 
+                $.ajax({
+                    url:"{{ route('lichsuvattu') }}", // Thay đổi thành URL thực tế của bạn
+                    type: 'POST',
+                    data: {
+                        id: supplyId, // Gửi ID của vật tư
+                        _token: $('meta[name="csrf-token"]').attr('content') // CSRF token
+                    },
+                    success: function(response) {
+                        var htmlContent = '';
+
+                        if (response.message || response.length === 0) {
+                            // Nếu server trả về thông báo không có giao dịch hoặc mảng trả về rỗng
+                            htmlContent = '<tr><td colspan="9" class="text-center">Chưa có giao dịch cho vật tư này.</td></tr>';
+                        } else {
+                            // Nếu có dữ liệu giao dịch, xây dựng bảng
+                            response.forEach(function(transaction, index) {
+                                console.log(transaction)
+                                htmlContent += `<tr>
+                                                    <td style="text-align: center; vertical-align: middle;">${index + 1}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.supply.tenvattu}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.supply.maso}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.loaigiaodich}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.soluong}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.ngaygiaodich}</td>
+                                                    <td style="text-align: center; vertical-align: middle;">${transaction.ghichu ? transaction.ghichu : ''}</td>
+                                                </tr>`;
+                            });
+                        }
+
+                        // Đặt htmlContent vào tbody của bảng trong modal
+                        $('#lichsugiaodich .modal-body .table tbody').html(htmlContent);
+
+                        // Hiển thị modal
+                        $('#lichsugiaodich').modal('show');
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        // Hiển thị thông báo lỗi
+                        $('#lichsugiaodich .modal-body').html('<p>Có lỗi xảy ra khi tải dữ liệu.</p>');
+                        $('#lichsugiaodich').modal('show');
+                    }
+                });
+            });
+
+        </script>
 @endsection

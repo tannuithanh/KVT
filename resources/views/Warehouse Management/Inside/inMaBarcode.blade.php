@@ -43,7 +43,7 @@ In mã barcode
     <h1>In mã barcode</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">In mã barcode</li>
         </ol>
     </nav>

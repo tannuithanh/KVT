@@ -1182,10 +1182,17 @@ class Insite extends Controller
 
         $countCatalogsWithoutOrders = $catalogsWithoutOrders->count();
 
-        // Lấy các catalog có đơn hàng
+        // Lấy các catalog có đơn hàng và vẫn còn vật tư chưa nhận hết
         $catalogsWithOrders = Catalog::with(['supplies.transactions', 'project.segment.brand'])
             ->has('orders') // Lọc các danh mục có đơn hàng
-            ->get();
+            ->get()
+            ->filter(function ($catalog) {
+                return $catalog->supplies->contains(function ($supply) {
+                    $totalSupplies = $supply->soluong;
+                    $totalReceived = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+                    return $totalSupplies > $totalReceived;
+                });
+            });
 
         $countCatalogsWithOrders = $catalogsWithOrders->count();
 
@@ -1194,7 +1201,7 @@ class Insite extends Controller
 
         $orders = Order::with(['catalog', 'supplies', 'expense'])->get();
         $orders->each(function ($order) {
-            $totalSupplies = $order->supplies->sum('soluong');
+            $totalSupplies = $order->supplies->sum('pivot.soluong');
             $totalReceived = $order->supplies->sum(function ($supply) {
                 return $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
             });
@@ -1205,6 +1212,7 @@ class Insite extends Controller
 
         return view('Warehouse Management.Inside.quanLyDonHang', compact('countCatalogsWithoutOrders', 'countCatalogsWithOrders', 'user', 'providers', 'orders', 'chiPhi', 'catalogsWithoutOrders', 'catalogsWithOrders'));
     }
+
 
 
     public function getProviderDetail(){
@@ -1226,10 +1234,19 @@ class Insite extends Controller
     }
 
     public function layDanhMucCoDonHang() {
+        // Lấy các catalog có đơn hàng và vẫn còn vật tư chưa nhận hết
         $catalogsWithOrders = Catalog::with(['supplies.transactions', 'project.segment.brand'])
             ->has('orders') // Lọc các danh mục có đơn hàng
-            ->get();
+            ->get()
+            ->filter(function ($catalog) {
+                return $catalog->supplies->contains(function ($supply) {
+                    $totalSupplies = $supply->soluong;
+                    $totalReceived = $supply->transactions->where('loaigiaodich', 'Đã nhận')->sum('soluong');
+                    return $totalSupplies > $totalReceived;
+                });
+            });
 
+        // Thêm thông tin nhà cung cấp và tính toán số lượng vật tư còn lại cho mỗi catalog
         $catalogsWithOrders->each(function ($catalog) {
             $catalog->provider_info = $catalog->getProviderInfo();
 
@@ -1242,6 +1259,7 @@ class Insite extends Controller
 
         return response()->json($catalogsWithOrders);
     }
+
 
     public function duLieuVatTuCuaDanhMuc(Request $request){
         // Lấy ID của danh mục được gửi lên từ client
@@ -1624,46 +1642,58 @@ class Insite extends Controller
         }
 
         // Kiểm tra số lượng đạt chất lượng so với số lượng nhập kho
-        if ($request->quantity > $qualityCheck->soluongnhapkho) {
+        if ($request->quantityDat > $qualityCheck->soluongnhapkho) {
             return response()->json(['success' => false, 'message' => 'Số lượng kiểm tra chất lượng không thể lớn hơn số lượng nhập kho.']);
         }
 
         // Cập nhật thông tin QualityCheck nếu số lượng kiểm tra hợp lệ
-        $qualityCheck->soluongdatchatluong = $request->quantity;
+        $qualityCheck->soluongdatchatluong = $request->quantityDat;
         $qualityCheck->status = 1;
         $qualityCheck->ngaykiemtra = Carbon::now()->format('Y-m-d');
-        if (!empty($request->note)) {
-            $qualityCheck->note = $request->note; // Lưu ghi chú nếu có
-        }
+        $qualityCheck->note = "Đạt chất lượng"; // Ghi chú cho vật tư đạt chất lượng
         $qualityCheck->save();
 
         $viewVatTuChiTiet = ViewVatTuChiTiet::where('supply_id', $qualityCheck->supply_id)->first();
         if (is_null($viewVatTuChiTiet->soluongdatchatluong)) {
-            $viewVatTuChiTiet->soluongdatchatluong = $request->quantity;
+            $viewVatTuChiTiet->soluongdatchatluong = $request->quantityDat;
         } else {
-            $viewVatTuChiTiet->increment('soluongdatchatluong', $request->quantity);
+            $viewVatTuChiTiet->increment('soluongdatchatluong', $request->quantityDat);
         }
         $viewVatTuChiTiet->soluongnhapkho = $viewVatTuChiTiet->soluongdatchatluong;
         $viewVatTuChiTiet->save();
 
-        // Tạo một Transaction mới với thông tin tương ứng
-        $transaction = new Transaction([
+        // Tạo một Transaction mới với thông tin tương ứng cho vật tư đạt chất lượng
+        $transactionDat = new Transaction([
             'supply_id' => $qualityCheck->supply_id,
-            'soluong' => $request->quantity,
+            'soluong' => $request->quantityDat,
             'loaigiaodich' => 'Đã nhận',
             'ngaygiaodich' => now(),
-            'ghichu' => $request->note // Lưu ghi chú vào Transaction nếu có
+            'ghichu' => "Đạt chất lượng"
         ]);
-        $transaction->save();
+        $transactionDat->save();
+
+        // Xử lý trường hợp có số lượng không đạt chất lượng
+        if ($request->quantityKhongDat > 0) {
+            // Tạo một Transaction mới với thông tin tương ứng cho vật tư không đạt chất lượng
+            $transactionKhongDat = new Transaction([
+                'supply_id' => $qualityCheck->supply_id,
+                'soluong' => $request->quantityKhongDat,
+                'loaigiaodich' => 'Không đạt chất lượng',
+                'ngaygiaodich' => now(),
+                'ghichu' => $request->note
+            ]);
+            $transactionKhongDat->save();
+        }
 
         // Bao gồm status mới trong phản hồi
         return response()->json([
             'success' => true,
             'message' => 'Dữ liệu đã được cập nhật thành công.',
             'status' => $qualityCheck->status,
-            'ngaykiemtra' => $qualityCheck->ngaykiemtra // Thêm dòng này
+            'ngaykiemtra' => $qualityCheck->ngaykiemtra
         ]);
     }
+
 
     public function timKiemVatTuCheck(Request $request){
         $status = $request->status;

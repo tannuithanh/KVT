@@ -1,0 +1,27 @@
+.table-hover tbody tr:hover {
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+    .filter-box {
+        flex-direction: column; /* Stack the items vertically on small screens */
+        gap: 10px; /* Reduce the gap */
+    }
+    .filter-box > div,
+    .filter-box > button {
+        max-width: 100%; /* Full width on small screens */
+        flex-grow: 1; /* Allow the children to fill the space */
+    }
+}
+
+.blink-warning {
+    background-color: rgba(255, 255, 0, 0.329) !important
+}
+
+.filter-box {
+    border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
+    padding: 11px;
+    margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
+    border-radius: 5px; /* Bo góc cho khung */
+}
+
+

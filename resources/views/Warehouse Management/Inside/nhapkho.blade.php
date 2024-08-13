@@ -59,7 +59,7 @@
     <h1>Nhập kho</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Nhập kho</li>
         </ol>
     </nav>
@@ -212,7 +212,7 @@
 {{-- CHUYỂN ĐỔI THÀNH ĐƠN HÀNG SELECT2 --}}
     <script type="text/javascript">
         $(document).ready(function() {
-            var orders = @json($orders);
+            var orders = @json($orders); // Biến orders chứa danh sách các đơn hàng từ server
             $('#actionModal').modal('show');
 
             // Hàm để hiển thị modal và cập nhật nội dung của nó
@@ -227,11 +227,12 @@
                     selectHTML += `<option value="${order.id}">${order.sodonhang}</option>`;
                 });
                 selectHTML += '</select>' +
-                    '<button onclick="searchOrder()" class="btn btn-primary w-100 mt-3">Tìm kiếm</button>';
+                    '<button onclick="searchOrder()" class="btn btn-primary w-100 mt-3">Tìm kiếm</button>' +
+                    '<button onclick="resetModal()" class="btn btn-warning w-100 mt-2">Trở về</button>'; // Thêm nút "Trở về"
 
                 $('#actionModal .modal-body').html(selectHTML);
 
-                // Khởi tạo Choices
+                // Khởi tạo Choices cho thẻ select để cải thiện tính năng tìm kiếm
                 var element = document.getElementById('orderSelect');
                 var choices = new Choices(element, {
                     searchEnabled: true,
@@ -306,6 +307,19 @@
                     console.warn('Vui lòng chọn một đơn hàng.');
                 }
             };
+
+            // Hàm để reset modal về trạng thái ban đầu
+            function resetModal() {
+                $('#actionModalLabel').text('Chọn Hành Động');
+                var initialHTML = `
+                    <button type="button" class="btn btn-primary w-100 mb-3" id="NTDH" onclick="showOrderNameModal()">
+                        <i class="bi bi-pencil-square"></i> Nhập tên đơn hàng
+                    </button>
+                    <button type="button" class="btn btn-secondary w-100" id="scan-button" onclick="setupScanner()">
+                        <i class="ri-qr-code-line"></i> Quét QR
+                    </button>`;
+                $('#actionModal .modal-body').html(initialHTML);
+            }
         });
     </script>
 {{-- CAMERA --}}
@@ -323,86 +337,134 @@
             const $tongDaNhan = $('#tongdanhan');
             const $tongChuaNhan = $('#tongchuanhan');
             const $tongDaXuat = $('#tongdaxuat');
+            let html5QrCodeScanner;
+            let isScannerRunning = false;
 
             $scanButton.on('click', function() {
+                setupScanner();
+            });
+
+            function setupScanner() {
                 $barcodeScanner.show();
                 $scanButton.hide();
                 $NTDH.hide();
 
-                function onScanSuccess(qrCodeMessage) {
-                    html5QrCodeScanner.stop().then(ignore => {
-                        $actionModal.modal('hide');
-                        $actionModal.remove();
-                    }).catch(err => {
-                        console.error("Failed to stop scanning.", err);
-                    });
-                    $.ajax({
-                        url: "{{ route('layThongTinDonHang') }}",
-                        type: 'POST',
-                        data: {
-                            sodonhang: qrCodeMessage,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            $vatTuDonHangTableBody.empty();
-
-                            // Duyệt qua các phần tử trong suppliesDetail và tạo các hàng mới
-                            response.suppliesDetail.forEach((supplyDetail, index) => {
-                                var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
-                                var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
-
-                                // Kiểm tra điều kiện để thêm class blink-warning
-                                var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
-
-                                const row = `
-                                    <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
-                                        <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
-                                    </tr>
-                                `;
-                                $vatTuDonHangTableBody.append(row);
-                            });
-                            $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
-                            $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
-                            $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
-                            $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
-                            $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
-                        },
-                        error: function(xhr, status, error) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: 'Đơn hàng không tồn tại',
-                            });
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-                        }
-                    });
+                if (!html5QrCodeScanner) {
+                    html5QrCodeScanner = new Html5Qrcode("barcode-scanner");
                 }
 
-                const html5QrCodeScanner = new Html5Qrcode("barcode-scanner");
                 html5QrCodeScanner.start(
                     { facingMode: "environment" },
                     {
                         fps: 10,
                         qrbox: 300 // Tăng kích thước vùng quét QR
                     },
-                    onScanSuccess,
-                );
-            });
+                    onScanSuccess
+                ).then(() => {
+                    isScannerRunning = true;
+                }).catch(err => {
+                    console.error("Failed to start scanning.", err);
+                });
+
+                // Thêm nút "Trở về" để reset modal
+                if ($('#cancelButton').length === 0) {
+                    const cancelButtonHTML = '<button id="cancelButton" onclick="resetModalAndStopScanner()" class="btn btn-warning w-100 mt-2">Trở về</button>';
+                    $('#actionModal .modal-body').append(cancelButtonHTML);
+                }
+            }
+
+            // Hàm để xử lý khi quét QR thành công
+            function onScanSuccess(qrCodeMessage) {
+                if (isScannerRunning) {
+                    html5QrCodeScanner.stop().then(() => {
+                        isScannerRunning = false;
+                        $actionModal.modal('hide');
+                        $actionModal.remove();
+
+                        // Thực hiện AJAX để lấy thông tin đơn hàng dựa trên QR code
+                        $.ajax({
+                            url: "{{ route('layThongTinDonHang') }}",
+                            type: 'POST',
+                            data: {
+                                sodonhang: qrCodeMessage,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                $vatTuDonHangTableBody.empty();
+
+                                // Duyệt qua các phần tử trong suppliesDetail và tạo các hàng mới
+                                response.suppliesDetail.forEach((supplyDetail, index) => {
+                                    var totalNhapKho = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongnhapkho, 0);
+                                    var totalDatChatLuong = supplyDetail.viewVatTuChiTietData.reduce((sum, vtct) => sum + vtct.soluongdatchatluong, 0);
+
+                                    // Kiểm tra điều kiện để thêm class blink-warning
+                                    var rowClass = totalNhapKho > totalDatChatLuong ? 'blink-warning' : '';
+
+                                    const row = `
+                                        <tr id="supply-row-${supplyDetail.supply.id}" data-id="${supplyDetail.supply.id}">
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} stt">${index + 1}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} tenvattu">${supplyDetail.supply.tenvattu}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} maso">${supplyDetail.supply.maso}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} donvitinh">${supplyDetail.supply.donvitinh}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} soluong">${supplyDetail.supply.soluong}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongnhapkho">${totalNhapKho}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} soluongdatchatluong">${totalDatChatLuong}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} chuanhan">${supplyDetail.chuanhan}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} daxuat">${supplyDetail.daxuat}</td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} soluonginbarcode">${supplyDetail.supply.soluongnhap ?? ''} </td>
+                                            <td style="text-align: center; vertical-align: middle" class="${rowClass} ghichu">${supplyDetail.supply.note !== null ? supplyDetail.supply.note : ''}</td>
+                                        </tr>
+                                    `;
+                                    $vatTuDonHangTableBody.append(row);
+                                });
+                                $orderTitle.text(`Đơn hàng: ${response.order.sodonhang}`);
+                                $tongSoVatTu.text(`Tổng vật tư: ${response.totalSupplies}`);
+                                $tongDaNhan.text(`Tổng đã nhận: ${response.totalDanhan}`);
+                                $tongChuaNhan.text(`Tổng chưa nhận: ${response.totalChuanhan}`);
+                                $tongDaXuat.text(`Tổng đã xuất: ${response.totalDaxuat}`);
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Đơn hàng không tồn tại',
+                                });
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1000);
+                            }
+                        });
+                    }).catch(err => {
+                        console.error("Failed to stop scanning.", err);
+                    });
+                }
+            }
+
+            // Hàm để dừng máy quét QR và reset modal về trạng thái ban đầu
+            window.resetModalAndStopScanner = function() {
+                if (isScannerRunning && html5QrCodeScanner) {
+                    html5QrCodeScanner.stop().then(() => {
+                        isScannerRunning = false;
+                        resetModal();
+                    }).catch(err => {
+                        console.error("Failed to stop scanning.", err);
+                        resetModal();
+                    });
+                } else {
+                    resetModal();
+                }
+            };
+
+            // Hàm để reset modal về trạng thái ban đầu
+            function resetModal() {
+                $('#actionModalLabel').text('Chọn Hành Động');
+                $barcodeScanner.hide();
+                $scanButton.show();
+                $NTDH.show();
+                $('#cancelButton').remove(); // Loại bỏ nút "Trở về"
+            }
         });
     </script>
-
 {{-- HIỂN THỊ LỊCH SỬ --}}
     <script>
         $('.vatTuDonHang tbody').on('click', 'tr', function(event) {
@@ -769,131 +831,43 @@
 {{-- HIỂN THỊ CHECKBOX NHẬP KHO --}}
     <script>
         $(document).ready(function() {
-            var isNhapKhoCheckboxAdded = false;
-
-            $('#nhapKho').click(function() {
-                if (!isNhapKhoCheckboxAdded) {
-                    var anyRowHasValue = false;
-
-                    // Thêm checkbox vào các hàng có giá trị trong cột "Số lượng in"
-                    $('.vatTuDonHang tbody tr').each(function() {
-                        var soluongIn = $(this).find('.soluonginbarcode').text().trim(); // Lấy giá trị từ cột "Số lượng in"
-                        if (soluongIn !== '') {
-                            anyRowHasValue = true;
-                            var vattuId = $(this).data('id');
-                            var checkboxHtml = '<input type="checkbox" class="form-check-input nhapKho-checkbox" name="selectedItems[]" value="' + vattuId + '">';
-                            $(this).find('td:first').data('original-content', $(this).find('td:first').html()).html(checkboxHtml);
-                        }
-                    });
-
-                    if (!anyRowHasValue) {
-                        // Hiển thị thông báo nếu không có hàng nào có giá trị
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Không có vật tư nào',
-                            text: 'Hiện tại không có vật tư nào đã được in mã.'
-                        });
-                    } else {
-                        // Tạo và thêm checkbox "Chọn Tất Cả" vào tiêu đề cột STT
-                        var headerCheckboxHtml = '<input type="checkbox" class="form-check-input" id="selectAllNhapKho">';
-                        $('.vatTuDonHang thead th:first').data('original-content', $('.vatTuDonHang thead th:first').html()).html(headerCheckboxHtml);
-
-                        isNhapKhoCheckboxAdded = true;
-                        $(this).html('<i class="bi bi-arrow-left"></i> Trở Về');
-
-                        // Vô hiệu hóa các nút khác ngoại trừ nút "Nhận vật tư"
-                        $('button').not(this).not('#nhanVatTu').prop('disabled', true);
-                    }
-                } else {
-                    // Khôi phục bảng và nút "Nhập Kho"
-                    $('.vatTuDonHang tbody tr').each(function(index) {
-                        $(this).find('td').each(function() {
-                            var originalContent = $(this).data('original-content');
-                            if (originalContent !== undefined) {
-                                $(this).html(originalContent);
-                            }
-                        });
-                        $(this).find('td:first').html(index + 1);
-                    });
-
-                    // Khôi phục tiêu đề cột STT và loại bỏ checkbox "Chọn Tất Cả"
-                    $('.vatTuDonHang thead th:first').html('STT');
-
-                    isNhapKhoCheckboxAdded = false;
-                    $(this).html('<i class="bi bi-box-arrow-in-down"></i> Nhập kho');
-
-                    // Ẩn nút Nhận vật tư
-                    $('#nhanVatTu').hide();
-
-                    // Kích hoạt lại các nút khác
-                    $('button').prop('disabled', false);
-                }
-            });
-
-            // Sự kiện cho checkbox "Chọn Tất Cả" cho nhập kho
-            $(document).on('change', '#selectAllNhapKho', function() {
-                var isChecked = $(this).is(':checked');
-                $('.nhapKho-checkbox').prop('checked', isChecked).trigger('change');
-            });
-
-            // Sự kiện khi giá trị của bất kỳ checkbox nào thay đổi
-            $(document).on('change', '.nhapKho-checkbox', function() {
-                checkCheckboxesAndToggleNhanVatTuButton();
-            });
-
-            function checkCheckboxesAndToggleNhanVatTuButton() {
-                var anyChecked = $('.nhapKho-checkbox:checked').length > 0;
-
-                // Hiển thị hoặc ẩn nút Nhận vật tư dựa trên kết quả kiểm tra
-                if (anyChecked) {
-                    $('#nhanVatTu').show();
-                    $('#nhanVatTu').prop('disabled', false); // Đảm bảo nút không bị vô hiệu hóa
-                } else {
-                    $('#nhanVatTu').hide();
-                }
-            }
-        });
-    </script>
-{{-- CHUYỂN HƯỚNG SANG TRANG NHẬP KHO --}}
-    <script>
-        $(document).ready(function() {
-            // Sự kiện cho nút "Nhận vật tư"
-            $('#nhanVatTu').click(function(e) {
-                e.preventDefault(); // Ngăn chặn hành động mặc định
+            $('#nhapKho').click(function(e) {
+                e.preventDefault(); // Ngăn chặn hành động mặc định của nút
 
                 var selectedItems = [];
-                var itemMap = {}; // Sử dụng đối tượng để theo dõi các mục đã chọn
-                // Lấy thông tin từ các hàng có checkbox được chọn
-                $('.nhapKho-checkbox:checked').each(function() {
-                    var row = $(this).closest('tr'); // Lấy hàng chứa checkbox đang được chọn
-                    var soLuongNhapKho = row.find('td').eq(10).text().trim(); // Lấy giá trị từ cột "Số lượng in"
-                    var itemId = $(this).val();
+                var anyRowHasValue = false;
 
-                    // Kiểm tra nếu phần tử đã tồn tại trong itemMap
-                    if (!itemMap[itemId]) {
-                        itemMap[itemId] = true; // Đánh dấu là đã thêm
+                // Duyệt qua từng hàng trong bảng và kiểm tra cột "Số lượng in"
+                $('.vatTuDonHang tbody tr').each(function() {
+                    var soluongIn = $(this).find('.soluonginbarcode').text().trim(); // Lấy giá trị từ cột "Số lượng in"
+                    if (soluongIn !== '') {
+                        anyRowHasValue = true;
+                        var vattuId = $(this).data('id');
                         selectedItems.push({
-                            id: itemId,
-                            soLuongNhapKho: soLuongNhapKho
+                            id: vattuId,
+                            soLuongNhapKho: soluongIn
                         });
                     }
                 });
 
-                // Kiểm tra nếu không có mục nào được chọn
-                if (selectedItems.length === 0) {
+                // Nếu không có hàng nào có giá trị, hiển thị thông báo cảnh báo
+                if (!anyRowHasValue) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Chưa chọn vật tư',
-                        text: 'Vui lòng chọn ít nhất một vật tư để nhập kho.'
+                        title: 'Không có vật tư nào',
+                        text: 'Hiện tại không có vật tư nào đã được in mã.'
                     });
-                    return false;
+                    return;
                 }
-                        var baseUrl = "{{ route('quetBarcodeNhapKho') }}"; // Đảm bảo đường dẫn này được in đúng trong mã HTML của bạn
-                        var query = $.param({ 'selectedItems': selectedItems });
-                        var redirectUrl = baseUrl + '?' + query;
 
-                        window.location.href = redirectUrl;
+                // Chuyển hướng đến trang nhập kho với thông tin các vật tư đã thu thập
+                var baseUrl = "{{ route('quetBarcodeNhapKho') }}"; // Đảm bảo đường dẫn này được in đúng trong mã HTML của bạn
+                var query = $.param({ 'selectedItems': selectedItems });
+                var redirectUrl = baseUrl + '?' + query;
+
+                window.location.href = redirectUrl;
             });
         });
     </script>
+
 @endsection

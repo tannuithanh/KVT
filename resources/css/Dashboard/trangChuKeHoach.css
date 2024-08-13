@@ -1,0 +1,57 @@
+/* resources/css/trangChuKeHoach.css */
+
+@import url('~choices.js/public/assets/styles/choices.min.css');
+
+.stat-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+}
+
+.stat-box .icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.stat-box.total-orders .icon {
+    color: #007bff; /* Màu xanh */
+}
+
+.stat-box.completed-orders .icon {
+    color: #28a745; /* Màu xanh lá cây */
+}
+
+.stat-box.pending-orders .icon {
+    color: #ffc107; /* Màu vàng */
+}
+
+.stat-box h3 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.stat-box p {
+    margin: 0;
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.card-header-custom {
+    background-color: #00529C;
+    color: white;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 400px;
+    margin: auto;
+}

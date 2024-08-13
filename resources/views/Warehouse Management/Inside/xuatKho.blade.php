@@ -61,7 +61,7 @@
     <h1>Xuất kho</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">Xuất kho</li>
         </ol>
     </nav>
@@ -178,7 +178,8 @@
                     selectHTML += `<option value="${order.id}">${order.sodonhang}</option>`;
                 });
                 selectHTML += '</select>' +
-                    '<button onclick="searchOrder()" class="btn btn-primary w-100 mt-3">Tìm kiếm</button>';
+                    '<button onclick="searchOrder()" class="btn btn-primary w-100 mt-3">Tìm kiếm</button>' +
+                    '<button onclick="reloadPage()" class="btn btn-warning w-100 mt-2">Trở về</button>'; // Thêm nút "Trở về"
 
                 $('#actionModal .modal-body').html(selectHTML);
 
@@ -265,8 +266,14 @@
                     console.warn('Vui lòng chọn một đơn hàng.');
                 }
             };
+
+            // Hàm để reload lại trang khi nhấn nút "Trở về"
+            window.reloadPage = function() {
+                location.reload(); // Reload lại trang
+            };
         });
     </script>
+
 
 
 {{-- CAMERA --}}
@@ -280,88 +287,136 @@
             const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
             const $orderTitle = $('#orderTitle');
             const $xuatKhoBarcode = $('#xuatKhoBarcode');
+            let html5QrCodeScanner;
+            let isScannerRunning = false;
+
             $scanButton.on('click', function() {
+                setupScanner();
+            });
+
+            function setupScanner() {
                 $barcodeScanner.show();
                 $scanButton.hide();
                 $NTDH.hide();
 
-                function onScanSuccess(qrCodeMessage) {
-                    html5QrCodeScanner.stop().then(ignore => {
-                        $actionModal.modal('hide');
-                        $actionModal.remove();
-                    }).catch(err => {
-                        console.error("Failed to stop scanning.", err);
-                    });
-
-                    $.ajax({
-                        url: "{{ route('searchSuppliesReal') }}",
-                        type: 'POST',
-                        data: {
-                            sodonhang: qrCodeMessage,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            console.log(response); // Kiểm tra xem dữ liệu có đúng như mong đợi không
-
-                            const $vatTuDonHangTableBody = $('#bangxuatkho tbody');
-                            $vatTuDonHangTableBody.empty();
-
-                            // Chuyển đổi đối tượng thành mảng
-                            const dataArray = Object.values(response.data);
-
-                            if (dataArray.length > 0) {
-                                var supplies = dataArray; // Lưu trữ mảng vật tư để sử dụng sau này
-
-                                supplies.forEach((item, index) => {
-                                    const row = `
-                                        <tr>
-                                            <td class="text-center">${index + 1}</td>
-                                            <td class="text-center">${item.tenvattu}</td>
-                                            <td class="text-center">${item.maso}</td>
-                                            <td class="text-center">${item.maso_new ?? ""}</td>
-                                            <td class="text-center hide-on-mobile">${item.donvitinh}</td>
-                                            <td class="text-center">${item.soluong}</td>
-                                            <td class="text-center hide-on-mobile">${item.note ?? ""}</td> <!-- Sửa từ ghichu thành note -->
-                                        </tr>
-                                    `;
-                                    $vatTuDonHangTableBody.append(row);
-                                });
-                                $('#xuatKhoBarcode').show();
-                                $('#orderTitle').text(`Đơn hàng: ${supplies[0].sodonhang || ''}`);
-
-                                // Đặt sự kiện click cho nút xuatKhoBarcode
-                                $('#xuatKhoBarcode').off('click').on('click', function(e) {
-                                    e.preventDefault();
-
-                                    var maso = supplies.map(supply => supply.maso);
-
-                                    // Encode the maso array as a JSON string and then URI encode it
-                                    var encodedmaso = encodeURIComponent(JSON.stringify(maso));
-
-                                    // Redirect to the route with query parameter
-                                    window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
-                                });
-                            } else {
-                                $vatTuDonHangTableBody.append('<tr><td colspan="7" class="text-center">Không có vật tư tồn kho</td></tr>');
-                                $('#xuatKhoBarcode').hide();
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Lỗi khi gửi yêu cầu AJAX:', error);
-                        }
-                    });
+                if (!html5QrCodeScanner) {
+                    html5QrCodeScanner = new Html5Qrcode("barcode-scanner");
                 }
 
-                const html5QrCodeScanner = new Html5Qrcode("barcode-scanner");
                 html5QrCodeScanner.start(
                     { facingMode: "environment" },
                     {
                         fps: 10,
                         qrbox: 300 // Tăng kích thước vùng quét QR
                     },
-                    onScanSuccess,
-                );
-            });
+                    onScanSuccess
+                ).then(() => {
+                    isScannerRunning = true;
+                }).catch(err => {
+                    console.error("Failed to start scanning.", err);
+                });
+
+                // Thêm nút "Trở về" để reset modal
+                if ($('#cancelButton').length === 0) {
+                    const cancelButtonHTML = '<button id="cancelButton" onclick="resetModalAndStopScanner()" class="btn btn-warning w-100 mt-4">Trở về</button>';
+                    $('#actionModal .modal-body').append(cancelButtonHTML);
+                }
+            }
+
+            // Hàm để xử lý khi quét QR thành công
+            function onScanSuccess(qrCodeMessage) {
+                if (isScannerRunning) {
+                    html5QrCodeScanner.stop().then(() => {
+                        isScannerRunning = false;
+                        $actionModal.modal('hide');
+                        $actionModal.remove();
+
+                        // Thực hiện AJAX để lấy thông tin đơn hàng dựa trên QR code
+                        $.ajax({
+                            url: "{{ route('searchSuppliesReal') }}",
+                            type: 'POST',
+                            data: {
+                                sodonhang: qrCodeMessage,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                console.log(response); // Kiểm tra xem dữ liệu có đúng như mong đợi không
+
+                                $vatTuDonHangTableBody.empty();
+
+                                // Chuyển đổi đối tượng thành mảng
+                                const dataArray = Object.values(response.data);
+
+                                if (dataArray.length > 0) {
+                                    var supplies = dataArray; // Lưu trữ mảng vật tư để sử dụng sau này
+
+                                    supplies.forEach((item, index) => {
+                                        const row = `
+                                            <tr>
+                                                <td class="text-center">${index + 1}</td>
+                                                <td class="text-center">${item.tenvattu}</td>
+                                                <td class="text-center">${item.maso}</td>
+                                                <td class="text-center">${item.maso_new ?? ""}</td>
+                                                <td class="text-center hide-on-mobile">${item.donvitinh}</td>
+                                                <td class="text-center">${item.soluong}</td>
+                                                <td class="text-center hide-on-mobile">${item.note ?? ""}</td> <!-- Sửa từ ghichu thành note -->
+                                            </tr>
+                                        `;
+                                        $vatTuDonHangTableBody.append(row);
+                                    });
+                                    $('#xuatKhoBarcode').show();
+                                    $('#orderTitle').text(`Đơn hàng: ${supplies[0].sodonhang || ''}`);
+
+                                    // Đặt sự kiện click cho nút xuatKhoBarcode
+                                    $('#xuatKhoBarcode').off('click').on('click', function(e) {
+                                        e.preventDefault();
+
+                                        var maso = supplies.map(supply => supply.maso);
+
+                                        // Encode the maso array as a JSON string and then URI encode it
+                                        var encodedmaso = encodeURIComponent(JSON.stringify(maso));
+
+                                        // Redirect to the route with query parameter
+                                        window.location.href = "{{ route('xuatKhoBarcode') }}" + "?maso=" + encodedmaso;
+                                    });
+                                } else {
+                                    $vatTuDonHangTableBody.append('<tr><td colspan="7" class="text-center">Không có vật tư tồn kho</td></tr>');
+                                    $('#xuatKhoBarcode').hide();
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Lỗi khi gửi yêu cầu AJAX:', error);
+                            }
+                        });
+                    }).catch(err => {
+                        console.error("Failed to stop scanning.", err);
+                    });
+                }
+            }
+
+            // Hàm để dừng máy quét QR và reset modal về trạng thái ban đầu
+            window.resetModalAndStopScanner = function() {
+                if (isScannerRunning && html5QrCodeScanner) {
+                    html5QrCodeScanner.stop().then(() => {
+                        isScannerRunning = false;
+                        resetModal();
+                    }).catch(err => {
+                        console.error("Failed to stop scanning.", err);
+                        resetModal();
+                    });
+                } else {
+                    resetModal();
+                }
+            };
+
+            // Hàm để reset modal về trạng thái ban đầu
+            function resetModal() {
+                $('#actionModalLabel').text('Chọn Hành Động');
+                $barcodeScanner.hide();
+                $scanButton.show();
+                $NTDH.show();
+                $('#cancelButton').remove(); // Loại bỏ nút "Trở về"
+            }
         });
     </script>
 

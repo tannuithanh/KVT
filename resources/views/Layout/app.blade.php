@@ -74,7 +74,7 @@
                 background: #555;
             }
     </style>
-    <style>
+    {{-- <style>
         .sidebar {
             background-color: #f8f9fa;
             padding-top: 20px;
@@ -129,7 +129,7 @@
             display: none;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-    </style>
+    </style> --}}
 </head>
 
 <body>
@@ -273,18 +273,22 @@
 
     <aside id="sidebar" class="sidebar">
         <ul class="sidebar-nav" id="sidebar-nav">
+            @if ($user->msnv === 9999)
+                <li class="nav-item">
+                    <a class="nav-link {{ $isActiveDashboard ? '' : 'collapsed' }}" href="{{route('trangChu')}}">
+                        <i class="bi bi-house-door"></i>
+                        <span>Trang chủ</span>
+                    </a>
+                </li>
+            @endif
+            @if (in_array($user->appFunction->id, [3,6]) || $user->is_admin == 1)
             <li class="nav-item">
-                <a class="nav-link {{ $isActiveDashboard ? '' : 'collapsed' }}" href="{{route('trangChu')}}">
+                <a class="nav-link {{ $Dashboard ? '' : 'collapsed' }}" href="{{route('dashBoard')}}">
                     <i class="bi bi-house-door"></i>
                     <span>Trang chủ</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $Dashboard ? '' : 'collapsed' }}" href="{{route('dashBoard')}}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            @endif
             @if (in_array($user->appFunction->id, [1, 3, 5]) || $user->is_admin == 1)
                 <li class="nav-item">
                     <a class="nav-link {{ $isActiveWarehouse ? '' : 'collapsed' }}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
@@ -293,7 +297,7 @@
                         <i class="bi bi-chevron-down ms-auto"></i>
                     </a>
                     <ul id="tables-nav" class="nav-content collapse {{ $isActiveWarehouse ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-                        @if (in_array($user->appFunction->id, [3, 5]) || $user->is_admin == 1)
+                        @if (in_array($user->appFunction->id, [5]) || $user->is_admin == 1)
                             <li>
                                 <a href="{{ route('listBrand', ['module' => 'Quản lý đơn hàng']) }}" class="{{ $quanLyDonHang ? 'active' : '' }}">
                                     <i class="bi bi-circle"></i>
@@ -301,7 +305,7 @@
                                 </a>
                             </li>
                         @endif
-                        @if (in_array($user->appFunction->id, [1, 5]) || $user->is_admin == 1)
+                        @if (in_array($user->appFunction->id, [1]) || $user->is_admin == 1)
                             <li>
                                 <a href="{{ route('listNhapKho', ['module' => 'Nhập kho']) }}" class="{{ $isActiveWarehouseEntry ? 'active' : '' }}">
                                     <i class="bi bi-circle"></i>
@@ -309,7 +313,7 @@
                                 </a>
                             </li>
                         @endif
-                        @if (in_array($user->appFunction->id, [2, 5]) || $user->is_admin == 1)
+                        @if (in_array($user->appFunction->id, [2]) || $user->is_admin == 1)
                             <li>
                                 <a href="{{ route('listExportWarehouse', ['module' => 'Xuất kho']) }}" class="{{ $xuatkho ? 'active' : '' }}">
                                     <i class="bi bi-circle"></i>
@@ -375,7 +379,7 @@
     </a>
 
     <!-- Vendor JS Files -->
-    <script src="{{asset('assets/js/jquery.min.js')}}"></script>
+    <script src="{{asset('assets/js/jquery-3.7.1.min.js')}}"></script>
     <script src="{{asset('assets/js/sweetalert2.all.min.js')}}"></script>
     <script src="{{asset('assets/vendor/apexcharts/apexcharts.min.js')}}"></script>
     <script src="{{asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>

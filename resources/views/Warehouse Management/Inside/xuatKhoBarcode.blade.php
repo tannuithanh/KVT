@@ -146,12 +146,12 @@
                                     }).showToast();
                                     $('#supply-card').remove();
                                 } else {
-                                    showError(response.message); // Sửa lỗi từ `response.error` thành `response.message`
+                                    showError(response.message);
                                 }
                             },
                             error: function (xhr, status, error) {
                                 console.error('Có lỗi xảy ra: ', error);
-                                let message = xhr.responseJSON ? xhr.responseJSON.message : "Có lỗi xảy ra khi cập nhật"; // Sửa lỗi từ `xhr.responseJSON.error` thành `xhr.responseJSON.message`
+                                let message = xhr.responseJSON ? xhr.responseJSON.message : "Có lỗi xảy ra khi cập nhật";
                                 showError(message);
                             }
                         });
@@ -181,74 +181,8 @@
 
 
 
-{{-- XÁC NHẬN XUẤT KHO
-    <script>
-        $(document).ready(function() {
-            $('body').on('click', '.confirm-export', function() {
-                var button = $(this);
-                var supplyId = button.data('id');
-                var quantity = $('#input-quantity-' + supplyId).val();
-                var maxQuantity = $('#input-quantity-' + supplyId).attr('max');
 
-                if (quantity && quantity > 0 && quantity <= maxQuantity) {
-                    $.ajax({
-                        url: '{{ route("xacNhanXuatKho") }}',
-                        type: 'POST',
-                        data: { id: supplyId, quantity: quantity },
-                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                        success: function(response) {
-                            if(response.success) {
-                                var cardBody = button.closest('.card-body');
-                                cardBody.find('.card-text').text('Số lượng còn lại: ' + response.remaining);
-                                button.siblings('input').remove(); // Xóa input số lượng
-                                button.remove(); // Xóa nút xác nhận xuất kho
-                                Toastify({
-                                    text: 'Thành công! Xuất kho thành công.',
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: 'top',
-                                    position: 'right',
-                                    backgroundColor: 'linear-gradient(to right, #00b09b, #96c93d)',
-                                    className: 'info',
-                                }).showToast();
-                            } else {
-                                Toastify({
-                                    text: `Lỗi! ${response.message}`,
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: 'top',
-                                    position: 'right',
-                                    backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
-                                    className: 'info',
-                                }).showToast();
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            Toastify({
-                                text: `Lỗi! Có lỗi xảy ra: ${error}`,
-                                duration: 3000,
-                                close: true,
-                                gravity: 'top',
-                                position: 'right',
-                                backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
-                                className: 'info',
-                            }).showToast();
-                        }
-                    });
-                } else {
-                    Toastify({
-                        text: 'Thông báo! Vui lòng nhập số lượng hợp lệ không quá số lượng còn lại.',
-                        duration: 3000,
-                        close: true,
-                        gravity: 'top',
-                        position: 'right',
-                        backgroundColor: 'linear-gradient(to right, #ff5f5f, #d33d3d)',
-                        className: 'info',
-                    }).showToast();
-                }
-            });
-        });
-    </script> --}}
+
 
 
 @endsection

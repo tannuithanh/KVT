@@ -6,3 +6,5 @@ use Illuminate\Support\Facades\Route;
     Route::get('/Dash-Board', [DashBoard::class, 'dashBoard'])->name('dashBoard')->middleware('auth');
 
     Route::get('/orders-by-DB', [DashBoard::class, 'orderByDashboard'])->name('orderByDashboard')->middleware('auth');
+
+    Route::get('/ordersApi', [DashBoard::class, 'apiOrder'])->name('apiOrder')->middleware('auth');

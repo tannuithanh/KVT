@@ -14,7 +14,23 @@
             margin: 0 auto;
         }
     </style>
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-selection {
+            height: calc(2.25rem + 2px) !important;
+            padding: 0.375rem 0.75rem !important;
+        }
+        .select2-selection__rendered {
+            line-height: 1.25rem !important;
+        }
+        .select2-selection__arrow {
+            height: calc(2.25rem + 2px) !important;
+        }
+    </style>
     <link rel="stylesheet" type="text/css" href="{{asset('assets/css/toastify.min.css')}}">
+    <link href="{{asset('assets/css/select2.min.css')}}" rel="stylesheet" />
 @endsection
 @section('content')
     <div class="pagetitle">
@@ -33,8 +49,10 @@
                             <video id="video" style="width: 100%; height: 100%; object-fit: contain;" autoplay></video>
                         </div>
                         <div id="manual-entry" class="mt-4" style="display: none;">
-                            <input type="text" id="manual-input" class="form-control mb-3" placeholder="Nhập mã số vật tư">
-                            <button id="manual-submit" class="btn btn-success w-100">Xác nhận</button>
+                            <select id="manual-select" class="form-control mb-3">
+                                <option value="">Chọn mã số vật tư</option>
+                            </select>
+                            <button id="manual-submit" class="btn btn-success w-100  mt-3">Xác nhận</button>
                         </div>
                         <div id="Danhmucvattuxuat" class="mt-4"></div>
                     </div>
@@ -47,12 +65,23 @@
     {{-- <script src="{{ asset('assets/js/quagga.min.js') }}"></script> --}}
     <script src="{{asset('assets/js/html5-qrcode.min.js')}}"></script>
     <script type="text/javascript" src="{{asset('assets/js/toastify-js.js')}}"></script>
+    <script src="{{asset('assets/js/select2.min.js')}}"></script>
 {{-- QUÉT QR KHI NHẬP KHO--}}
     <script>
         $(document).ready(function () {
             var supplies = @json($supplies);
-
+            console.log(supplies);
             var html5QrCode = new Html5Qrcode("barcode-scanner");
+
+            // Initialize Select2
+            $('#manual-select').select2({
+                placeholder: 'Chọn mã số vật tư',
+                width: '100%',
+                data: supplies.map(supply => ({
+                    id: supply.maso_new ? supply.maso_new : supply.maso,
+                    text: supply.maso_new ? supply.maso_new : supply.maso + ' - ' + supply.tenvattu
+                }))
+            });
 
             $('#scan-button').on('click', function () {
                 $('#barcode-scanner').show();
@@ -85,13 +114,9 @@
                 $('#manual-entry').show();
             });
 
-            $('#manual-input').on('input', function () {
-                $(this).val($(this).val().toUpperCase());
-            });
-
             $('#manual-submit').on('click', function () {
-                var inputValue = $('#manual-input').val().toUpperCase();
-                var matchedSupply = supplies.find(supply => supply.maso_new ? supply.maso_new === inputValue : supply.maso === inputValue);
+                var selectedValue = $('#manual-select').val();
+                var matchedSupply = supplies.find(supply => supply.maso_new === selectedValue || supply.maso === selectedValue);
 
                 if (matchedSupply) {
                     displaySupplyCard(matchedSupply);
@@ -102,7 +127,7 @@
 
             function displaySupplyCard(supply) {
                 var cardHtml = `
-                    <div class="card mb-3" id="supply-card">
+                    <div class="card mb-3" id="supply-card" data-id="${supply.id}">
                         <div class="card-header">
                             Đơn hàng: ${supply.orders.length > 0 ? supply.orders[0].sodonhang : 'Không có đơn hàng'}
                         </div>
@@ -119,7 +144,7 @@
                 `;
                 $('#Danhmucvattuxuat').html(cardHtml);
 
-                $('#nhap-kho-button').on('click', function () {
+                $('#nhap-kho-button').off('click').on('click', function () {
                     var quantity = $('#quantity-input').val();
                     if (quantity && !isNaN(quantity)) {
                         $.ajax({
@@ -170,6 +195,7 @@
                 }).showToast();
             }
         });
+
     </script>
 
 

@@ -1,35 +1,7 @@
 @extends('Layout.app')
 @section('style')
     <link rel="stylesheet" type="text/css" href="{{asset('assets/css/choices.min.css')}}">
-    <style>
-        .table-hover tbody tr:hover {
-            cursor: pointer;
-        }
-        @media (max-width: 768px) {
-            .filter-box {
-                flex-direction: column; /* Stack the items vertically on small screens */
-                gap: 10px; /* Reduce the gap */
-            }
-            .filter-box > div,
-            .filter-box > button {
-                max-width: 100%; /* Full width on small screens */
-                flex-grow: 1; /* Allow the children to fill the space */
-            }
-        }
-    </style>
-    <style>
-        .blink-warning {
-            background-color: rgba(255, 255, 0, 0.329) !important
-        }
-
-        .filter-box {
-            border: 1px solid #173e864f; /* Màu border, có thể điều chỉnh */
-            padding: 11px;
-            margin-bottom: 20px; /* Khoảng cách với nội dung tiếp theo */
-            border-radius: 5px; /* Bo góc cho khung */
-        }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{asset('css/Warehouse Management/Inside/quanlykehoach.css')}}">
 @endsection
 @section('title')
     Quản lý danh mục vật tư
@@ -40,7 +12,7 @@
     <h1>Quản lý danh mục vật tư</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item">{{ $module }}</li>
             <li class="breadcrumb-item"><a href="{{route('listBrand', ['module' => $module])}}">Thương hiệu</a></li>
             <li class="breadcrumb-item"><a href="{{ route('listProject', [$segmentId,'module' => $module]) }}">Dự án</a></li>
@@ -203,7 +175,7 @@
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">STT</th>
                                         <th style="text-align: left; vertical-align: middle; position: sticky; top: 0;">Tên vật tư</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Mã số</th>
-                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Mã số mới</th>
+                                        <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;" class="masoNew1">Mã số mới</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Đơn vị tính</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Số lượng</th>
                                         <th style="text-align: center; vertical-align: middle; position: sticky; top: 0;">Thao tác</th>
@@ -328,7 +300,7 @@
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">STT</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Tên vật tư</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số</th>
-                                        <th rowspan="2" style="text-align: center; vertical-align: middle;">Mã số mới</th>
+                                        <th rowspan="2" style="text-align: center; vertical-align: middle;" class="masoNew2">Mã số mới</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">Đơn vị tính</th>
                                         <th colspan="5" style="text-align: center;">Tình trạng</th>
                                         <th rowspan="2" style="text-align: center; vertical-align: middle;">ghi chú</th>
@@ -395,12 +367,6 @@
 <script src="{{asset('assets/js/xlsx.full.min.js')}}"></script>
 <script src="{{asset('assets/js/choices.min.js')}}"></script>
 {{-- ĐƠN HÀNG --}}
-  <script>
-    $('.btn-secondary').click(function() {
-        var supplyId = $(this).data('id'); // Lấy ID từ data-id của nút
-        $('#supplyId').val(supplyId); // Đặt ID vào trường ẩn
-    });
-  </script>
   {{-- XÓA VẬT TƯ --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -497,12 +463,12 @@
                         _token: '{{ csrf_token() }}' // Đảm bảo bạn thêm token CSRF
                     },
                     success: function(data) {
-                        console.log(data)
+                        console.log(data);
                         var tbody = $('#danhMucVatTuChiTiet').find('tbody');
                         tbody.empty(); // Xóa nội dung hiện tại của tbody
                         $('#themvattuchitiet').attr('data-id', orderId);
                         $('#timkiemVatTuChiTiet').attr('data-id', orderId);
-                        var userFunctionId = {{$user->function_id}}
+                        var userFunctionId = {{$user->function_id}};
                         var orderName = data.orderName; // Lấy giá trị orderName từ dữ liệu trả về
 
                         var totalSupplies = data.totalSupplies;
@@ -514,7 +480,13 @@
                         $('#tongdanhan').text('Tổng đã nhận: ' + totalDanhan);
                         $('#tongchuanhan').text('Tổng chưa nhận: ' + totalChuanhan);
                         $('#tongdaxuat').text('Tổng đã xuất: ' + totalDaxuat);
+
+                        var hasMasoNew = false;
+
                         $.each(data.supplies, function(index, item) {
+                            if (item.maso_new) {
+                                hasMasoNew = true;
+                            }
 
                             var selectMaSo = $('.masochitiet').empty().append('<option selected="">Mã số</option>');
                             var selectDonViTinhChiTiet = $('.donvitinhchitiet').empty().append('<option selected="">Đơn vị Tính</option>');
@@ -530,11 +502,11 @@
                             });
 
                             if (item) {
-                                    var row = '<tr id="supply-row-' + item.id + '"  data-id="' + item.id + '">' +
+                                var row = '<tr id="supply-row-' + item.id + '" data-id="' + item.id + '">' +
                                     '<td style="text-align:center;vertical-align: middle">' + (index + 1) + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' tenvattu">' + (item.tenvattu) + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' maso">' + (item.maso) + '</td>' +
-                                    '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' maso">' + (item.maso_new ?? "") + '</td>' +
+                                    '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' masoNew2">' + (item.maso_new ?? "") + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' donvitinh">' + (item.donvitinh) + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluong">' + (item.soluong) + '</td>' +
                                     '<td style="text-align:center;vertical-align: middle" class="' + rowClass + ' soluongnhapkho">' + totalNhapKho + '</td>' +
@@ -546,6 +518,14 @@
                                 tbody.append(row);
                             }
                         });
+
+                        // Hiển thị hoặc ẩn cột Mã số mới
+                        if (hasMasoNew) {
+                            $('.masoNew2').show();
+                        } else {
+                            $('.masoNew2').hide();
+                        }
+
                         // Hiển thị modal
                         $('#danhMucVatTuChiTiet').modal('show');
                     },
@@ -581,6 +561,7 @@
                 ], 'value', 'label', false);
             });
         });
+
     </script>
 
   {{-- XÓA VẬT TƯ CHI TIẾT --}}
@@ -956,8 +937,13 @@
                             });
                             masovattuSelect.data('choices', choices);
 
+                            var hasMasoNew = false;
                             var tbodyHtml = '';
                             $.each(response.supplies, function(index, supply) {
+                                if (supply.maso_new) {
+                                    hasMasoNew = true;
+                                }
+
                                 var noteIcon = supply.note ? `<span class="bi bi-info-circle-fill text-info" style="cursor:pointer;" data-bs-toggle="popover" title="Nguyên nhân" data-bs-content="${supply.note}"></span>` : '';
 
                                 var actionColumnHtml = '';
@@ -965,29 +951,37 @@
                                 if (supply.orders && supply.orders.some(order => order.status === 1)) {
                                     actionColumnHtml = '';
                                 } else {
-                                        actionColumnHtml = `<td class='action-column' style="text-align: center; vertical-align: middle;">
-                                            <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
-                                                <i class="bx bx-transfer"></i>
-                                            </button>
-                                        </td>`;
-
+                                    actionColumnHtml = `<td class='action-column' style="text-align: center; vertical-align: middle;">
+                                                            <button class="btn btn-secondary thaydoivattu" title="Thay đổi">
+                                                                <i class="bx bx-transfer"></i>
+                                                            </button>
+                                                        </td>`;
                                 }
 
                                 tbodyHtml += `<tr data-supply-id="${supply.id}">
                                     <td style="text-align: center;vertical-align: middle">${index + 1}</td>
                                     <td style="vertical-align: middle">${supply.tenvattu} ${noteIcon}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.maso}</td>
-                                    <td style="text-align: center;vertical-align: middle" class="maso-moi">${supply.maso_new ?? ""}</td>
+                                    <td style="text-align: center;vertical-align: middle" class="maso-moi masoNew1">${supply.maso_new ?? ""}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.donvitinh}</td>
                                     <td style="text-align: center;vertical-align: middle">${supply.soluong}</td>
                                     ${actionColumnHtml}
                                 </tr>`;
                             });
+
+                            // Hiển thị hoặc ẩn cột Mã số mới
+
+
                             $('.vattucuadanhmuc tbody').empty().append(tbodyHtml);
                             $('[data-bs-toggle="popover"]').popover();
                             $('#tongsovattu').text('Tổng vật tư: ' + response.stats.totalSupplies);
                             $('#vautucuadanhmuc .modal-title').html(`Danh mục vật tư: ${catalogName}`);
                             $('#vautucuadanhmuc').modal('show');
+                            if (hasMasoNew) {
+                                $('.masoNew1, .maso-moi').show();
+                            } else {
+                                $('.masoNew1, .maso-moi').hide();
+                            }
                         },
                         error: function(xhr, status, error) {
                             alert('Có lỗi xảy ra, vui lòng thử lại sau.');
@@ -1065,7 +1059,6 @@
                     });
                 });
             });
-
         </script>
 
     {{-- XÓA VẬT TƯ --}}

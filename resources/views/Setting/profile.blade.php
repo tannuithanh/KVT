@@ -9,7 +9,7 @@
         <h1>Thông tin cá nhân</h1>
         <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('trangChu')}}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{route('dashBoard')}}">Trang chủ</a></li>
             <li class="breadcrumb-item active">Thông tin cá nhân</li>
         </ol>
         </nav>

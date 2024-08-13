@@ -1,0 +1,72 @@
+/* Điều chỉnh màu sắc biểu tượng cho tất cả các stat-box */
+.stat-box .icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #6c757d; /* Màu xám trung tính */
+}
+
+/* Nếu muốn giữ nguyên các lớp cụ thể nhưng thay đổi màu cho chúng */
+.total-project-supplies .icon {
+    color: #4caf50; /* Màu xanh lá cho tổng số vật tư */
+}
+
+.total-supplies-received .icon {
+    color: #2196f3; /* Màu xanh dương cho vật tư nhập kho */
+}
+
+.total-supplies-issued .icon {
+    color: #ff9800; /* Màu cam cho vật tư xuất kho */
+}
+
+.total-supplies-pending .icon {
+    color: #f44336; /* Màu đỏ cho vật tư chưa nhận */
+}
+
+/* Màu cho thống kê danh mục */
+.total-categories .icon {
+    color: #6f42c1; /* Màu tím cho tổng số danh mục */
+}
+
+.categories-completed .icon {
+    color: #28a745; /* Màu xanh lá đậm cho danh mục hoàn thành */
+}
+
+.categories-in-progress .icon {
+    color: #ffc107; /* Màu vàng cho danh mục đang thực hiện */
+}
+
+/* Thêm một số định dạng khác nếu cần */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #00529C;
+    color: white;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.stat-box {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-box h3 {
+    margin: 10px 0 5px;
+    font-size: 24px;
+}
+
+.stat-box p {
+    margin: 0;
+    font-size: 18px;
+}
+
